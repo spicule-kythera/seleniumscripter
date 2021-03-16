@@ -11,8 +11,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 public class SeleniumScripter {
     private WebDriver driver;
@@ -306,6 +304,10 @@ public class SeleniumScripter {
     private void snapshot(){
         System.out.println("Taking Snapshot");
         snapshots.add(driver.getPageSource());
+    }
+
+    public List<String> getSnapshots(){
+        return this.snapshots;
     }
 
 }
