@@ -67,7 +67,7 @@ public class SeleniumScripter {
     private void iterateTable(Map<String, Object> script) throws Exception {
         int offset = 0;
         if(script.containsKey("rowoffset")){
-            offset = Integer.parseInt(script.get("rowoffset").toString());
+            offset = (int) script.get("rowoffset");
         }
         while (true) {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
@@ -184,7 +184,7 @@ public class SeleniumScripter {
             selectObj.selectByValue(script.get("value").toString());
         } else if(script.get("selectBy").equals("index")){
             System.out.println("Run select by index");
-            selectObj.selectByIndex(Integer.parseInt(script.get("value").toString()));
+            selectObj.selectByIndex((int) script.get("value"));
         } else if(script.get("selectBy").equals("visible")){
             System.out.println("Run select by visible text");
             selectObj.selectByVisibleText(script.get("value").toString());
@@ -215,7 +215,7 @@ public class SeleniumScripter {
     private void runWait(Map<String, Object> script) throws Exception {
         int waittimeout = 30;
         if(script.containsKey("timeout")){
-            waittimeout = Integer.parseInt(script.get("timeout").toString());
+            waittimeout = (int) script.get("timeout");
         }
         WebDriverWait wait = new WebDriverWait(driver, waittimeout);
         System.out.println("Waiting for object: "+script.get("name").toString());
@@ -296,7 +296,7 @@ public class SeleniumScripter {
 
     private void clickListItem(Map<String, Object> script) throws Exception {
         List<WebElement> element = selectElements(script.get("selector").toString(), script.get("name").toString());
-        int i = Integer.parseInt(script.get("item").toString());
+        int i = (int) script.get("item");
         System.out.println("Clicking list item");
         element.get(i).click();
     }
