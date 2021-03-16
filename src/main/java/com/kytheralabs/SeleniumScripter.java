@@ -12,21 +12,30 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Selenium Scripter, generate selenium scripts from YAML.
+ */
 public class SeleniumScripter {
-    private WebDriver driver;
+    private final WebDriver driver;
     private Map<String, Object> masterScript;
-    private Map<String, List> captureLists = new HashMap<>();
-    private List<String> snapshots = new ArrayList<>();
-    private Integer iteration = 0;
+    private final Map<String, List> captureLists = new HashMap<>();
+    private final List<String> snapshots = new ArrayList<>();
     private Object loopValue;
 
     public SeleniumScripter(WebDriver webDriver){
         driver = webDriver;
     }
+
+    /**
+     * Run a selenium script, see wiki for more details.
+     * @param script
+     * @param iteration
+     * @param loopValue
+     * @throws Exception
+     */
     public void runScript(Map<String, Object> script, Integer iteration, Object loopValue) throws Exception {
         System.out.println("Processing Selenium Script");
         System.out.println("Objects found: "+script.size());
-        this.iteration = iteration;
         this.loopValue = loopValue;
         if(masterScript == null){
             masterScript = script;
@@ -64,6 +73,11 @@ public class SeleniumScripter {
         System.out.println("SNAPSHOTS TAKEN: "+snapshots.size());
     }
 
+    /**
+     * Iterate through a tables rows and perform a subscript on each row.
+     * @param script
+     * @throws Exception
+     */
     private void iterateTable(Map<String, Object> script) throws Exception {
         int offset = 0;
         if(script.containsKey("rowoffset")){
@@ -95,8 +109,6 @@ public class SeleniumScripter {
                     System.out.println("Can't find next button, exiting loop");
                     break;
                 }
-
-
             } else{
                 System.out.println("Now more rows left to parse");
                 break;
@@ -105,6 +117,13 @@ public class SeleniumScripter {
     }
 
 
+    /**
+     * Select an element by selector and nmme.
+     * @param selector
+     * @param name
+     * @return
+     * @throws Exception
+     */
     private WebElement selectElement(String selector, String name) throws Exception {
         WebElement clickedEl = null;
         switch (selector) {
@@ -132,6 +151,13 @@ public class SeleniumScripter {
         }
     }
 
+    /**
+     * Select multiple elements by selector and name.
+     * @param selector
+     * @param name
+     * @return
+     * @throws Exception
+     */
     private List<WebElement> selectElements(String selector, String name) throws Exception {
         List<WebElement> clickedEl = null;
         switch (selector) {
@@ -159,6 +185,12 @@ public class SeleniumScripter {
         }
     }
 
+    /**
+     * Get a By Element object
+     * @param selector
+     * @param name
+     * @return
+     */
     private By ByElement(String selector, String name) {
         switch (selector) {
             case "id":
@@ -176,6 +208,11 @@ public class SeleniumScripter {
         return null;
     }
 
+    /**
+     * Interact with a select object on a webpage.
+     * @param script
+     * @throws Exception
+     */
     private void runSelect(Map<String, Object> script) throws Exception {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
         Select selectObj = new Select(element);
@@ -191,6 +228,11 @@ public class SeleniumScripter {
         }
     }
 
+    /**
+     * Type some keys into your website.
+     * @param script
+     * @throws Exception
+     */
     private void runKeys(Map<String, Object> script) throws Exception {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
         String keystring = script.get("value").toString();
@@ -212,6 +254,11 @@ public class SeleniumScripter {
 
     }
 
+    /**
+     * Wait for an element to become visible.
+     * @param script
+     * @throws Exception
+     */
     private void runWait(Map<String, Object> script) throws Exception {
         int waittimeout = 30;
         if(script.containsKey("timeout")){
@@ -223,6 +270,11 @@ public class SeleniumScripter {
         System.out.println("Object found");
     }
 
+    /**
+     * Create a capture list. A capture list is a list of elements or labels which you can iterate over elsewhere in your script.
+     * @param script
+     * @throws Exception
+     */
     private void captureList(Map<String, Object> script) throws Exception {
         System.out.println("Generating Capture List");
         List<WebElement> webElements = selectElements(script.get("selector").toString(), script.get("name").toString());
@@ -255,6 +307,11 @@ public class SeleniumScripter {
         }
     }
 
+    /**
+     * Loop over a variable and run a script on each iteration.
+     * @param script
+     * @throws Exception
+     */
     private void loop(Map<String, Object> script) throws Exception {
         String loopType = script.get("type").toString();
         if(loopType.equals("variable")){
@@ -269,6 +326,11 @@ public class SeleniumScripter {
         }
     }
 
+    /**
+     * Click on an element on your website.
+     * @param script
+     * @throws Exception
+     */
     private void click(Map<String, Object> script) throws Exception {
         WebElement element = null;
         if(script.containsKey("selector") && script.get("selector").equals("element")){
@@ -294,6 +356,11 @@ public class SeleniumScripter {
         }
     }
 
+    /**
+     * Click on an item in a list.
+     * @param script
+     * @throws Exception
+     */
     private void clickListItem(Map<String, Object> script) throws Exception {
         List<WebElement> element = selectElements(script.get("selector").toString(), script.get("name").toString());
         int i = ((Double) script.get("item")).intValue();
@@ -301,11 +368,18 @@ public class SeleniumScripter {
         element.get(i).click();
     }
 
+    /**
+     * Take a snapshot and store the HTML content on the page.
+     */
     private void snapshot(){
         System.out.println("Taking Snapshot");
         snapshots.add(driver.getPageSource());
     }
 
+    /**
+     * Return the snapshots
+     * @return
+     */
     public List<String> getSnapshots(){
         return this.snapshots;
     }
