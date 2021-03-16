@@ -7,6 +7,14 @@
     <groupId>com.kytheralabs</groupId>
     <artifactId>seleniumScripter</artifactId>
     <version>1.0-SNAPSHOT</version>
+    <distributionManagement>
+        <repository>
+            <id>github</id>
+            <name>GitHub OWNER Apache Maven Packages</name>
+            <url>https://maven.pkg.github.com/spicule-kythera/seleniumscripter</url>
+        </repository>
+    </distributionManagement>
+
     <dependencies>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
