@@ -5,7 +5,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>com.kytheralabs</groupId>
-    <artifactId>seleniumScripter</artifactId>
+    <artifactId>seleniumscripter</artifactId>
     <version>1.0-SNAPSHOT</version>
     <distributionManagement>
         <repository>
