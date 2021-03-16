@@ -1,7 +1,7 @@
 0:
   operation: wait
   selector: id
-  name: mcoveragetype
+  name: dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_Name_0_mb_Name_0
   timeout: 30
 1:
   operation: keys
@@ -21,15 +21,24 @@
   # Capture actual elements rather than text strings, to click directly. Also collect using a partial class selector because of the different class names
   operation: captureList
   selector: cssSelector
+  collect: elements
   name: "[class^='iC_DataListItem']"
   variable: resultsElements
 5:
+  # Capture actual elements rather than text strings, to click directly. Also collect using a partial class selector because of the different class names
+  operation: captureList
+  selector: cssSelector
+  collect: elements
+  append: true
+  name: "[class^='iC_DataListAlternateItem']"
+  variable: resultsElements
+6:
   # Loop through all the elements on the front page
   operation: loop
   type: while
   variable: resultsElements
   subscript: resultsPanelScript
-6:
+7:
   # If next button exists execute the nextLoop subscript
   operation: conditional
   type: if
@@ -54,14 +63,22 @@ subscripts:
     3:
       operation: captureList
       selector: cssSelector
+      collect: elements
       name: "[class^='iC_DataListItem']"
       variable: resultsElements
     4:
+      operation: captureList
+      selector: cssSelector
+      collect: elements
+      append: true
+      name: "[class^='iC_DataListAlternateItem']"
+      variable: resultsElements
+    5:
       operation: loop
       type: while
       variable: resultsElements
       subscript: resultsPanelScript
-    5:
+    6:
       operation: conditional
       type: if
       condition:
@@ -69,7 +86,7 @@ subscripts:
           selector: class
           name: Next
       subscript: nextLoop
-      
+
   resultsPanelScript:
     1:
       operation: click

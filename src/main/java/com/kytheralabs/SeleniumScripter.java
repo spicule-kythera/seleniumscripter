@@ -11,11 +11,13 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 public class SeleniumScripter {
     private WebDriver driver;
     private Map<String, Object> masterScript;
-    private Map<String, List<String>> captureLists = new HashMap<>();
+    private Map<String, List> captureLists = new HashMap<>();
     private List<String> snapshots = new ArrayList<>();
     private Integer iteration = 0;
     private String loopValue;
@@ -175,13 +177,33 @@ public class SeleniumScripter {
     private void captureList(Map<String, Object> script) throws Exception {
         System.out.println("Generating Capture List");
         List<WebElement> webElements = selectElements(script.get("selector").toString(), script.get("name").toString());
-        List<String> strlist = new ArrayList<>();
+        String type = "text";
+        if(script.containsKey("collect")){
+            type = script.get("collect").toString();
+        }
+        List strlist = new ArrayList<>();
         for(WebElement el : webElements){
             System.out.println("Capture Element Found: "+el.getText());
-            strlist.add(el.getText());
+            if(type.equals("text")){
+                strlist.add(el.getText());
+            } else if(type.equals("elements")){
+                strlist.add(el);
+            }
+
         }
         System.out.println("Storing capture list as: "+script.get("variable").toString());
-        captureLists.put(script.get("variable").toString(), strlist);
+        String append = "false";
+        if(script.containsKey("append")){
+            append = script.get("append").toString();
+        }
+        if(append.equals("false")) {
+            captureLists.put(script.get("variable").toString(), strlist);
+        } else if(append.equals("true")){
+            List list = captureLists.get(script.get("variable"));
+            List<String> newList = new ArrayList<String>(list);
+            newList.addAll(strlist);
+            captureLists.put(script.get("variable").toString(), newList);
+        }
     }
 
     private void loop(Map<String, Object> script) throws Exception {
