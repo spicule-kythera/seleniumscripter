@@ -11,7 +11,7 @@
         <repository>
             <id>github</id>
             <name>GitHub OWNER Apache Maven Packages</name>
-            <url>https://maven.pkg.github.com/spicule-kythera/seleniumScripter</url>
+            <url>https://maven.pkg.github.com/spicule-kythera/seleniumscripter</url>
         </repository>
     </distributionManagement>
 
