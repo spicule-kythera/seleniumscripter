@@ -7,7 +7,7 @@
   operation: keys
   selector: id
   name: dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_Name_0_mb_Name_0
-  value: Zyvox
+  value: Abilify
 2:
   operation: click
   selector: id
@@ -18,83 +18,33 @@
   name: dnn_ctr347_NDCSearchPage_SearchPage_Datalist
   timeout: 30
 4:
-  # Capture actual elements rather than text strings, to click directly. Also collect using a partial class selector because of the different class names
-  operation: captureList
-  selector: cssSelector
-  collect: elements
-  name: "[class^='iC_DataListItem']"
-  variable: resultsElements
-5:
-  # Capture actual elements rather than text strings, to click directly. Also collect using a partial class selector because of the different class names
-  operation: captureList
-  selector: cssSelector
-  collect: elements
-  append: true
-  name: "[class^='iC_DataListAlternateItem']"
-  variable: resultsElements
-6:
-  # Loop through all the elements on the front page
-  operation: loop
-  type: while
-  variable: resultsElements
-  subscript: resultsPanelScript
-7:
-  # If next button exists execute the nextLoop subscript
-  operation: conditional
-  type: if
-  condition:
-    visible:
-      selector: class
-      name: Next
-  subscript: nextLoop
+  operation: table
+  selector: xpath
+  name: //*[@id="dnn_ctr347_NDCSearchPage_SearchPage_Datalist"]/tbody/tr
+  rowoffset: 3
+  subscript: tablesnapshot
+  nextbuttonscript: nextscript
+  nextbutton:
+    selector: class
+    name: Next
+
 
 
 subscripts:
-  nextLoop:
+  tablesnapshot:
     1:
-      operation: click
-      type: class
-      name: Next
-    2:
-      operation: wait
-      type: id
-      name: dnn_ctr347_NDCSearchPage_SearchPage_Datalist
-      timeout: 30
-    3:
-      operation: captureList
-      selector: cssSelector
-      collect: elements
-      name: "[class^='iC_DataListItem']"
-      variable: resultsElements
-    4:
-      operation: captureList
-      selector: cssSelector
-      collect: elements
-      append: true
-      name: "[class^='iC_DataListAlternateItem']"
-      variable: resultsElements
-    5:
-      operation: loop
-      type: while
-      variable: resultsElements
-      subscript: resultsPanelScript
-    6:
-      operation: conditional
-      type: if
-      condition:
-        visible:
-          selector: class
-          name: Next
-      subscript: nextLoop
-
-  resultsPanelScript:
-    1:
-      operation: click
-      selector: element
-      variable: ${inputElement}
-    2:
       operation: wait
       selector: class
       name: iC_DataPanelContainer
-    3:
+    2:
       operation: snapshot
+  nextscript:
+    1:
+      operation: click
+      selector: class
+      name: Next
+      failNotFound: false
+    2:
+      operation: wait
+      selector: class
+      name: iC_EditItem

@@ -20,12 +20,12 @@ public class SeleniumScripter {
     private Map<String, List> captureLists = new HashMap<>();
     private List<String> snapshots = new ArrayList<>();
     private Integer iteration = 0;
-    private String loopValue;
+    private Object loopValue;
 
     public SeleniumScripter(WebDriver webDriver){
         driver = webDriver;
     }
-    public void runScript(Map<String, Object> script, Integer iteration, String loopValue) throws Exception {
+    public void runScript(Map<String, Object> script, Integer iteration, Object loopValue) throws Exception {
         System.out.println("Processing Selenium Script");
         System.out.println("Objects found: "+script.size());
         this.iteration = iteration;
@@ -55,12 +55,57 @@ public class SeleniumScripter {
                         clickListItem(obj);
                     } else if (obj.get("operation").equals("snapshot")) {
                         snapshot();
+                    } else if (obj.get("operation").equals("table")){
+                        iterateTable(obj);
                     }
                 }
             }
 
         }
+
+        System.out.println("SNAPSHOTS TAKEN: "+snapshots.size());
     }
+
+    private void iterateTable(Map<String, Object> script) throws Exception {
+        int offset = 0;
+        if(script.containsKey("rowoffset")){
+            offset = Integer.parseInt(script.get("rowoffset").toString());
+        }
+        while (true) {
+            List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
+            int elementcount = allRows.size();
+            if(elementcount <= offset){
+                break;
+            }
+            for (int i = offset; i < elementcount; i++) {
+                String xpath = script.get("name").toString();
+                xpath = xpath + "[" + i + "]";
+                allRows = selectElements(script.get("selector").toString(), xpath);
+                allRows.get(0).click();
+                Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
+                Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
+                runScript(subscript, null, null);
+            }
+            if (script.containsKey("nextbuttonscript")) {
+                Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
+                Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("nextbuttonscript"));
+                Map<String, Object> nextbuttonAttrs = (Map<String, Object>) script.get("nextbutton");
+                try{
+                    selectElement(nextbuttonAttrs.get("selector").toString(), nextbuttonAttrs.get("name").toString());
+                    runScript(subscript, null, null);
+                } catch(org.openqa.selenium.NoSuchElementException e){
+                    System.out.println("Can't find next button, exiting loop");
+                    break;
+                }
+
+
+            } else{
+                System.out.println("Now more rows left to parse");
+                break;
+            }
+        }
+    }
+
 
     private WebElement selectElement(String selector, String name) throws Exception {
         WebElement clickedEl = null;
@@ -152,15 +197,21 @@ public class SeleniumScripter {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
         String keystring = script.get("value").toString();
         String target = keystring;
-        if(keystring.equals("${loopvalue}")){
-            target = this.loopValue;
+        if(this.loopValue != null && !(this.loopValue instanceof String)) {
+            throw new Exception("Can't insert keys, value not string");
+
         }
-        element.clear();
-        for(char s : target.toCharArray()){
-            System.out.println("Inserting: "+String.valueOf(s));
-            element.sendKeys(String.valueOf(s));
-            Thread.sleep(300);
-        }
+
+            if (keystring.equals("${loopvalue}")) {
+                target = this.loopValue.toString();
+            }
+            element.clear();
+            for (char s : target.toCharArray()) {
+                System.out.println("Inserting: " + String.valueOf(s));
+                element.sendKeys(String.valueOf(s));
+                Thread.sleep(300);
+            }
+
     }
 
     private void runWait(Map<String, Object> script) throws Exception {
@@ -211,7 +262,7 @@ public class SeleniumScripter {
         if(loopType.equals("variable")){
             List<String> vars = captureLists.get(script.get("variable").toString());
             System.out.println("Performing Variable Loop for: "+script.get("variable").toString());
-            for (String v : vars) {
+            for (Object v : vars) {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 System.out.println("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
@@ -221,9 +272,28 @@ public class SeleniumScripter {
     }
 
     private void click(Map<String, Object> script) throws Exception {
-        WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
-        System.out.println("Clicking Element");
-        element.click();
+        WebElement element = null;
+        if(script.containsKey("selector") && script.get("selector").equals("element")){
+            if(script.containsKey("variable") && script.get("variable").equals("${inputElement}")){
+                element = (WebElement) this.loopValue;
+            }
+        } else {
+            if(script.containsKey("failNotFound") && script.get("failNotFound").equals(false)){
+                try{
+                    element = selectElement(script.get("selector").toString(), script.get("name").toString());
+                } catch (org.openqa.selenium.NoSuchElementException e){
+                    System.out.println("Element not found but continuing.");
+                }
+            } else {
+                element = selectElement(script.get("selector").toString(), script.get("name").toString());
+            }
+        }
+        if(element != null) {
+            System.out.println("Clicking Element");
+            element.click();
+        } else{
+            System.out.println("Element null, nothing to click.");
+        }
     }
 
     private void clickListItem(Map<String, Object> script) throws Exception {
@@ -237,8 +307,5 @@ public class SeleniumScripter {
         System.out.println("Taking Snapshot");
         snapshots.add(driver.getPageSource());
     }
-
-
-
 
 }

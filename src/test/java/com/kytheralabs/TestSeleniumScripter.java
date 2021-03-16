@@ -53,6 +53,13 @@ public class TestSeleniumScripter {
         chromeOptions.addArguments("--no-sandbox");
         chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--ignore-certificate-errors");
+        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--window-size=1920,1080");
+        chromeOptions.addArguments("--start-maximized");
+        chromeOptions.addArguments("--disable-gpu");
+        chromeOptions.addArguments("--no-sandbox");
+        chromeOptions.addArguments("--disable-extensions");
+        chromeOptions.addArguments("--disable-infobars");
         //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
         String loc = "http://localhost:3000/webdriver";
         capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
