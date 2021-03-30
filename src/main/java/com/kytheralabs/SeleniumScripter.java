@@ -86,6 +86,7 @@ public class SeleniumScripter {
         while (true) {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
             int elementcount = allRows.size();
+            System.out.println("ROWS FOUND IN TABLE: "+ elementcount);
             if(elementcount <= offset){
                 break;
             }
@@ -97,6 +98,9 @@ public class SeleniumScripter {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 runScript(subscript, null, null);
+                WebDriverWait wait = new WebDriverWait(driver, 30);
+                System.out.println("Waiting for object: "+script.get("name").toString());
+                wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             }
             if (script.containsKey("nextbuttonscript")) {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
