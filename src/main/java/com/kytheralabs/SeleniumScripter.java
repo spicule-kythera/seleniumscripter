@@ -1,6 +1,7 @@
 package com.kytheralabs;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.Keys;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -248,6 +249,8 @@ public class SeleniumScripter {
 
             if (keystring.equals("${loopvalue}")) {
                 target = this.loopValue.toString();
+            } else if(keystring.equals("{enter}")){
+                element.sendKeys(Keys.ENTER);
             }
             element.clear();
             for (char s : target.toCharArray()) {
