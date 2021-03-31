@@ -252,6 +252,12 @@ public class SeleniumScripter {
             } else if(keystring.equals("{enter}")){
                 element.sendKeys(Keys.ENTER);
                 return;
+            }else if(keystring.equals("{return}")){
+                element.sendKeys(Keys.RETURN);
+                return;
+            }else if(keystring.equals("{down}")){
+                element.sendKeys(Keys.ARROW_DOWN);
+                return;
             }
             element.clear();
             for (char s : target.toCharArray()) {
