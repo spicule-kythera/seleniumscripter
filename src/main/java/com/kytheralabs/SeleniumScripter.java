@@ -280,8 +280,8 @@ public class SeleniumScripter {
         }
 
         if(script.get("selector").toString().equals("none")){
-            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
-            wait.wait(waittimeout);
+            System.out.println("Sleeping for :"+waittimeout);
+            Thread.sleep(waittimeout*1000);
         } else {
             WebDriverWait wait = new WebDriverWait(driver, waittimeout);
             System.out.println("Waiting for object: " + script.get("name").toString());
