@@ -280,9 +280,10 @@ public class SeleniumScripter {
             waittimeout = ((Double) script.get("timeout")).intValue();
         }
 
+
+
         if(script.get("selector").toString().equals("none")){
-            System.out.println("Sleeping for :"+waittimeout);
-            pause(waittimeout*1000);
+            driver.manage().timeouts().implicitlyWait(waittimeout, TimeUnit.SECONDS);
         } else {
             WebDriverWait wait = new WebDriverWait(driver, waittimeout);
             System.out.println("Waiting for object: " + script.get("name").toString());
