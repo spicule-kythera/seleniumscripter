@@ -278,10 +278,16 @@ public class SeleniumScripter {
         if(script.containsKey("timeout")){
             waittimeout = ((Double) script.get("timeout")).intValue();
         }
-        WebDriverWait wait = new WebDriverWait(driver, waittimeout);
-        System.out.println("Waiting for object: "+script.get("name").toString());
-        wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
-        System.out.println("Object found");
+
+        if(script.get("selector").toString().equals("none")){
+            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
+            wait.wait(waittimeout);
+        } else {
+            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
+            System.out.println("Waiting for object: " + script.get("name").toString());
+            wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+            System.out.println("Object found");
+        }
     }
 
     /**
