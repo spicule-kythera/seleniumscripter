@@ -12,6 +12,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
@@ -281,7 +282,7 @@ public class SeleniumScripter {
 
         if(script.get("selector").toString().equals("none")){
             System.out.println("Sleeping for :"+waittimeout);
-            Thread.sleep(waittimeout*1000);
+            pause(waittimeout*1000);
         } else {
             WebDriverWait wait = new WebDriverWait(driver, waittimeout);
             System.out.println("Waiting for object: " + script.get("name").toString());
@@ -289,7 +290,13 @@ public class SeleniumScripter {
             System.out.println("Object found");
         }
     }
-
+    private void pause(Integer milliseconds){
+        try {
+            TimeUnit.MILLISECONDS.sleep(milliseconds);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+    }
     /**
      * Create a capture list. A capture list is a list of elements or labels which you can iterate over elsewhere in your script.
      * @param script
