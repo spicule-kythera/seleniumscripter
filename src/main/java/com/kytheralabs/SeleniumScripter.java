@@ -251,6 +251,7 @@ public class SeleniumScripter {
                 target = this.loopValue.toString();
             } else if(keystring.equals("{enter}")){
                 element.sendKeys(Keys.ENTER);
+                return;
             }
             element.clear();
             for (char s : target.toCharArray()) {
