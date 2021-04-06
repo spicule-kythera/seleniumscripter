@@ -277,7 +277,7 @@ public class SeleniumScripter {
     private void runWait(Map<String, Object> script) throws Exception {
         int waittimeout = 30;
         if(script.containsKey("timeout")){
-            waittimeout = ((Double) script.get("timeout")).intValue();
+            waittimeout = ((Integer) script.get("timeout")).intValue();
         }
 
 
