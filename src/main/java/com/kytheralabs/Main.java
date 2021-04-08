@@ -23,7 +23,7 @@ public class Main {
         Yaml yaml = new Yaml();
         InputStream inputStream = Thread.currentThread()
                 .getContextClassLoader()
-                .getResourceAsStream("example2.yaml");
+                .getResourceAsStream(args[0]);
         Map<String, Object> obj = yaml.load(inputStream);
         System.out.println(obj);
 
@@ -33,7 +33,7 @@ public class Main {
         chromeOptions.addArguments("--ignore-certificate-errors");
         System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
         ChromeDriver webDriver = new ChromeDriver();
-        webDriver.get("https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx");
+        webDriver.get(args[1]);
         SeleniumScripter scripter = new SeleniumScripter(webDriver);
         scripter.runScript(obj, 1, 0);
 
