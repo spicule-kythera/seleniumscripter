@@ -83,7 +83,7 @@ public class SeleniumScripter {
     private void iterateTable(Map<String, Object> script) throws Exception {
         int offset = 0;
         if(script.containsKey("rowoffset")){
-            offset = ((Double)script.get("rowoffset")).intValue();
+            offset = ((Integer)script.get("rowoffset")).intValue();
         }
         while (true) {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
@@ -243,10 +243,10 @@ public class SeleniumScripter {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
         String keystring = script.get("value").toString();
         String target = keystring;
-        if(this.loopValue != null && !(this.loopValue instanceof String)) {
-            throw new Exception("Can't insert keys, value not string");
-
-        }
+//        if(this.loopValue != null && !(this.loopValue instanceof String)) {
+//            throw new Exception("Can't insert keys, value not string");
+//
+//        }
 
             if (keystring.equals("${loopvalue}")) {
                 target = this.loopValue.toString();
