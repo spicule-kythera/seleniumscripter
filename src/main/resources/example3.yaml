@@ -1,7 +1,22 @@
 0:
   operation: wait
   selector: id
-  name: main
+  name: Name
   timeout: 30
-  1:
-    operation: snapshot
+1:
+  operation: keys
+  selector: id
+  name: NAME
+  value: Zyvox
+2:
+  operation: click
+  selector: id
+  name: Name
+  value: "{enter}"
+3:
+  operation: wait
+  selector: id
+  name: searchResults
+  timeout: 30
+4:
+  operation: snapshot

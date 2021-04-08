@@ -2,7 +2,10 @@ package com.kytheralabs;
 
 import org.junit.Test;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.yaml.snakeyaml.Yaml;
@@ -13,62 +16,72 @@ import java.util.Map;
 
 public class TestSeleniumScripter {
 
+    //To test at Jar level
     @Test
     public void testRunScript() throws Exception {
         Yaml yaml = new Yaml();
-        InputStream inputStream = this.getClass()
-                .getClassLoader()
-                .getResourceAsStream("example.yaml");
+        InputStream inputStream = Thread.currentThread()
+                .getContextClassLoader()
+                .getResourceAsStream("example3.yaml");
         Map<String, Object> obj = yaml.load(inputStream);
         System.out.println(obj);
 
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
         final ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--no-sandbox");
         chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--ignore-certificate-errors");
-        //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
-        String loc = "http://localhost:3000/webdriver";
-        capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
+        System.setProperty("webdriver.chrome.driver", "classes/chromedriver.exe");
+        ChromeDriver webDriver = new ChromeDriver();
+        webDriver.get("https://communitysolutions.pacificsource.com/Search/Drug/Name");
+        SeleniumScripter scripter = new SeleniumScripter(webDriver);
+        scripter.runScript(obj, 1, 0);
 
-
-        WebDriver webDriver = new RemoteWebDriver(new URL(loc), capabilities);
-
-        webDriver.get("https://www.upmchealthplan.com/find-a-medication/default.aspx#medication");
-        SeleniumScripter s = new SeleniumScripter(webDriver);
-        s.runScript(obj, null, null);
     }
 
+    //To test at IDE level
     @Test
     public void testRunAlabama() throws Exception {
-        Yaml yaml = new Yaml();
-        InputStream inputStream = this.getClass()
-                .getClassLoader()
-                .getResourceAsStream("example2.yaml");
-        Map<String, Object> obj = yaml.load(inputStream);
-        System.out.println(obj);
+            Yaml yaml = new Yaml();
+            InputStream inputStream = Thread.currentThread()
+                    .getContextClassLoader()
+                    .getResourceAsStream("example2.yaml");
+            Map<String, Object> obj = yaml.load(inputStream);
+            System.out.println(obj);
 
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        final ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--no-sandbox");
-        chromeOptions.addArguments("--headless");
-        chromeOptions.addArguments("--ignore-certificate-errors");
-        chromeOptions.addArguments("--headless");
-        chromeOptions.addArguments("--window-size=1920,1080");
-        chromeOptions.addArguments("--start-maximized");
-        chromeOptions.addArguments("--disable-gpu");
-        chromeOptions.addArguments("--no-sandbox");
-        chromeOptions.addArguments("--disable-extensions");
-        chromeOptions.addArguments("--disable-infobars");
-        //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
-        String loc = "http://localhost:3000/webdriver";
-        capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
-
-
-        WebDriver webDriver = new RemoteWebDriver(new URL(loc), capabilities);
-
-        webDriver.get("https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx");
-        SeleniumScripter s = new SeleniumScripter(webDriver);
-        s.runScript(obj, null, null);
+            final ChromeOptions chromeOptions = new ChromeOptions();
+            chromeOptions.addArguments("--no-sandbox");
+            chromeOptions.addArguments("--headless");
+            chromeOptions.addArguments("--ignore-certificate-errors");
+            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+            ChromeDriver webDriver = new ChromeDriver();
+            webDriver.get("https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx");
+            SeleniumScripter scripter = new SeleniumScripter(webDriver);
+            scripter.runScript(obj, 1, 0);
     }
+        //Future proxy intergration?
+//    @Test
+//    public void testRunScript() throws Exception {
+//        Yaml yaml = new Yaml();
+//        InputStream inputStream = this.getClass()
+//                .getClassLoader()
+//                .getResourceAsStream("example.yaml");
+//        Map<String, Object> obj = yaml.load(inputStream);
+//        System.out.println(obj);
+//
+//        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+//        final ChromeOptions chromeOptions = new ChromeOptions();
+//        chromeOptions.addArguments("--no-sandbox");
+//        chromeOptions.addArguments("--headless");
+//        chromeOptions.addArguments("--ignore-certificate-errors");
+//        //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
+//        String loc = "http://localhost:3000/webdriver";
+//        capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
+//
+//
+//        WebDriver webDriver = new RemoteWebDriver(new URL(loc), capabilities);
+//
+//        webDriver.get("https://www.upmchealthplan.com/find-a-medication/default.aspx#medication");
+//        SeleniumScripter s = new SeleniumScripter(webDriver);
+//        s.runScript(obj, null, null);
+//    }
 }
