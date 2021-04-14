@@ -1,17 +1,11 @@
 package com.kytheralabs;
 
 import org.junit.Test;
-import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
 import org.yaml.snakeyaml.Yaml;
 
 import java.io.InputStream;
-import java.net.URL;
 import java.util.Map;
 
 public class TestSeleniumScripter {
@@ -52,9 +46,9 @@ public class TestSeleniumScripter {
             chromeOptions.addArguments("--no-sandbox");
             chromeOptions.addArguments("--headless");
             chromeOptions.addArguments("--ignore-certificate-errors");
-            System.setProperty("webdriver.chrome.driver", "chromedriver.exe");
+            System.setProperty("webdriver.chrome.driver", "/home/bugg/chromedriver");
             ChromeDriver webDriver = new ChromeDriver();
-            webDriver.get("https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx");
+            webDriver.get("https://rxtools.aetnamedicare.com/helpfultools/2021/Resources/HelpfulTools");
             SeleniumScripter scripter = new SeleniumScripter(webDriver);
             scripter.runScript(obj, 1, 0);
     }

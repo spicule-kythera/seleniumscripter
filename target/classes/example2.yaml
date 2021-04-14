@@ -1,50 +1,98 @@
-0:
+a:
   operation: wait
   selector: id
-  name: dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_Name_0_mb_Name_0
-  timeout: 30
-1:
+  name: demographic_input
+b:
   operation: keys
   selector: id
-  name: dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_Name_0_mb_Name_0
-  value: Zyvox
-2:
+  name: demographic_input
+  value: 19067
+c:
+  operation: wait
+  selector: xpath
+  name: //*[text()= 'Bucks, PA']
+  timeout: 30
+d:
   operation: click
   selector: id
-  name: dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_SearchButton_0
-3:
+  name: helpfultools_zip_button
+e:
   operation: wait
-  selector: id
-  name: dnn_ctr347_NDCSearchPage_SearchPage_Datalist
-  timeout: 30
-4:
-  operation: table
   selector: xpath
-  name: //*[@id="dnn_ctr347_NDCSearchPage_SearchPage_Datalist"]/tbody/tr
-  rowoffset: 3
-  subscript: tablesnapshot
-  nextbuttonscript: nextscript
-  nextbutton:
-    selector: class
-    name: Next
-
-
-
+  name: //*[@id="helpful-tools-container"]/div[2]/div[1]/div/vnext-helpful-tools-plancard/div/div[2]/div/div/div/div/div[3]/vnext-helpful-tools-link/span
+f:
+  operation: click
+  selector: xpath
+  name: /html/body/app-root/div/vnext-template-basic/vnext-zone-content/div/vnext-helpful-tools-plan-list/div/div[2]/vnext-filter-tab[2]/div
+g:
+  operation: click
+  selector: xpath
+  name: //*[@id="helpful-tools-container"]/div[2]/div[1]/div/vnext-helpful-tools-plancard/div/div[2]/div/div/div/div/div[3]/vnext-helpful-tools-link/span
+h:
+  operation: wait
+  selector: xpath
+  name: //*[@id="helpful-tools-prescriptions-tab"]/div[2]/vnext-widget-drug-search/div/div/div[1]/vnext-liveedit-container/input
+  timeout: 30
+i:
+  operation: keys
+  selector: xpath
+  name: //*[@id="helpful-tools-prescriptions-tab"]/div[2]/vnext-widget-drug-search/div/div/div[1]/vnext-liveedit-container/input
+  value: aripiprazole
+j:
+  operation: wait
+  timeout: 10
+  selector: xpath
+  name: //*[@id="ngb-typeahead-0-0"]
+k:
+  operation: keys
+  selector: xpath
+  name: //*[@id="helpful-tools-prescriptions-tab"]/div[2]/vnext-widget-drug-search/div/div/div[1]/vnext-liveedit-container/input
+  value: "{enter}"
+l:
+  operation: wait
+  selector: xpath
+  name: //*[@class="btn Spa_Style_PrimaryButton"]
+  timeout: 30
+m:
+  operation: captureList
+  selector: xpath
+  name: //*[@class="toggle-option Spa_Style_SecondaryButton"]
+  variable: dosagelabels
+n:
+  operation: loop
+  type: variable
+  variable: dosagelabels
+  subscript: searchSubScript
 subscripts:
-  tablesnapshot:
+  searchSubScript:
     1:
       operation: wait
-      selector: class
-      name: iC_DataPanelContainer
+      selector: xpath
+      name: //*[@class="drug-details-container row mb-2"]
+      timeout: 60
     2:
-      operation: snapshot
-  nextscript:
-    1:
       operation: click
-      selector: class
-      name: Next
-      failNotFound: false
-    2:
+      selector: xpath
+      name: //*[@aria-label="{variable}"]
+      variable: true
+      timeout: 60
+    4:
+      operation: click
+      selector: xpath
+      name: //*[@class="btn Spa_Style_PrimaryButton"]
+    5:
       operation: wait
-      selector: class
-      name: iC_EditItem
+      selector: xpath
+      name: //*[@class="drug-details-container row mb-2"]
+      timeout: 60
+    6:
+      operation: wait
+      selector: xpath
+      name: //*[@class="mt-2"]
+      timeout: 60
+    7:
+      operation: snapshot
+    8:
+      operation: click
+      selector: xpath
+      name: //*[@id="helpful-tools-prescriptions-tab"]/div[2]/vnext-widget-drug-search/div/div/div[2]/vnext-drug-details/div/div[2]/vnext-link/div/a/span/span
