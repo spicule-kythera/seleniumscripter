@@ -1,18 +1,20 @@
 package com.kytheralabs;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import com.databricks.dbutils_v1.DbfsUtils;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import com.databricks.dbutils_v1.DBUtilsV1;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
@@ -63,9 +65,11 @@ public class SeleniumScripter {
                     } else if (obj.get("operation").equals("clickListItem")) {
                         clickListItem(obj);
                     } else if (obj.get("operation").equals("snapshot")) {
-                        snapshot();
+                        snapshot(obj);
                     } else if (obj.get("operation").equals("table")){
                         iterateTable(obj);
+                    } else if (obj.get("operation").equals("screenshot")){
+                        screenshot();
                     }
                 }
             }
@@ -73,6 +77,17 @@ public class SeleniumScripter {
         }
 
         System.out.println("SNAPSHOTS TAKEN: "+snapshots.size());
+    }
+
+    private void screenshot(Map<String, Object> script) throws IOException {
+        TakesScreenshot scrShot =((TakesScreenshot)driver);
+
+        if(script.get("type").equals("file")) {
+            File f = scrShot.getScreenshotAs(OutputType.FILE);
+            File dest = new File((String) script.get("targetdir"));
+            FileUtils.copyFile(f, dest);
+        } else if(script.get("type").equals("dbfs")){
+        }
     }
 
     /**
