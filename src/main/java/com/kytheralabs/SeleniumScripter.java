@@ -65,11 +65,11 @@ public class SeleniumScripter {
                     } else if (obj.get("operation").equals("clickListItem")) {
                         clickListItem(obj);
                     } else if (obj.get("operation").equals("snapshot")) {
-                        snapshot(obj);
+                        snapshot();
                     } else if (obj.get("operation").equals("table")){
                         iterateTable(obj);
                     } else if (obj.get("operation").equals("screenshot")){
-                        screenshot();
+                        screenshot(obj);
                     }
                 }
             }
