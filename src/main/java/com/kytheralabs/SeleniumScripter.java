@@ -373,7 +373,13 @@ public class SeleniumScripter {
                     System.out.println("Element not found but continuing.");
                 }
             } else {
-                element = selectElement(script.get("selector").toString(), script.get("name").toString());
+                if(script.containsKey("variable") && script.get("variable").equals(true)){
+                    String n = script.get("name").toString().replace("{variable}", this.loopValue.toString());
+                    element = selectElement(script.get("selector").toString(), n);
+                } else{
+                    element = selectElement(script.get("selector").toString(), script.get("name").toString());
+                }
+
             }
         }
         if(element != null) {
