@@ -295,10 +295,9 @@ public class SeleniumScripter {
     private void runWait(Map<String, Object> script) throws Exception {
         int waittimeout = 30;
         if(script.containsKey("timeout")){
-            waittimeout = ((Integer) script.get("timeout")).intValue();
+            Object test = 0.00;
+            waittimeout = ((Double) script.get("timeout")).intValue();
         }
-
-
 
         if(script.get("selector").toString().equals("none")){
             driver.manage().timeouts().implicitlyWait(waittimeout, TimeUnit.SECONDS);
