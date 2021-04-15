@@ -9,9 +9,5 @@
         <module name="seleniumscripter" />
       </profile>
     </annotationProcessing>
-    <bytecodeTargetLevel>
-      <module name="seleniumscripter" target="8" />
-      <module name="seleniumScripter" target="8" />
-    </bytecodeTargetLevel>
   </component>
 </project>

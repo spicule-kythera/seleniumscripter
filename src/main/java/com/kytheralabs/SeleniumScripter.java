@@ -62,6 +62,8 @@ public class SeleniumScripter {
                         click(obj);
                     } else if (obj.get("operation").equals("clickListItem")) {
                         clickListItem(obj);
+                    } else if (obj.get("operation").equals("screenshot")) {
+                        screenshot(obj);
                     } else if (obj.get("operation").equals("snapshot")) {
                         snapshot();
                     } else if (obj.get("operation").equals("table")){
