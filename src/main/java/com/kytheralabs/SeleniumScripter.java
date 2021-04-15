@@ -1,6 +1,5 @@
 package com.kytheralabs;
 
-import com.databricks.dbutils_v1.DbfsUtils;
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -14,7 +13,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import com.databricks.dbutils_v1.DBUtilsV1;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
@@ -64,12 +62,12 @@ public class SeleniumScripter {
                         click(obj);
                     } else if (obj.get("operation").equals("clickListItem")) {
                         clickListItem(obj);
+                    } else if (obj.get("operation").equals("screenshot")) {
+                        screenshot(obj);
                     } else if (obj.get("operation").equals("snapshot")) {
                         snapshot();
                     } else if (obj.get("operation").equals("table")){
                         iterateTable(obj);
-                    } else if (obj.get("operation").equals("screenshot")){
-                        screenshot(obj);
                     }
                 }
             }
@@ -79,6 +77,11 @@ public class SeleniumScripter {
         System.out.println("SNAPSHOTS TAKEN: "+snapshots.size());
     }
 
+    /**
+     * Take a screenshot for debugging purposes
+     * @param script
+     * @throws IOException
+     */
     public void screenshot(Map<String, Object> script) throws IOException {
         TakesScreenshot scrShot =((TakesScreenshot)driver);
 
@@ -98,7 +101,7 @@ public class SeleniumScripter {
     private void iterateTable(Map<String, Object> script) throws Exception {
         int offset = 0;
         if(script.containsKey("rowoffset")){
-            offset = ((Double)script.get("rowoffset")).intValue();
+            offset = ((Integer)script.get("rowoffset")).intValue();
         }
         while (true) {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
@@ -258,10 +261,10 @@ public class SeleniumScripter {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
         String keystring = script.get("value").toString();
         String target = keystring;
-        if(this.loopValue != null && !(this.loopValue instanceof String)) {
-            throw new Exception("Can't insert keys, value not string");
-
-        }
+//        if(this.loopValue != null && !(this.loopValue instanceof String)) {
+//            throw new Exception("Can't insert keys, value not string");
+//
+//        }
 
             if (keystring.equals("${loopvalue}")) {
                 target = this.loopValue.toString();
@@ -292,7 +295,7 @@ public class SeleniumScripter {
     private void runWait(Map<String, Object> script) throws Exception {
         int waittimeout = 30;
         if(script.containsKey("timeout")){
-            waittimeout = ((Double) script.get("timeout")).intValue();
+            waittimeout = ((Integer) script.get("timeout")).intValue();
         }
 
 
@@ -388,7 +391,13 @@ public class SeleniumScripter {
                     System.out.println("Element not found but continuing.");
                 }
             } else {
-                element = selectElement(script.get("selector").toString(), script.get("name").toString());
+                if(script.containsKey("variable") && script.get("variable").equals(true)){
+                    String n = script.get("name").toString().replace("{variable}", this.loopValue.toString());
+                    element = selectElement(script.get("selector").toString(), n);
+                } else{
+                    element = selectElement(script.get("selector").toString(), script.get("name").toString());
+                }
+
             }
         }
         if(element != null) {
