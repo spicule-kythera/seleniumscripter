@@ -1,13 +1,13 @@
 package com.kytheralabs;
 
-import org.openqa.selenium.By;
-import org.openqa.selenium.Keys;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -73,6 +73,22 @@ public class SeleniumScripter {
         }
 
         System.out.println("SNAPSHOTS TAKEN: "+snapshots.size());
+    }
+
+    /**
+     * Take a screenshot for debugging purposes
+     * @param script
+     * @throws IOException
+     */
+    public void screenshot(Map<String, Object> script) throws IOException {
+        TakesScreenshot scrShot =((TakesScreenshot)driver);
+
+        if(script.get("type").equals("file")) {
+            File f = scrShot.getScreenshotAs(OutputType.FILE);
+            File dest = new File((String) script.get("targetdir"));
+            FileUtils.copyFile(f, dest);
+        } else if(script.get("type").equals("dbfs")){
+        }
     }
 
     /**

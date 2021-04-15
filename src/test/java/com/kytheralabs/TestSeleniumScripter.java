@@ -38,7 +38,7 @@ public class TestSeleniumScripter {
             Yaml yaml = new Yaml();
             InputStream inputStream = Thread.currentThread()
                     .getContextClassLoader()
-                    .getResourceAsStream("example2.yaml");
+                    .getResourceAsStream("example.yaml");
             Map<String, Object> obj = yaml.load(inputStream);
             System.out.println(obj);
 
