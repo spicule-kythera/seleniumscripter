@@ -79,7 +79,7 @@ public class SeleniumScripter {
         System.out.println("SNAPSHOTS TAKEN: "+snapshots.size());
     }
 
-    private void screenshot(Map<String, Object> script) throws IOException {
+    public void screenshot(Map<String, Object> script) throws IOException {
         TakesScreenshot scrShot =((TakesScreenshot)driver);
 
         if(script.get("type").equals("file")) {
