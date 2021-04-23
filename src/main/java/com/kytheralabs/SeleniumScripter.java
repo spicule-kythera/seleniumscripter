@@ -83,7 +83,7 @@ public class SeleniumScripter {
     private void iterateTable(Map<String, Object> script) throws Exception {
         int offset = 0;
         if(script.containsKey("rowoffset")){
-            offset = ((Double)script.get("rowoffset")).intValue();
+            offset = ((Integer)script.get("rowoffset")).intValue();
         }
         while (true) {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
@@ -227,7 +227,7 @@ public class SeleniumScripter {
             selectObj.selectByValue(script.get("value").toString());
         } else if(script.get("selectBy").equals("index")){
             System.out.println("Run select by index");
-            selectObj.selectByIndex(((Double) script.get("value")).intValue());
+            selectObj.selectByIndex(((Integer) script.get("value")).intValue());
         } else if(script.get("selectBy").equals("visible")){
             System.out.println("Run select by visible text");
             selectObj.selectByVisibleText(script.get("value").toString());
@@ -277,13 +277,13 @@ public class SeleniumScripter {
     private void runWait(Map<String, Object> script) throws Exception {
         int waittimeout = 30;
         if(script.containsKey("timeout")){
-            waittimeout = ((Double) script.get("timeout")).intValue();
+            waittimeout = ((Integer) script.get("timeout")).intValue();
         }
 
 
 
         if(script.get("selector").toString().equals("none")){
-            driver.manage().timeouts().implicitlyWait(waittimeout, TimeUnit.SECONDS);
+            TimeUnit.SECONDS.sleep(30);
         } else {
             WebDriverWait wait = new WebDriverWait(driver, waittimeout);
             System.out.println("Waiting for object: " + script.get("name").toString());
@@ -391,7 +391,7 @@ public class SeleniumScripter {
      */
     private void clickListItem(Map<String, Object> script) throws Exception {
         List<WebElement> element = selectElements(script.get("selector").toString(), script.get("name").toString());
-        int i = ((Double) script.get("item")).intValue();
+        int i = ((Integer) script.get("item")).intValue();
         System.out.println("Clicking list item");
         element.get(i).click();
     }
