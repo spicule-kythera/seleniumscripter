@@ -279,11 +279,20 @@ public class SeleniumScripter {
         if(script.containsKey("timeout")){
             waittimeout = ((Integer) script.get("timeout")).intValue();
         }
-
-
-
         if(script.get("selector").toString().equals("none")){
-            TimeUnit.SECONDS.sleep(30);
+            final long PERIOD = (5000 / 1000) % 60; // Adjust to suit timing
+            long lastTime = (System.currentTimeMillis() / 1000) % 60 - PERIOD;
+            long thisTime = (System.currentTimeMillis() / 1000) % 60;
+            if ((thisTime - lastTime) >= PERIOD) {
+                lastTime = thisTime;
+                if(!false) {
+                    try {
+                        TimeUnit.SECONDS.sleep(lastTime);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
         } else {
             WebDriverWait wait = new WebDriverWait(driver, waittimeout);
             System.out.println("Waiting for object: " + script.get("name").toString());
@@ -411,5 +420,10 @@ public class SeleniumScripter {
     public List<String> getSnapshots(){
         return this.snapshots;
     }
+
+
+
+
+
 
 }
