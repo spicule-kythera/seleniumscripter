@@ -68,6 +68,8 @@ public class SeleniumScripter {
                         snapshot();
                     } else if (obj.get("operation").equals("table")){
                         iterateTable(obj);
+                    } else if (obj.get("operation").equals("conditional")){
+                        conditionalCheck(obj);
                     }
                 }
             }
@@ -75,6 +77,9 @@ public class SeleniumScripter {
         }
 
         System.out.println("SNAPSHOTS TAKEN: "+snapshots.size());
+    }
+
+    private void conditionalCheck(Map<String, Object> obj) {
     }
 
     /**
@@ -118,7 +123,7 @@ public class SeleniumScripter {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 runScript(subscript, null, null);
-                WebDriverWait wait = new WebDriverWait(driver, 30);
+                WebDriverWait wait = new WebDriverWait(driver, 180);
                 System.out.println("Waiting for object: "+script.get("name").toString());
                 wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             }
@@ -284,6 +289,7 @@ public class SeleniumScripter {
                 element.sendKeys(String.valueOf(s));
                 Thread.sleep(300);
             }
+            Thread.sleep(5000);
 
     }
 
@@ -293,10 +299,10 @@ public class SeleniumScripter {
      * @throws Exception
      */
     private void runWait(Map<String, Object> script) throws Exception {
-        int waittimeout = 30;
+        int waittimeout = 180;
         if(script.containsKey("timeout")){
-            Object test = 0.00;
-            waittimeout = ((Double) script.get("timeout")).intValue();
+            //waittimeout = ((Double) script.get("timeout")).intValue();
+            waittimeout = (Integer) script.get("timeout");
         }
 
         if(script.get("selector").toString().equals("none")){
