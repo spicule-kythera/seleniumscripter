@@ -271,25 +271,25 @@ public class SeleniumScripter {
 //
 //        }
 
-            if (keystring.equals("${loopvalue}")) {
-                target = this.loopValue.toString();
-            } else if(keystring.equals("{enter}")){
-                element.sendKeys(Keys.ENTER);
-                return;
-            }else if(keystring.equals("{return}")){
-                element.sendKeys(Keys.RETURN);
-                return;
-            }else if(keystring.equals("{down}")){
-                element.sendKeys(Keys.ARROW_DOWN);
-                return;
-            }
-            element.clear();
-            for (char s : target.toCharArray()) {
-                System.out.println("Inserting: " + String.valueOf(s));
-                element.sendKeys(String.valueOf(s));
-                Thread.sleep(300);
-            }
-            Thread.sleep(5000);
+        if (keystring.equals("${loopvalue}")) {
+            target = this.loopValue.toString();
+        } else if(keystring.equals("{enter}")){
+            element.sendKeys(Keys.ENTER);
+            return;
+        }else if(keystring.equals("{return}")){
+            element.sendKeys(Keys.RETURN);
+            return;
+        }else if(keystring.equals("{down}")){
+            element.sendKeys(Keys.ARROW_DOWN);
+            return;
+        }
+        element.clear();
+        for (char s : target.toCharArray()) {
+            System.out.println("Inserting: " + String.valueOf(s));
+            element.sendKeys(String.valueOf(s));
+            Thread.sleep(300);
+        }
+        Thread.sleep(5000);
 
     }
 
@@ -308,9 +308,8 @@ public class SeleniumScripter {
         if(script.get("selector").toString().equals("none")){
             driver.manage().timeouts().implicitlyWait(waittimeout, TimeUnit.SECONDS);
         } else {
-            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
             System.out.println("Waiting for object: " + script.get("name").toString());
-            wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+            new WebDriverWait(driver, waittimeout).until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             System.out.println("Object found");
         }
     }
