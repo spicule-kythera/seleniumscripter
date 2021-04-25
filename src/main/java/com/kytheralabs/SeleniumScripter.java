@@ -106,7 +106,7 @@ public class SeleniumScripter {
     private void iterateTable(Map<String, Object> script) throws Exception {
         int offset = 0;
         if(script.containsKey("rowoffset")){
-            offset = ((Integer)script.get("rowoffset")).intValue();
+            offset = ((Double) script.get("rowoffset")).intValue();
         }
         while (true) {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
@@ -301,16 +301,15 @@ public class SeleniumScripter {
     private void runWait(Map<String, Object> script) throws Exception {
         int waittimeout = 180;
         if(script.containsKey("timeout")){
-            //waittimeout = ((Double) script.get("timeout")).intValue();
-            waittimeout = (Integer) script.get("timeout");
+            waittimeout = ((Double) script.get("timeout")).intValue();
+            //waittimeout = (Integer) script.get("timeout");
         }
 
         if(script.get("selector").toString().equals("none")){
             driver.manage().timeouts().implicitlyWait(waittimeout, TimeUnit.SECONDS);
         } else {
-            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
             System.out.println("Waiting for object: " + script.get("name").toString());
-            wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+            new WebDriverWait(driver, waittimeout).until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             System.out.println("Object found");
         }
     }
@@ -372,7 +371,13 @@ public class SeleniumScripter {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 System.out.println("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
-                runScript(subscript, null, v);
+                try {
+                    runScript(subscript, null, v);
+                } catch (Exception e){
+                    if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
+                        break;
+                    }
+                }
             }
         }
     }

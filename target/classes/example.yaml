@@ -1,9 +1,207 @@
-#Setup the search - Populate the top 2 selects and enter the token value and wait for the auto complete to popup
-a:
-  operation: wait
-  selector: id
-  name: demographic_input
-b:
-  operation: screenshot
-  type: file
-  targetdir: /tmp/out.png
+{
+  "a": {
+    "operation": "wait",
+    "selector": "id",
+    "name": "demographic_input"
+  },
+  "b": {
+    "operation": "keys",
+    "selector": "id",
+    "name": "demographic_input",
+    "value": 19067
+  },
+  "c": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//*[text()= 'Bucks, PA']"
+  },
+  "d": {
+    "operation": "click",
+    "selector": "id",
+    "name": "helpfultools_zip_button"
+  },
+  "e": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//vnext-filter-tab[2]/div"
+  },
+  "f": {
+    "operation": "click",
+    "selector": "xpath",
+    "name": "//vnext-filter-tab[2]/div"
+  },
+  "g": {
+    "operation": "click",
+    "selector": "xpath",
+    "name": "//*[@id=\"helpful-tools-container\"]/div[2]/div[1]/div/vnext-helpful-tools-plancard/div/div[2]/div/div/div/div/div[3]/vnext-helpful-tools-link/span"
+  },
+  "h": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//vnext-liveedit-container/input"
+  },
+  "i": {
+    "operation": "keys",
+    "selector": "xpath",
+    "name": "//vnext-liveedit-container/input",
+    "value": "Abilify"
+  },
+  "j": {
+    "operation": "wait",
+    "selector": "none"
+  },
+  "n": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//*[@class=\"ngb-highlight\"]"
+  },
+  "q": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//*[@id=\"ngb-typeahead-0\"]//*"
+  },
+  "r": {
+    "operation": "captureList",
+    "selector": "xpath",
+    "name": "//ngb-highlight",
+    "variable": "druglist"
+  },
+  "s": {
+    "operation": "loop",
+    "type": "variable",
+    "variable": "druglist",
+    "subscript": "listSearch"
+  },
+  "subscripts": {
+    "listSearch": {
+      "a": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//vnext-liveedit-container/input"
+      },
+      "b": {
+        "operation": "keys",
+        "selector": "xpath",
+        "name": "//vnext-liveedit-container/input",
+        "value": "${loopvalue}"
+      },
+      "c": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@class=\"ngb-highlight\"]"
+      },
+      "d": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//ngb-typeahead-window/button[1]"
+      },
+      "e": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@class=\"btn Spa_Style_PrimaryButton\"]"
+      },
+      "h": {
+        "operation": "captureList",
+        "selector": "xpath",
+        "name": "//*[@aria-labelledby=\"dosageHeaderId\"]/*",
+        "variable": "dosagelabels"
+      },
+      "i": {
+        "operation": "loop",
+        "type": "variable",
+        "variable": "dosagelabels",
+        "subscript": "searchSubScript"
+      },
+      "j": {
+        "operation": "loop",
+        "type": "variable",
+        "variable": "dosagelabels",
+        "subscript": "genericSearch",
+        "exitOnError": "false"
+      }
+    },
+    "searchSubScript": {
+      "1": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@class=\"drug-details-container row mb-2\"]"
+      },
+      "2": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//*[@aria-label=\"{variable}\"]",
+        "variable": true
+      },
+      "5": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//*[@class=\"btn Spa_Style_PrimaryButton\"]"
+      },
+      "6": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@class=\"drug-details-container row mb-2\"]"
+      },
+      "7": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@class=\"mt-2\"]"
+      },
+      "8": {
+        "operation": "snapshot"
+      },
+      "9": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//vnext-drug-details//vnext-link"
+      }
+    },
+    "genericSearch": {
+      "1": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@class=\"drug-details-container row mb-2\"]"
+      },
+      "2": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//*[@aria-label=\"{variable}\"]",
+        "variable": true
+      },
+      "3": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@id=\"generic-option-1\"]",
+        "timeout": 1
+      },
+      "4": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//*[@id=\"generic-option-1\"]"
+      },
+      "5": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//*[@class=\"btn Spa_Style_PrimaryButton\"]"
+      },
+      "6": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@class=\"drug-details-container row mb-2\"]"
+      },
+      "7": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@class=\"mt-2\"]"
+      },
+      "8": {
+        "operation": "snapshot"
+      },
+      "9": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//vnext-drug-details//vnext-link"
+      }
+    }
+  }
+}
