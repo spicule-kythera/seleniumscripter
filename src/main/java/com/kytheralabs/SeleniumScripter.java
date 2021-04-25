@@ -372,7 +372,13 @@ public class SeleniumScripter {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 System.out.println("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
-                runScript(subscript, null, v);
+                try {
+                    runScript(subscript, null, v);
+                } catch (Exception e){
+                    if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
+                        break;
+                    }
+                }
             }
         }
     }
