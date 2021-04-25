@@ -2,9 +2,7 @@ package com.kytheralabs;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.*;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,11 +12,15 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.concurrent.TimeUnit.SECONDS;
+
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
-    private final WebDriver driver;
+    private final FluentWait<WebDriver> waits;
+    private final FluentWait<WebDriver> wait;
+    private WebDriver driver;
     private Map<String, Object> masterScript;
     private final Map<String, List> captureLists = new HashMap<>();
     private final List<String> snapshots = new ArrayList<>();
@@ -26,6 +28,14 @@ public class SeleniumScripter {
 
     public SeleniumScripter(WebDriver webDriver){
         driver = webDriver;
+        wait = new FluentWait<WebDriver>(driver)
+                .withTimeout(180, SECONDS)
+                .pollingEvery(5, SECONDS)
+                .ignoring(NoSuchElementException.class).ignoring(ElementClickInterceptedException.class);
+        waits = new FluentWait<WebDriver>(driver)
+                .withTimeout(10, SECONDS)
+                .pollingEvery(5, SECONDS)
+                .ignoring(NoSuchElementException.class).ignoring(ElementClickInterceptedException.class);
     }
 
     /**
@@ -298,18 +308,27 @@ public class SeleniumScripter {
      * @param script
      * @throws Exception
      */
+
     private void runWait(Map<String, Object> script) throws Exception {
-        int waittimeout = 180;
+        long waittimeout = 180;
         if(script.containsKey("timeout")){
             waittimeout = ((Double) script.get("timeout")).intValue();
             //waittimeout = (Integer) script.get("timeout");
         }
 
         if(script.get("selector").toString().equals("none")){
-            driver.manage().timeouts().implicitlyWait(waittimeout, TimeUnit.SECONDS);
+           // driver.manage().timeouts().implicitlyWait(waittimeout, SECONDS);
         } else {
             System.out.println("Waiting for object: " + script.get("name").toString());
-            new WebDriverWait(driver, waittimeout).until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+            //new WebDriverWait(driver, waittimeout)
+
+
+            if(waittimeout == 180){
+                wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+            } else{
+                waits.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+            }
+
             System.out.println("Object found");
         }
     }
