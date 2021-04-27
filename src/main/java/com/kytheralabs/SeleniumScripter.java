@@ -7,7 +7,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
+import org.openqa.selenium.JavascriptExecutor;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -310,6 +310,9 @@ public class SeleniumScripter {
         if(script.containsKey("collect")){
             type = script.get("collect").toString();
         }
+        if(script.containsKey("type")){
+            type = script.get("type").toString();
+        }
         List strlist = new ArrayList<>();
         for(WebElement el : webElements){
             System.out.println("Capture Element Found: "+el.getText());
@@ -317,6 +320,8 @@ public class SeleniumScripter {
                 strlist.add(el.getText());
             } else if(type.equals("elements")){
                 strlist.add(el);
+            } else if(type.equals("xpath")){
+                strlist.add(getElementXPath(driver, el));
             }
 
         }
@@ -334,7 +339,9 @@ public class SeleniumScripter {
             captureLists.put(script.get("variable").toString(), newList);
         }
     }
-
+    public String getElementXPath(WebDriver driver, WebElement element) {
+        return (String)((JavascriptExecutor)driver).executeScript("gPt=function(c){if(c.id!==''){return'id(\"'+c.id+'\")'}if(c===document.body){return c.tagName}var a=0;var e=c.parentNode.childNodes;for(var b=0;b<e.length;b++){var d=e[b];if(d===c){return gPt(c.parentNode)+'/'+c.tagName+'['+(a+1)+']'}if(d.nodeType===1&&d.tagName===c.tagName){a++}}};return gPt(arguments[0]).toLowerCase();", element);
+    }
     /**
      * Loop over a variable and run a script on each iteration.
      * @param script
@@ -342,13 +349,13 @@ public class SeleniumScripter {
      */
     private void loop(Map<String, Object> script) throws Exception {
         String loopType = script.get("type").toString();
-        if(loopType.equals("variable")){
-            List<String> vars = captureLists.get(script.get("variable").toString());
-            System.out.println("Performing Variable Loop for: "+script.get("variable").toString());
+        List<String> vars = captureLists.get(script.get("variable").toString());
+        if(loopType.equals("variable")) {
+            System.out.println("Performing Variable Loop for: " + script.get("variable").toString());
             for (Object v : vars) {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
-                System.out.println("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
+                System.out.println("Looping for variable: " + v + " . Using subscript: " + script.get("subscript"));
                 runScript(subscript, null, v);
             }
         }
