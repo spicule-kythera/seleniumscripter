@@ -339,6 +339,7 @@ public class SeleniumScripter {
             }
 
             System.out.println("Object found");
+            
         if (script.containsKey("asyncwait") && script.get("asyncwait").equals(true)) {
             //To set the script timeout to 10 seconds
             driver.manage().timeouts().setScriptTimeout(10, TimeUnit.SECONDS);
@@ -348,20 +349,6 @@ public class SeleniumScripter {
             js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
             //To get the difference current time and start time
             System.out.println("Wait time: " + (System.currentTimeMillis() - startTime));
-        }else if (script.containsKey("refresh") && script.get("refresh").equals(true)) {
-            System.out.println("Refreshing page");
-            //Calling executeAsyncScript() method to refresh page
-            js.executeScript("history.go(0)");
-            //waits for page to load
-            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
-            System.out.println("Page refreshed");
-        }else if (script.containsKey("back") && script.get("back").equals(true)) {
-            System.out.println("Going to last page");
-            //Calling executeAsyncScript() method to go back a page
-            js.executeScript("window.history.back();");
-            //waits for page to load
-            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
-            System.out.println("Page refreshed");
         }
     }
     private void pause(Integer milliseconds){
