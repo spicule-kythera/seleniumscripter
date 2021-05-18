@@ -318,7 +318,8 @@ public class SeleniumScripter {
      */
 
     private void runWait(Map<String, Object> script) throws Exception {
-        long waittimeout = 180;
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        int waittimeout = 30;
         if(script.containsKey("timeout")){
             waittimeout = ((Double) script.get("timeout")).intValue();
             //waittimeout = (Integer) script.get("timeout");
@@ -338,6 +339,16 @@ public class SeleniumScripter {
             }
 
             System.out.println("Object found");
+            
+        if (script.containsKey("asyncwait") && script.get("asyncwait").equals(true)) {
+            //To set the script timeout to 10 seconds
+            driver.manage().timeouts().setScriptTimeout(10, TimeUnit.SECONDS);
+            //To declare and set the start time
+            long startTime = System.currentTimeMillis();
+            //Calling executeAsyncScript() method to wait for 10 seconds
+            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
+            //To get the difference current time and start time
+            System.out.println("Wait time: " + (System.currentTimeMillis() - startTime));
         }
     }
     private void pause(Integer milliseconds){
