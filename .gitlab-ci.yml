@@ -32,7 +32,7 @@ cache:
 .verify: &verify
   stage: test
   script:
-    - 'mvn $MAVEN_CLI_OPTS verify'
+    - 'mvn $MAVEN_CLI_OPTS verify -DskipTests -s ci_settings.xml'
   except:
     variables:
       - $CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH
