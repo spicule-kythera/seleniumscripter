@@ -346,7 +346,7 @@ public class SeleniumScripter {
             //To declare and set the start time
             long startTime = System.currentTimeMillis();
             //Calling executeAsyncScript() method to wait for js
-            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 30000);");
+            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 20000);");
             //To get the difference current time and start time
             System.out.println("Wait time: " + (System.currentTimeMillis() - startTime));
         }
