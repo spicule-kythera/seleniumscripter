@@ -1,0 +1,16 @@
+0:
+  operation: wait
+  selector: id
+  name: rxFullFormularyDrugNameInput
+  timeout: 30
+1:
+  operation: keys
+  selector: id
+  name: rxFullFormularyDrugNameInput
+  value: Abcavir
+2:
+  operation: wait
+  selector: id
+  name: rxFullFormularyDrugNameInput
+  timeout: 30
+
