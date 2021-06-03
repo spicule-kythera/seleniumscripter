@@ -2,6 +2,7 @@ package com.kytheralabs;
 
 import org.apache.commons.io.FileUtils;
 import org.openqa.selenium.*;
+import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.support.ui.*;
 
 import java.io.File;
@@ -14,10 +15,9 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.JavascriptExecutor;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
@@ -72,6 +72,8 @@ public class SeleniumScripter {
                         runKeys(obj);
                     } else if (obj.get("operation").equals("wait")) {
                         runWait(obj);
+                    }else if (obj.get("operation").equals("pause")) {
+                        runPause(obj);
                     } else if (obj.get("operation").equals("captureList")) {
                         captureList(obj);
                     } else if (obj.get("operation").equals("loop")) {
@@ -320,13 +322,16 @@ public class SeleniumScripter {
     private void runWait(Map<String, Object> script) throws Exception {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         int waittimeout = 30;
+
         if (script.containsKey("timeout")) {
             waittimeout = ((Double) script.get("timeout")).intValue();
             //waittimeout = (Integer) script.get("timeout");
         }
 
         if (script.get("selector").toString().equals("none")) {
-            // driver.manage().timeouts().implicitlyWait(waittimeout, SECONDS);
+            long delay = waittimeout * 1000L;
+            System.out.println("Sleeping for " + delay + " milliseconds!");
+            Thread.sleep(delay);
         } else {
             System.out.println("Waiting for object: " + script.get("name").toString());
             //new WebDriverWait(driver, waittimeout)
@@ -352,12 +357,14 @@ public class SeleniumScripter {
         }
         }
     }
-    private void pause(Integer milliseconds){
-        try {
-            TimeUnit.MILLISECONDS.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+    private void runPause(Map<String, Object> script){
+        throw new NotImplementedException();
+//        System.out.println("Started pause event: " + script);
+//        Scanner in = new Scanner(System.in);
+//        System.out.println("Press any key to continue...");
+//        String out = in.nextLine();
+//        System.out.println("Got: " + out);
     }
     /**
      * Create a capture list. A capture list is a list of elements or labels which you can iterate over elsewhere in your script.

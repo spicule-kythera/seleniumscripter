@@ -6,30 +6,29 @@ import java.util.List;
 import java.util.Arrays;
 import java.io.InputStream;
 import org.yaml.snakeyaml.Yaml;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.firefox.*;
+import org.openqa.selenium.remote.RemoteWebDriver;
 
 
 public class TestSeleniumScripter {
+    private final String driverType = "firefox";
     private final Yaml yamlParser = new Yaml();
     private final FirefoxOptions driverOptions = new FirefoxOptions();
     private final List<String> options = Arrays.asList("--no-sandbox",
-                                                       "--headless",
                                                        "--ignore-certificate-errors",
-                                                       "--headless",
+//                                                       "--headless",
                                                        "--window-size=1920,1080",
                                                        "--start-maximized",
                                                        "--disable-gpu",
-                                                       "--no-sandbox",
                                                        "--disable-extensions",
                                                        "--disable-infobars");
 
-    private FirefoxDriver driver = null;
+    private RemoteWebDriver driver = null;
 
     @Before
     public void setUp() {
         options.forEach(driverOptions::addArguments);
-        driver = new FirefoxDriver();
+        driver = new FirefoxDriver(driverOptions);
     }
 
     @After
@@ -52,8 +51,9 @@ public class TestSeleniumScripter {
         scriptRunner.runScript(script, null, null);
     }
 
+    @Ignore
     @Test
-    public void testRunAlabama() throws Exception {
+    public void testAlabama() throws Exception {
         // Crawl parameters
         final String scriptName = "alabama.yaml";
         final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
@@ -66,7 +66,18 @@ public class TestSeleniumScripter {
     public void testBcbsms() throws Exception {
         // Crawl parameters
         final String scriptName = "bcbsms.yaml";
-        final String url = "https://www.bcbsms.com/find-coverage/medication-search";
+        final String url = "https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do?year=2017&dotcom=true";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Ignore
+    @Test
+    public void testForward() throws Exception {
+        // Crawl parameters
+        final String scriptName = "forward.yaml";
+        final String url = "https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx";
 
         // Start the crawl
         runScript(url, scriptName);

@@ -1,16 +1,31 @@
-0:
+# https://www.bcbsms.com/find-coverage/medication-search
+# iframe -> https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do?year=2017&dotcom=true
+'0':
   operation: wait
   selector: id
   name: rxFullFormularyDrugNameInput
-  timeout: 30
-1:
+  timeout: 30.0
+'1':
   operation: keys
   selector: id
   name: rxFullFormularyDrugNameInput
-  value: Abcavir
-2:
-  operation: wait
+  value: humira
+  timeout: 30.0
+'2':
+  operation: keys
   selector: id
   name: rxFullFormularyDrugNameInput
-  timeout: 30
-
+  value: '{enter}'
+'3':
+  operation: wait
+  selector: class
+  name: button
+  timeout: 30.0
+'4':
+  operation: click
+  selector: class
+  name: button
+'5':
+  operation: wait
+  selector: none
+  timeout: 300.0
