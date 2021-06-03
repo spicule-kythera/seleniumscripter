@@ -21,6 +21,7 @@ import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
+import static java.util.concurrent.TimeUnit.values;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
@@ -48,10 +49,10 @@ public class SeleniumScripter {
 
     /**
      * Run a selenium script, see wiki for more details.
-     * @param script
-     * @param iteration
-     * @param loopValue
-     * @throws Exception
+     * @param script The Yaml() object containing the script
+     * @param iteration The number of crawl iterations to perform
+     * @param loopValue The set of the script to perform
+     * @throws Exception Throws this in the event of any number of selenium failures
      */
     public void runScript(Map<String, Object> script, Integer iteration, Object loopValue) throws Exception {
         System.out.println("Processing Selenium Script");
@@ -96,7 +97,7 @@ public class SeleniumScripter {
 
         }
 
-        System.out.println("SNAPSHOTS TAKEN: "+snapshots.size());
+        System.out.println("SNAPSHOTS TAKEN: " + snapshots.size());
     }
 
     private void conditionalCheck(Map<String, Object> obj) {
@@ -124,10 +125,8 @@ public class SeleniumScripter {
      * @throws Exception
      */
     private void iterateTable(Map<String, Object> script) throws Exception {
-        int offset = 0;
-        if(script.containsKey("rowoffset")){
-            offset = ((Double) script.get("rowoffset")).intValue();
-        }
+        int offset = Integer.parseInt(script.getOrDefault("rowoffset", "0").toString());
+
         while (true) {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
             int elementcount = allRows.size();
@@ -321,15 +320,21 @@ public class SeleniumScripter {
 
     private void runWait(Map<String, Object> script) throws Exception {
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        int waittimeout = 30;
+        Number timeout = 30;
 
         if (script.containsKey("timeout")) {
-            waittimeout = ((Double) script.get("timeout")).intValue();
-            //waittimeout = (Integer) script.get("timeout");
+            String rawTimeout = script.get("timeout").toString();
+            Scanner typeChecker = new Scanner(rawTimeout);
+
+            if(typeChecker.hasNextDouble()){
+                timeout = Double.parseDouble(rawTimeout);
+            } else if(typeChecker.hasNextInt()) {
+                timeout = Integer.parseInt(rawTimeout);
+            }
         }
 
         if (script.get("selector").toString().equals("none")) {
-            long delay = waittimeout * 1000L;
+            long delay = timeout.longValue() * 1000L;
             System.out.println("Sleeping for " + delay + " milliseconds!");
             Thread.sleep(delay);
         } else {
@@ -337,7 +342,7 @@ public class SeleniumScripter {
             //new WebDriverWait(driver, waittimeout)
 
 
-            if (waittimeout == 180) {
+            if (timeout.intValue() == 180) {
                 wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             } else {
                 waits.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));

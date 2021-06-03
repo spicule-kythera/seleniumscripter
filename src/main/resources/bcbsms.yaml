@@ -28,4 +28,4 @@
 '5':
   operation: wait
   selector: none
-  timeout: 300.0
+  timeout: 3.0

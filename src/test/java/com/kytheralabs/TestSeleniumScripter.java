@@ -16,7 +16,7 @@ public class TestSeleniumScripter {
     private final FirefoxOptions driverOptions = new FirefoxOptions();
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--ignore-certificate-errors",
-//                                                       "--headless",
+                                                       "--headless",
                                                        "--window-size=1920,1080",
                                                        "--start-maximized",
                                                        "--disable-gpu",
@@ -72,7 +72,6 @@ public class TestSeleniumScripter {
         runScript(url, scriptName);
     }
 
-    @Ignore
     @Test
     public void testForward() throws Exception {
         // Crawl parameters
