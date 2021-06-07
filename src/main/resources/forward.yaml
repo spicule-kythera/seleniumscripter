@@ -1,0 +1,59 @@
+# https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx
+'0':
+  operation: wait
+  selector: id
+  name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_0
+  timeout: 30
+'1':
+  operation: keys
+  selector: id
+  name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_0
+  value: abilify
+'2':
+  operation: select
+  selector: id
+  name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Category_0
+  selectBy: value
+  value: '2'
+'3':
+  operation: click
+  selector: xpath
+  name: '//*[@id="ctl00_MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_ctl00_ctl02_SearchButton"]'
+  timeout: 30
+'4':
+  operation: wait
+  selector: id
+  name: MainContent_GenericPageCtrl1_Datalist
+  timeout: 30
+'5':
+  operation: captureList
+  selector: xpath
+  name: //tr[contains(@onclick, 'doRowClick(this, event);')]
+  type: xpath
+  variable: drugCard
+'6':
+  operation: loop
+  type: variable
+  variable: drugCard
+  subscript: tablesnapshot
+subscripts:
+  tablesnapshot:
+    '1':
+      operation: wait
+      selector: id
+      name: MainContent_GenericPageCtrl1_Datalist
+    '2':
+      operation: click
+      selector: xpath
+      name: '//*{variable}'
+      variable: true
+    '3':
+      operation: wait
+      selector: xpath
+      name: //*[@id="ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input"]
+    '4':
+      operation: snapshot
+    '5':
+      operation: click
+      selector: xpath
+      name: //*[@id="ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input"]
