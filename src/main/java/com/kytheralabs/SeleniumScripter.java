@@ -1,27 +1,24 @@
 package com.kytheralabs;
 
-import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.*;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.support.ui.*;
-
+import java.util.*;
 import java.io.File;
 import java.io.IOException;
 import org.openqa.selenium.By;
+import org.openqa.selenium.*;
 import org.openqa.selenium.Keys;
+import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.support.ui.*;
 import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.JavascriptExecutor;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
 import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-
 import static java.util.concurrent.TimeUnit.SECONDS;
-import static java.util.concurrent.TimeUnit.values;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
@@ -350,16 +347,16 @@ public class SeleniumScripter {
 
             System.out.println("Object found");
           
-        if (script.containsKey("asyncwait") && script.get("asyncwait").equals(true)) {
-            //To set the script timeout to 10 seconds
-            driver.manage().timeouts().setScriptTimeout(30, TimeUnit.SECONDS);
-            //To declare and set the start time
-            long startTime = System.currentTimeMillis();
-            //Calling executeAsyncScript() method to wait for js
-            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 20000);");
-            //To get the difference current time and start time
-            System.out.println("Wait time: " + (System.currentTimeMillis() - startTime));
-        }
+            if (script.containsKey("asyncwait") && script.get("asyncwait").equals(true)) {
+                //To set the script timeout to 10 seconds
+                driver.manage().timeouts().setScriptTimeout(30, TimeUnit.SECONDS);
+                //To declare and set the start time
+                long startTime = System.currentTimeMillis();
+                //Calling executeAsyncScript() method to wait for js
+                js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 20000);");
+                //To get the difference current time and start time
+                System.out.println("Wait time: " + (System.currentTimeMillis() - startTime));
+            }
         }
     }
 

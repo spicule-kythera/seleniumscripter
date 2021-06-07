@@ -11,7 +11,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 
 public class TestSeleniumScripter {
-    private final String driverType = "firefox";
     private final Yaml yamlParser = new Yaml();
     private final FirefoxOptions driverOptions = new FirefoxOptions();
     private final List<String> options = Arrays.asList("--no-sandbox",
@@ -51,7 +50,6 @@ public class TestSeleniumScripter {
         scriptRunner.runScript(script, null, null);
     }
 
-    @Ignore
     @Test
     public void testAlabama() throws Exception {
         // Crawl parameters

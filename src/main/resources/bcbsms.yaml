@@ -4,13 +4,13 @@
   operation: wait
   selector: id
   name: rxFullFormularyDrugNameInput
-  timeout: 30.0
+  timeout: 30
 '1':
   operation: keys
   selector: id
   name: rxFullFormularyDrugNameInput
   value: humira
-  timeout: 30.0
+  timeout: 30
 '2':
   operation: keys
   selector: id
@@ -20,7 +20,7 @@
   operation: wait
   selector: class
   name: button
-  timeout: 30.0
+  timeout: 30
 '4':
   operation: click
   selector: class
@@ -28,4 +28,4 @@
 '5':
   operation: wait
   selector: none
-  timeout: 3.0
+  timeout: 3
