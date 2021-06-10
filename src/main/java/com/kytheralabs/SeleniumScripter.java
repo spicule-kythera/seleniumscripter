@@ -66,7 +66,9 @@ public class SeleniumScripter {
                         snapshot();
                     } else if (obj.get("operation").equals("table")){
                         iterateTable(obj);
-                    }
+                    } else if (obj.get("operation").equals("jsclick")){
+                        jsclicker(obj);
+                }
                 }
             }
 
