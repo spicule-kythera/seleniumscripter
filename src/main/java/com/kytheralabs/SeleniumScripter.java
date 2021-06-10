@@ -68,7 +68,7 @@ public class SeleniumScripter {
                         iterateTable(obj);
                     } else if (obj.get("operation").equals("jsclick")){
                         jsclicker(obj);
-                }
+                    }
                 }
             }
 
@@ -432,21 +432,18 @@ public class SeleniumScripter {
      */
 
     private void jsclicker(Map<String, Object> script) throws Exception {
-
         JavascriptExecutor js = (JavascriptExecutor) driver;
         WebElement element =null;
-
         if(script.containsKey("variable") && script.get("variable").equals(true)){
             String n = script.get("name").toString().replace("{variable}", this.loopValue.toString());
             element = selectElement(script.get("selector").toString(), n);
-        } else{
+        }else{
             element = selectElement(script.get("selector").toString(), script.get("name").toString());
         }
-
-        if(element != null) {
+        if(element != null){
             System.out.println("Clicking Element");
             js.executeScript("arguments[0].click();", element);
-        } else {
+        }else{
             if(script.containsKey("back") && script.get("back").equals(true)){
                 try{
                     System.out.println("Going to last page");
