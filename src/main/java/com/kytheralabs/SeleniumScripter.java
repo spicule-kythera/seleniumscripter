@@ -1,24 +1,32 @@
 package com.kytheralabs;
 
+import java.util.*;
+import java.io.File;
+import java.io.IOException;
 import org.openqa.selenium.By;
+import org.openqa.selenium.*;
 import org.openqa.selenium.Keys;
+import java.util.concurrent.TimeUnit;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.support.ui.*;
 import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.JavascriptExecutor;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.TimeUnit;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
+import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
-    private final WebDriver driver;
+    private final FluentWait<WebDriver> waits;
+    private final FluentWait<WebDriver> wait;
+    private WebDriver driver;
     private Map<String, Object> masterScript;
     private final Map<String, List> captureLists = new HashMap<>();
     private final List<String> snapshots = new ArrayList<>();
@@ -26,14 +34,22 @@ public class SeleniumScripter {
 
     public SeleniumScripter(WebDriver webDriver){
         driver = webDriver;
+        wait = new FluentWait<WebDriver>(driver)
+                .withTimeout(180, SECONDS)
+                .pollingEvery(5, SECONDS)
+                .ignoring(NoSuchElementException.class).ignoring(ElementClickInterceptedException.class);
+        waits = new FluentWait<WebDriver>(driver)
+                .withTimeout(10, SECONDS)
+                .pollingEvery(5, SECONDS)
+                .ignoring(NoSuchElementException.class).ignoring(ElementClickInterceptedException.class);
     }
 
     /**
      * Run a selenium script, see wiki for more details.
-     * @param script
-     * @param iteration
-     * @param loopValue
-     * @throws Exception
+     * @param script The Yaml() object containing the script
+     * @param iteration The number of crawl iterations to perform
+     * @param loopValue The set of the script to perform
+     * @throws Exception Throws this in the event of any number of selenium failures
      */
     public void runScript(Map<String, Object> script, Integer iteration, Object loopValue) throws Exception {
         System.out.println("Processing Selenium Script");
@@ -54,6 +70,8 @@ public class SeleniumScripter {
                         runKeys(obj);
                     } else if (obj.get("operation").equals("wait")) {
                         runWait(obj);
+                    }else if (obj.get("operation").equals("pause")) {
+                        runPause(obj);
                     } else if (obj.get("operation").equals("captureList")) {
                         captureList(obj);
                     } else if (obj.get("operation").equals("loop")) {
@@ -62,6 +80,8 @@ public class SeleniumScripter {
                         click(obj);
                     } else if (obj.get("operation").equals("clickListItem")) {
                         clickListItem(obj);
+                    } else if (obj.get("operation").equals("screenshot")) {
+                        screenshot(obj);
                     } else if (obj.get("operation").equals("snapshot")) {
                         snapshot();
                     } else if (obj.get("operation").equals("table")){
@@ -74,7 +94,23 @@ public class SeleniumScripter {
 
         }
 
-        System.out.println("SNAPSHOTS TAKEN: "+snapshots.size());
+        System.out.println("SNAPSHOTS TAKEN: " + snapshots.size());
+    }
+
+    /**
+     * Take a screenshot for debugging purposes
+     * @param script
+     * @throws IOException
+     */
+    public void screenshot(Map<String, Object> script) throws IOException {
+        TakesScreenshot scrShot =((TakesScreenshot)driver);
+
+        if(script.get("type").equals("file")) {
+            File f = scrShot.getScreenshotAs(OutputType.FILE);
+            File dest = new File((String) script.get("targetdir"));
+            FileUtils.copyFile(f, dest);
+        } else if(script.get("type").equals("dbfs")){
+        }
     }
 
     /**
@@ -83,10 +119,8 @@ public class SeleniumScripter {
      * @throws Exception
      */
     private void iterateTable(Map<String, Object> script) throws Exception {
-        int offset = 0;
-        if(script.containsKey("rowoffset")){
-            offset = ((Double)script.get("rowoffset")).intValue();
-        }
+        int offset = Integer.parseInt(script.getOrDefault("rowoffset", "0").toString());
+
         while (true) {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
             int elementcount = allRows.size();
@@ -102,7 +136,7 @@ public class SeleniumScripter {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 runScript(subscript, null, null);
-                WebDriverWait wait = new WebDriverWait(driver, 30);
+                WebDriverWait wait = new WebDriverWait(driver, 180);
                 System.out.println("Waiting for object: "+script.get("name").toString());
                 wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             }
@@ -245,29 +279,30 @@ public class SeleniumScripter {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
         String keystring = script.get("value").toString();
         String target = keystring;
-        if(this.loopValue != null && !(this.loopValue instanceof String)) {
-            throw new Exception("Can't insert keys, value not string");
+//        if(this.loopValue != null && !(this.loopValue instanceof String)) {
+//            throw new Exception("Can't insert keys, value not string");
+//
+//        }
 
+        if (keystring.equals("${loopvalue}")) {
+            target = this.loopValue.toString();
+        } else if(keystring.equals("{enter}")){
+            element.sendKeys(Keys.ENTER);
+            return;
+        }else if(keystring.equals("{return}")){
+            element.sendKeys(Keys.RETURN);
+            return;
+        }else if(keystring.equals("{down}")){
+            element.sendKeys(Keys.ARROW_DOWN);
+            return;
         }
-
-            if (keystring.equals("${loopvalue}")) {
-                target = this.loopValue.toString();
-            } else if(keystring.equals("{enter}")){
-                element.sendKeys(Keys.ENTER);
-                return;
-            }else if(keystring.equals("{return}")){
-                element.sendKeys(Keys.RETURN);
-                return;
-            }else if(keystring.equals("{down}")){
-                element.sendKeys(Keys.ARROW_DOWN);
-                return;
-            }
-            element.clear();
-            for (char s : target.toCharArray()) {
-                System.out.println("Inserting: " + String.valueOf(s));
-                element.sendKeys(String.valueOf(s));
-                Thread.sleep(300);
-            }
+        element.clear();
+        for (char s : target.toCharArray()) {
+            System.out.println("Inserting: " + String.valueOf(s));
+            element.sendKeys(String.valueOf(s));
+            Thread.sleep(300);
+        }
+        Thread.sleep(5000);
 
     }
 
@@ -276,55 +311,59 @@ public class SeleniumScripter {
      * @param script
      * @throws Exception
      */
+
     private void runWait(Map<String, Object> script) throws Exception {
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        int waittimeout = 30;
-        if(script.containsKey("timeout")){
-            waittimeout = ((Double) script.get("timeout")).intValue();
+        Number timeout = 30;
+
+        if (script.containsKey("timeout")) {
+            String rawTimeout = script.get("timeout").toString();
+            Scanner typeChecker = new Scanner(rawTimeout);
+
+            if(typeChecker.hasNextDouble()){
+                timeout = Double.parseDouble(rawTimeout);
+            } else if(typeChecker.hasNextInt()) {
+                timeout = Integer.parseInt(rawTimeout);
+            }
         }
 
-
-
-        if(script.get("selector").toString().equals("none")){
-            driver.manage().timeouts().implicitlyWait(waittimeout, TimeUnit.SECONDS);
+        if (script.get("selector").toString().equals("none")) {
+            long delay = timeout.longValue() * 1000L;
+            System.out.println("Sleeping for " + delay + " milliseconds!");
+            Thread.sleep(delay);
         } else {
-            WebDriverWait wait = new WebDriverWait(driver, waittimeout);
             System.out.println("Waiting for object: " + script.get("name").toString());
-            wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+            //new WebDriverWait(driver, waittimeout)
+
+
+            if (timeout.intValue() == 180) {
+                wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+            } else {
+                waits.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+            }
+
             System.out.println("Object found");
-        if (script.containsKey("asyncwait") && script.get("asyncwait").equals(true)) {
-            //To maximize the window
-            driver.manage().window().maximize();
-            //To set the script timeout to 10 seconds
-            driver.manage().timeouts().setScriptTimeout(30, TimeUnit.SECONDS);
-            //To declare and set the start time
-            long startTime = System.currentTimeMillis();
-            //Calling executeAsyncScript() method to wait for js
-            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 30000);");
-            //To get the difference current time and start time
-            System.out.println("Wait time: " + (System.currentTimeMillis() - startTime));
-        }else if (script.containsKey("refresh") && script.get("refresh").equals(true)) {
-            System.out.println("Refreshing page");
-            //Calling executeAsyncScript() method to refresh page
-            js.executeScript("history.go(0)");
-            //waits for page to load
-            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
-            System.out.println("Page refreshed");
-        }else if (script.containsKey("back") && script.get("back").equals(true)) {
-            System.out.println("Going to last page");
-            //Calling executeAsyncScript() method to go back a page
-            js.executeScript("window.history.back();");
-            //waits for page to load
-            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
-            System.out.println("Page refreshed");
+          
+            if (script.containsKey("asyncwait") && script.get("asyncwait").equals(true)) {
+                //To set the script timeout to 10 seconds
+                driver.manage().timeouts().setScriptTimeout(30, TimeUnit.SECONDS);
+                //To declare and set the start time
+                long startTime = System.currentTimeMillis();
+                //Calling executeAsyncScript() method to wait for js
+                js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 20000);");
+                //To get the difference current time and start time
+                System.out.println("Wait time: " + (System.currentTimeMillis() - startTime));
+            }
         }
     }
-    private void pause(Integer milliseconds){
-        try {
-            TimeUnit.MILLISECONDS.sleep(milliseconds);
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
+
+    private void runPause(Map<String, Object> script){
+        throw new NotImplementedException();
+//        System.out.println("Started pause event: " + script);
+//        Scanner in = new Scanner(System.in);
+//        System.out.println("Press any key to continue...");
+//        String out = in.nextLine();
+//        System.out.println("Got: " + out);
     }
     /**
      * Create a capture list. A capture list is a list of elements or labels which you can iterate over elsewhere in your script.
@@ -383,8 +422,14 @@ public class SeleniumScripter {
             for (Object v : vars) {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
-                System.out.println("Looping for variable: " + v + " . Using subscript: " + script.get("subscript"));
-                runScript(subscript, null, v);
+                System.out.println("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
+                try {
+                    runScript(subscript, null, v);
+                } catch (Exception e){
+                    if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
+                        break;
+                    }
+                }
             }
         }
     }

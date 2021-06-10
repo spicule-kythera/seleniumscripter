@@ -1,74 +1,82 @@
 package com.kytheralabs;
 
-import org.junit.Test;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.yaml.snakeyaml.Yaml;
-
-import java.io.InputStream;
-import java.net.URL;
+import org.junit.*;
 import java.util.Map;
+import java.util.List;
+import java.util.Arrays;
+import java.io.InputStream;
+import org.yaml.snakeyaml.Yaml;
+import org.openqa.selenium.firefox.*;
+import org.openqa.selenium.remote.RemoteWebDriver;
+
 
 public class TestSeleniumScripter {
+    private final Yaml yamlParser = new Yaml();
+    private final FirefoxOptions driverOptions = new FirefoxOptions();
+    private final List<String> options = Arrays.asList("--no-sandbox",
+                                                       "--ignore-certificate-errors",
+                                                       "--headless",
+                                                       "--window-size=1920,1080",
+                                                       "--start-maximized",
+                                                       "--disable-gpu",
+                                                       "--disable-extensions",
+                                                       "--disable-infobars");
 
-    @Test
-    public void testRunScript() throws Exception {
-        Yaml yaml = new Yaml();
+    private RemoteWebDriver driver = null;
+
+    @Before
+    public void setUp() {
+        options.forEach(driverOptions::addArguments);
+        driver = new FirefoxDriver(driverOptions);
+    }
+
+    @After
+    public void tearDown() {
+        driver.close();
+        driver = null;
+    }
+
+    private Map<String, Object> loadScript(String fileName) {
         InputStream inputStream = this.getClass()
-                .getClassLoader()
-                .getResourceAsStream("example.yaml");
-        Map<String, Object> obj = yaml.load(inputStream);
-        System.out.println(obj);
+                                      .getClassLoader()
+                                      .getResourceAsStream(fileName);
+        return yamlParser.load(inputStream);
+    }
 
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        final ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--no-sandbox");
-        chromeOptions.addArguments("--headless");
-        chromeOptions.addArguments("--ignore-certificate-errors");
-        //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
-        String loc = "http://localhost:3000/webdriver";
-        capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
-
-
-        WebDriver webDriver = new RemoteWebDriver(new URL(loc), capabilities);
-
-        webDriver.get("https://www.upmchealthplan.com/find-a-medication/default.aspx#medication");
-        SeleniumScripter s = new SeleniumScripter(webDriver);
-        s.runScript(obj, null, null);
+    private void runScript(String url, String scriptName) throws Exception {
+        final Map<String, Object> script = loadScript(scriptName);
+        driver.get(url);
+        SeleniumScripter scriptRunner = new SeleniumScripter(driver);
+        scriptRunner.runScript(script, null, null);
     }
 
     @Test
-    public void testRunAlabama() throws Exception {
-        Yaml yaml = new Yaml();
-        InputStream inputStream = this.getClass()
-                .getClassLoader()
-                .getResourceAsStream("example2.yaml");
-        Map<String, Object> obj = yaml.load(inputStream);
-        System.out.println(obj);
+    public void testAlabama() throws Exception {
+        // Crawl parameters
+        final String scriptName = "alabama.yaml";
+        final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
 
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        final ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--no-sandbox");
-        chromeOptions.addArguments("--headless");
-        chromeOptions.addArguments("--ignore-certificate-errors");
-        chromeOptions.addArguments("--headless");
-        chromeOptions.addArguments("--window-size=1920,1080");
-        chromeOptions.addArguments("--start-maximized");
-        chromeOptions.addArguments("--disable-gpu");
-        chromeOptions.addArguments("--no-sandbox");
-        chromeOptions.addArguments("--disable-extensions");
-        chromeOptions.addArguments("--disable-infobars");
-        //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
-        String loc = "http://localhost:3000/webdriver";
-        capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
+        // Start the crawl
+        runScript(url, scriptName);
+    }
 
+    @Test
+    public void testBcbsms() throws Exception {
+        // Crawl parameters
+        final String scriptName = "bcbsms.yaml";
+        final String url = "https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do?year=2017&dotcom=true";
 
-        WebDriver webDriver = new RemoteWebDriver(new URL(loc), capabilities);
+        // Start the crawl
+        runScript(url, scriptName);
+    }
 
-        webDriver.get("https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx");
-        SeleniumScripter s = new SeleniumScripter(webDriver);
-        s.runScript(obj, null, null);
+    @Test
+    public void testForward() throws Exception {
+        // Crawl parameters
+        final String scriptName = "forward.yaml";
+        final String url = "https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx";
+
+        // Start the crawl
+        runScript(url, scriptName);
     }
 }
