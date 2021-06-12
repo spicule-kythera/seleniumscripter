@@ -493,7 +493,7 @@ public class SeleniumScripter {
                 try{
                     System.out.println("Going to last page");
                     //Calling executeAsyncScript() method to go back a page
-                    js.executeScript("window.history.back();");
+                    js.executeScript("window.history.go(-1);");
                     //waits for page to load
                     js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
                     System.out.println("Page refreshed");
