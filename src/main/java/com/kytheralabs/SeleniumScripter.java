@@ -16,7 +16,6 @@ import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
 
 import static java.util.concurrent.TimeUnit.SECONDS;
 
@@ -357,8 +356,8 @@ public class SeleniumScripter {
         }
     }
 
-    private void runPause(Map<String, Object> script){
-        throw new NotImplementedException();
+    private void runPause(Map<String, Object> script) throws Exception {
+        throw new Exception("Pause operation not implemented!");
 //        System.out.println("Started pause event: " + script);
 //        Scanner in = new Scanner(System.in);
 //        System.out.println("Press any key to continue...");
