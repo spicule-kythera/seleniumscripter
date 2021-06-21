@@ -73,6 +73,12 @@
             <artifactId>dbutils-api_2.12</artifactId>
             <version>0.0.5</version>
         </dependency>
+        <dependency>
+            <groupId>org.yaml</groupId>
+            <artifactId>snakeyaml</artifactId>
+            <version>1.27</version>
+            <scope>compile</scope>
+        </dependency>
 
     </dependencies>
 

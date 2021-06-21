@@ -23,13 +23,13 @@ import static java.util.concurrent.TimeUnit.SECONDS;
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
-    private final FluentWait<WebDriver> waits;
-    private final FluentWait<WebDriver> wait;
+    private Object loopValue;
     private WebDriver driver;
     private Map<String, Object> masterScript;
-    private final Map<String, List> captureLists = new HashMap<>();
+    private final FluentWait<WebDriver> wait;
+    private final FluentWait<WebDriver> waits;
     private final List<String> snapshots = new ArrayList<>();
-    private Object loopValue;
+    private final Map<String, List> captureLists = new HashMap<>();
 
     public SeleniumScripter(WebDriver webDriver){
         driver = webDriver;
@@ -69,8 +69,6 @@ public class SeleniumScripter {
                         runKeys(obj);
                     } else if (obj.get("operation").equals("wait")) {
                         runWait(obj);
-                    }else if (obj.get("operation").equals("pause")) {
-                        runPause(obj);
                     } else if (obj.get("operation").equals("captureList")) {
                         captureList(obj);
                     } else if (obj.get("operation").equals("loop")) {
@@ -356,14 +354,6 @@ public class SeleniumScripter {
         }
     }
 
-    private void runPause(Map<String, Object> script) throws Exception {
-        throw new Exception("Pause operation not implemented!");
-//        System.out.println("Started pause event: " + script);
-//        Scanner in = new Scanner(System.in);
-//        System.out.println("Press any key to continue...");
-//        String out = in.nextLine();
-//        System.out.println("Got: " + out);
-    }
     /**
      * Create a capture list. A capture list is a list of elements or labels which you can iterate over elsewhere in your script.
      * @param script

@@ -1,0 +1,9 @@
+if:
+  condition:
+    - a
+    - ==
+    - b
+  then:
+    wait: 1
+  else:
+    wait: 1

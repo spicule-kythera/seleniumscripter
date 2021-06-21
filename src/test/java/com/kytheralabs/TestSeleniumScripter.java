@@ -11,7 +11,6 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 
 
 public class TestSeleniumScripter {
-    private final Yaml yamlParser = new Yaml();
     private final FirefoxOptions driverOptions = new FirefoxOptions();
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--ignore-certificate-errors",
@@ -21,7 +20,6 @@ public class TestSeleniumScripter {
                                                        "--disable-gpu",
                                                        "--disable-extensions",
                                                        "--disable-infobars");
-
     private RemoteWebDriver driver = null;
 
     @Before
@@ -36,11 +34,11 @@ public class TestSeleniumScripter {
         driver = null;
     }
 
-    private Map<String, Object> loadScript(String fileName) {
-        InputStream inputStream = this.getClass()
-                                      .getClassLoader()
-                                      .getResourceAsStream(fileName);
-        return yamlParser.load(inputStream);
+    private static Map<String, Object> loadScript(String fileName) {
+        InputStream inputStream = TestSeleniumScripter.class
+                                                      .getClassLoader()
+                                                      .getResourceAsStream(fileName);
+        return new Yaml().load(inputStream);
     }
 
     private void runScript(String url, String scriptName) throws Exception {
