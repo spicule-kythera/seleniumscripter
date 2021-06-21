@@ -15,7 +15,7 @@ public class TestSeleniumScripter {
     private final FirefoxOptions driverOptions = new FirefoxOptions();
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--ignore-certificate-errors",
-                                                       "--headless",
+//                                                       "--headless",
                                                        "--window-size=1920,1080",
                                                        "--start-maximized",
                                                        "--disable-gpu",
@@ -75,6 +75,16 @@ public class TestSeleniumScripter {
         // Crawl parameters
         final String scriptName = "forward.yaml";
         final String url = "https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
+    public void testHumanServePA() throws Exception {
+        // Crawl parameters
+        final String scriptName = "humanservepa.yaml";
+        final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
 
         // Start the crawl
         runScript(url, scriptName);
