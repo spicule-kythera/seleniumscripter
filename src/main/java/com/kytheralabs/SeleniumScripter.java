@@ -43,55 +43,106 @@ public class SeleniumScripter {
                 .ignoring(NoSuchElementException.class).ignoring(ElementClickInterceptedException.class);
     }
 
+    private int firstMatch(String match, String[] set) {
+        for(int i = 0; i < set.length; i++) {
+            if(set[i].equals(match)) {
+                return i;
+            }
+        }
+        throw new IndexOutOfBoundsException("Instruction name does not exist: " + match);
+    }
+
+    public boolean runScript(Map<String, Object> script) throws Exception {
+        return runScript(script, null);
+    }
+
     /**
      * Run a selenium script, see wiki for more details.
      * @param script The Yaml() object containing the script
-     * @param iteration The number of crawl iterations to perform
      * @param loopValue The set of the script to perform
      * @throws Exception Throws this in the event of any number of selenium failures
      */
-    public void runScript(Map<String, Object> script, Integer iteration, Object loopValue) throws Exception {
+    public boolean runScript(Map<String, Object> script, Object loopValue) throws Exception {
+        boolean success = false;
         System.out.println("Processing Selenium Script");
         System.out.println("Objects found: "+script.size());
         this.loopValue = loopValue;
         if(masterScript == null){
             masterScript = script;
         }
-        for (Map.Entry me : script.entrySet()) {
-            System.out.println("Key: "+me.getKey() + " & Value: " + me.getValue());
-            if(me.getValue() instanceof Map){
-                Map<String, Object> obj = (Map<String, Object>) me.getValue();
-                System.out.println("Operation found: "+ obj.get("operation"));
-                if(obj.containsKey("operation")) {
-                    if (obj.get("operation").equals("select")) {
-                        runSelect(obj);
-                    } else if (obj.get("operation").equals("keys")) {
-                        runKeys(obj);
-                    } else if (obj.get("operation").equals("wait")) {
-                        runWait(obj);
-                    } else if (obj.get("operation").equals("captureList")) {
-                        captureList(obj);
-                    } else if (obj.get("operation").equals("loop")) {
-                        loop(obj);
-                    } else if (obj.get("operation").equals("click")) {
-                        click(obj);
-                    } else if (obj.get("operation").equals("clickListItem")) {
-                        clickListItem(obj);
-                    } else if (obj.get("operation").equals("screenshot")) {
-                        screenshot(obj);
-                    } else if (obj.get("operation").equals("snapshot")) {
+
+        int position;
+        String[] instructionNames = script.keySet().toArray(new String[0]);
+
+        try {
+            for (position = 0; position < instructionNames.length; position++) {
+                String instructionName = instructionNames[position];
+                Object instructionBlock = script.get(instructionName);
+
+                System.out.println("Key: " + instructionName + " & Value: " + instructionBlock);
+                if (instructionBlock instanceof Map) {
+                    Map<String, Object> subscript = (Map<String, Object>) instructionBlock;
+                    String operation = subscript.getOrDefault("operation", "n/a").toString().toLowerCase();
+
+                    if (operation.equalsIgnoreCase("capturelist")) {
+                        captureList(subscript);
+                    } else if (operation.equalsIgnoreCase("click")) {
+                        click(subscript);
+                    } else if (operation.equalsIgnoreCase("clicklistitem")) {
+                        clickListItem(subscript);
+                    } else if (operation.equalsIgnoreCase("if")) {
+                        boolean willJump = false;
+                        Map<String, String> conditionBody = (Map<String, String>) subscript.get("condition");
+                        Map<String, Object> condition = new HashMap<>();
+                        condition.put("condition", conditionBody);
+                        String thenInstructionName = subscript.get("then").toString();
+                        String elseInstructionName = subscript.getOrDefault("else", "n/a").toString();
+
+                        if (runScript(condition)) {
+                            position = firstMatch(thenInstructionName, instructionNames);
+                            willJump = true;
+                        } else if (!elseInstructionName.equalsIgnoreCase("n/a")) {
+                            position = firstMatch(elseInstructionName, instructionNames);
+                            willJump = true;
+                        }
+
+                        if (willJump) {
+                            position -= 1; // Subtract 1, because the for loop is about to re-increment
+                            String newName = instructionNames[position + 1];
+                            System.out.println("Jumping to instruction: \"" + newName + "\"");
+                        } else {
+                            System.out.println("Condition did not meet, and no `else` clause was specified! Falling through...");
+                        }
+                    } else if (operation.equalsIgnoreCase("select")) {
+                        runSelect(subscript);
+                    } else if (operation.equalsIgnoreCase("jsclick")) {
+                        jsclicker(subscript);
+                    } else if (operation.equalsIgnoreCase("keys")) {
+                        runKeys(subscript);
+                    } else if (operation.equalsIgnoreCase("loop")) {
+                        loop(subscript);
+                    } else if (operation.equalsIgnoreCase("screenshot")) {
+                        screenshot(subscript);
+                    } else if (operation.equalsIgnoreCase("snapshot")) {
                         snapshot();
-                    } else if (obj.get("operation").equals("table")){
-                        iterateTable(obj);
-                    } else if (obj.get("operation").equals("jsclick")){
-                        jsclicker(obj);
+                    } else if (operation.equalsIgnoreCase("table")) {
+                        iterateTable(subscript);
+                    } else if (operation.equalsIgnoreCase("wait")) {
+                        runWait(subscript);
+                    } else {
+                        throw new Exception("Invalid operation: " + operation);
                     }
                 }
+
             }
 
+            success = true;
+        } catch (Exception e) {
+            e.printStackTrace();
         }
 
         System.out.println("SNAPSHOTS TAKEN: " + snapshots.size());
+        return success;
     }
 
     /**
@@ -132,7 +183,7 @@ public class SeleniumScripter {
                 allRows.get(0).click();
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
-                runScript(subscript, null, null);
+                runScript(subscript, null);
                 WebDriverWait wait = new WebDriverWait(driver, 180);
                 System.out.println("Waiting for object: "+script.get("name").toString());
                 wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
@@ -143,12 +194,12 @@ public class SeleniumScripter {
                 Map<String, Object> nextbuttonAttrs = (Map<String, Object>) script.get("nextbutton");
                 try{
                     selectElement(nextbuttonAttrs.get("selector").toString(), nextbuttonAttrs.get("name").toString());
-                    runScript(subscript, null, null);
+                    runScript(subscript, null);
                 } catch(org.openqa.selenium.NoSuchElementException e){
                     System.out.println("Can't find next button, exiting loop");
                     break;
                 }
-            } else{
+            } else {
                 System.out.println("Now more rows left to parse");
                 break;
             }
@@ -324,7 +375,7 @@ public class SeleniumScripter {
             }
         }
 
-        if (script.get("selector").toString().equals("none")) {
+        if (!script.containsKey("selector")) {
             long delay = timeout.longValue() * 1000L;
             System.out.println("Sleeping for " + delay + " milliseconds!");
             Thread.sleep(delay);
@@ -413,7 +464,7 @@ public class SeleniumScripter {
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 System.out.println("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
                 try {
-                    runScript(subscript, null, v);
+                    runScript(subscript, v);
                 } catch (Exception e){
                     if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
                         break;

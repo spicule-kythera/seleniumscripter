@@ -45,7 +45,7 @@ public class TestSeleniumScripter {
         final Map<String, Object> script = loadScript(scriptName);
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver);
-        scriptRunner.runScript(script, null, null);
+        scriptRunner.runScript(script);
     }
 
     @Test
@@ -78,10 +78,21 @@ public class TestSeleniumScripter {
         runScript(url, scriptName);
     }
 
+
     @Test
     public void testHumanServePA() throws Exception {
         // Crawl parameters
         final String scriptName = "humanservepa.yaml";
+        final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
+    public void testLogicBlocks() throws Exception {
+        // Crawl parameters
+        final String scriptName = "logic-blocks.yaml";
         final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
 
         // Start the crawl
