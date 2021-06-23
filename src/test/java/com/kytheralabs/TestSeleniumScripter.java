@@ -5,6 +5,8 @@ import java.util.Map;
 import java.util.List;
 import java.util.Arrays;
 import java.io.InputStream;
+import java.util.Set;
+
 import org.yaml.snakeyaml.Yaml;
 import org.openqa.selenium.firefox.*;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -96,6 +98,13 @@ public class TestSeleniumScripter {
         final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
 
         // Start the crawl
-        runScript(url, scriptName);
+        final Map<String, Object> script = loadScript(scriptName);
+        Set<String> keys = script.keySet();
+        for(String key : keys) {
+            List<Map<String, String>> thing = (List<Map<String, String>>) script.get(key);
+            for (Map<String, String> pair : thing) {
+                System.out.println(pair);
+            }
+        }
     }
 }
