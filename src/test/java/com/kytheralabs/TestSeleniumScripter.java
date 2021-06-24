@@ -64,7 +64,9 @@ public class TestSeleniumScripter {
     }
 
     private void runScript(String url, String scriptName) throws Exception {
-        String extension = scriptName.split("\\.")[1];
+        String[] parts = scriptName.split("\\.");
+        String extension = parts[parts.length - 1];
+        System.out.println("Using " + extension + " parser!");
         runScript(url, scriptName, extension);
     }
 
