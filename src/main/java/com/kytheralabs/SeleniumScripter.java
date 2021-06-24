@@ -1,26 +1,19 @@
 package com.kytheralabs;
 
-import java.text.ParseException;
-import java.util.*;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.io.File;
 import java.io.IOException;
-import org.openqa.selenium.By;
-import org.openqa.selenium.*;
-import org.openqa.selenium.Keys;
-import java.util.concurrent.TimeUnit;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.support.ui.*;
-import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-
+import java.text.ParseException;
 import java.time.Duration;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
+import java.util.*;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
