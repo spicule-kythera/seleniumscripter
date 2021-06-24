@@ -351,10 +351,6 @@ public class SeleniumScripter {
             System.out.println("Sleeping for " + delay + " milliseconds!");
             Thread.sleep(delay);
         } else {
-            System.out.println("Waiting for object: " + script.get("name").toString());
-            //new WebDriverWait(driver, waittimeout)
-
-
             if (timeout.intValue() == 180) {
                 wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             } else {

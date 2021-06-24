@@ -95,7 +95,6 @@ public class TestSeleniumScripter {
         runScript(url, scriptName);
     }
 
-    @Ignore
     @Test
     public void testBcbsms() throws Exception {
         // Crawl parameters
@@ -106,7 +105,6 @@ public class TestSeleniumScripter {
         runScript(url, scriptName);
     }
 
-    @Ignore
     @Test
     public void testForward() throws Exception {
         // Crawl parameters
@@ -117,7 +115,6 @@ public class TestSeleniumScripter {
         runScript(url, scriptName);
     }
 
-    @Ignore
     @Test
     public void testForwardJSON() throws Exception {
         // Crawl parameters
@@ -128,22 +125,10 @@ public class TestSeleniumScripter {
         runScript(url, scriptName);
     }
 
-    @Ignore
     @Test
     public void testHumanServePA() throws Exception {
         // Crawl parameters
         final String scriptName = "humanservepa.yaml";
-        final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Ignore
-    @Test
-    public void testLogicBlocks() throws Exception {
-        // Crawl parameters
-        final String scriptName = "logic-blocks.yaml";
         final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
 
         // Start the crawl
