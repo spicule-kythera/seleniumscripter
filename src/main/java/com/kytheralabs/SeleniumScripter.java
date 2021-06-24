@@ -398,6 +398,61 @@ public class SeleniumScripter {
     }
 
     /**
+     * Uses JavascriptExecutor to click a button
+     * @param script
+     * @throws Exception
+     */
+
+    private void jsclicker(Map<String, Object> script) throws Exception {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        WebElement element =null;
+
+        if(script.containsKey("variable") && script.get("variable").equals(true)){
+            String n = script.get("name").toString().replace("{variable}", this.loopValue.toString());
+            element = selectElement(script.get("selector").toString(), n);
+        }else{
+            element = selectElement(script.get("selector").toString(), script.get("name").toString());
+        }
+
+
+        if(element != null){
+            if(script.containsKey("back") && script.get("back").equals(true)){
+                try{
+                    System.out.println("Going to last page");
+                    //Calling executeAsyncScript() method to go back a page
+                    js.executeScript("window.history.go(-1);");
+                    //waits for page to load
+                    System.out.println("Waiting for object: " + script.get("name").toString());
+                    js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
+                    System.out.println("Object: " + script.get("name").toString() + " found.");
+                } catch (org.openqa.selenium.NoSuchElementException e){
+                    System.out.println("Element not found but page refreshed");
+                }
+            }else if(script.containsKey("refresh") && script.get("refresh").equals(true)){
+                try{
+                    System.out.println("Going to the previous page");
+                    //Calling executeAsyncScript() method to go back a page
+                    js.executeScript("window.history.go(0);");
+                    //waits for page to load
+                    System.out.println("Waiting for object: " + script.get("name").toString());
+                    js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
+                    System.out.println("Object: " + script.get("name").toString() + " found.");
+                } catch (org.openqa.selenium.NoSuchElementException e){
+                    System.out.println("Element not found but page refreshed");
+                }
+            }else {
+                System.out.println("Clicking Element");
+                js.executeScript("arguments[0].click();", element);
+            }
+        }else{
+                System.out.println("Element null, nothing to click.");
+        }
+    }
+
+
+
+
+    /**
      * Click on an item in a list.
      * @param script
      * @throws Exception
