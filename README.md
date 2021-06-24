@@ -2,6 +2,10 @@
 
 A generic yaml script-runner for the Selenium framework. 
 
+#### Install Locally
+`$` `mvn clean install`
+
+
 #### Run Tests
 
 `$` `mvn clean test`
