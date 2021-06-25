@@ -11,6 +11,10 @@ Then you need a copy of the Gekco webdriver: https://github.com/mozilla/geckodri
 #### Install Locally
 `$` `mvn clean install`
 
+#### Verify Build
+
+`$` `mvn --batch-mode --errors --fail-at-end --show-version -DinstallAtEnd=true -DdeployAtEnd=true verify -DskipTests -s ci_settings.xml`
+
 #### Run Tests
 
 `$` `mvn clean test -Dwebdriver.gecko.driver=./geckodriver`
