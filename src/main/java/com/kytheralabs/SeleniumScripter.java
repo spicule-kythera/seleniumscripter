@@ -100,27 +100,31 @@ public class SeleniumScripter {
                                                 .toString()
                                                 .toLowerCase();
 
-                    switch(operation.toLowerCase()) {
-                        case "capturelist" -> captureList(subscript);
-                        case "click" -> click(subscript);
-                        case "clicklistitem" -> clickListItem(subscript);
-                        case "if" -> {
+                    switch (operation.toLowerCase()) {
+                        case "capturelist":
+                            captureList(subscript);
+                            break;
+                        case "click":
+                            click(subscript);
+                            break;
+                        case "clicklistitem":
+                            clickListItem(subscript);
+                            break;
+                        case "if":
+                            // Start processing the logic block
                             // """"Validation""""
                             String[] required = {"condition", "then"};
-                            for (String r : required){
-                                if(!subscript.containsKey(r)) {
+                            for (String r : required) {
+                                if (!subscript.containsKey(r)) {
                                     throw new ParseException("`if` block must specify `" + r + "` parameter!", 0);
                                 }
                             }
-
-                            // Start processing the logic block
                             boolean willJump = false;
                             Map<String, String> conditionBody = (Map<String, String>) subscript.get("condition");
                             Map<String, Object> condition = new HashMap<>();
                             condition.put("condition", conditionBody);
                             String thenInstructionName = subscript.get("then").toString();
                             String elseInstructionName = subscript.getOrDefault("else", "n/a").toString();
-
                             if (runScript(condition)) {
                                 position = firstMatch(thenInstructionName, instructionNames);
                                 willJump = true;
@@ -128,7 +132,6 @@ public class SeleniumScripter {
                                 position = firstMatch(elseInstructionName, instructionNames);
                                 willJump = true;
                             }
-
                             if (willJump) {
                                 position -= 1; // Subtract 1, because the for loop is about to re-increment
                                 String newName = instructionNames[position + 1];
@@ -136,17 +139,36 @@ public class SeleniumScripter {
                             } else {
                                 System.err.println("Condition did not meet, and no `else` clause was specified! Falling through...");
                             }
-                        }
-                        case "jsclick" -> jsclicker(subscript);
-                        case "select" -> select(subscript);
-                        case "{undefined}" -> System.err.println("Found the " + instructionName + " block with no defined operation! Skipping...");
-                        case "keys" -> sendKeys(subscript);
-                        case "loop" -> loop(subscript);
-                        case "screenshot" -> screenshot(subscript);
-                        case "snapshot" -> snapshot();
-                        case "table" -> iterateTable(subscript);
-                        case "wait" -> wait(subscript);
-                        default -> throw new ParseException("Invalid operation: " + operation, 0);
+                            break;
+                        case "jsclick":
+                            jsclicker(subscript);
+                            break;
+                        case "select":
+                            select(subscript);
+                            break;
+                        case "{undefined}":
+                            System.err.println("Found the " + instructionName + " block with no defined operation! Skipping...");
+                            break;
+                        case "keys":
+                            sendKeys(subscript);
+                            break;
+                        case "loop":
+                            loop(subscript);
+                            break;
+                        case "screenshot":
+                            screenshot(subscript);
+                            break;
+                        case "snapshot":
+                            snapshot();
+                            break;
+                        case "table":
+                            iterateTable(subscript);
+                            break;
+                        case "wait":
+                            wait(subscript);
+                            break;
+                        default:
+                            throw new ParseException("Invalid operation: " + operation, 0);
                     }
                 }
             }
@@ -231,14 +253,20 @@ public class SeleniumScripter {
      * @return WebElement
      */
     private WebElement selectElement(String selector, String name) {
-        return switch (selector) {
-            case "id" -> driver.findElement(By.id(name));
-            case "class" -> driver.findElement(By.className(name));
-            case "cssSelector" -> driver.findElement(By.cssSelector(name));
-            case "xpath" -> driver.findElement(By.xpath(name));
-            case "name" -> driver.findElement(By.name(name));
-            default -> throw new NotFoundException("Could not find element with " + selector + " of " + name);
-        };
+        switch (selector) {
+            case "id":
+                return driver.findElement(By.id(name));
+            case "class":
+                return driver.findElement(By.className(name));
+            case "cssSelector":
+                return driver.findElement(By.cssSelector(name));
+            case "xpath":
+                return driver.findElement(By.xpath(name));
+            case "name":
+                return driver.findElement(By.name(name));
+            default:
+                throw new NotFoundException("Could not find element with " + selector + " of " + name);
+        }
     }
 
     /**
@@ -248,14 +276,20 @@ public class SeleniumScripter {
      * @return List<WebElement>
      */
     private List<WebElement> selectElements(String selector, String name) {
-        return switch (selector) {
-            case "id" -> driver.findElements(By.id(name));
-            case "class" -> driver.findElements(By.className(name));
-            case "cssSelector" -> driver.findElements(By.cssSelector(name));
-            case "xpath" -> driver.findElements(By.xpath(name));
-            case "name" -> driver.findElements(By.name(name));
-            default -> throw new NotFoundException("Could not find element with " + selector + " of " + name);
-        };
+        switch (selector) {
+            case "id":
+                return driver.findElements(By.id(name));
+            case "class":
+                return driver.findElements(By.className(name));
+            case "cssSelector":
+                return driver.findElements(By.cssSelector(name));
+            case "xpath":
+                return driver.findElements(By.xpath(name));
+            case "name":
+                return driver.findElements(By.name(name));
+            default:
+                throw new NotFoundException("Could not find element with " + selector + " of " + name);
+        }
     }
 
     /**
@@ -265,14 +299,20 @@ public class SeleniumScripter {
      * @return By the desired element
      */
     private By ByElement(String selector, String name) {
-        return switch (selector) {
-            case "id" -> By.id(name);
-            case "class" -> By.className(name);
-            case "cssSelector" -> By.cssSelector(name);
-            case "xpath" -> By.xpath(name);
-            case "name" -> By.name(name);
-            default -> null;
-        };
+        switch (selector) {
+            case "id":
+                return By.id(name);
+            case "class":
+                return By.className(name);
+            case "cssSelector":
+                return By.cssSelector(name);
+            case "xpath":
+                return By.xpath(name);
+            case "name":
+                return By.name(name);
+            default:
+                return null;
+        }
     }
 
     /**
@@ -303,26 +343,27 @@ public class SeleniumScripter {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
         String input = script.get("value").toString().toLowerCase();
 
-        switch (input) {
-            case "{enter}" -> element.sendKeys(Keys.ENTER);
-            case "{return}" -> element.sendKeys(Keys.RETURN);
-            case "{down}" -> element.sendKeys(Keys.ARROW_DOWN);
-            default -> { // If input is none of the keywords then slow-type the input
-                // Convert the input to loop-value if it's said keyword
-                input = (input.equals("${loopvalue}")) ? this.loopValue.toString() : input;
+        if ("{enter}".equals(input)) {
+            element.sendKeys(Keys.ENTER);
+        } else if ("{return}".equals(input)) {
+            element.sendKeys(Keys.RETURN);
+        } else if ("{down}".equals(input)) {
+            element.sendKeys(Keys.ARROW_DOWN);
+        } else { // If input is none of the keywords then slow-type the input
+            // Convert the input to loop-value if it's said keyword
+            input = (input.equals("${loopvalue}")) ? this.loopValue.toString() : input;
 
-                // Clear the input field
-                element.clear();
+            // Clear the input field
+            element.clear();
 
-                // Slow-type each character
-                for (char s : input.toCharArray()) {
-                    System.out.println("Inserting: " + String.valueOf(s));
-                    element.sendKeys(String.valueOf(s));
-                    Thread.sleep(300);
-                }
-
-                Thread.sleep(5000); // Wait even more for some reason?
+            // Slow-type each character
+            for (char s : input.toCharArray()) {
+                System.out.println("Inserting: " + String.valueOf(s));
+                element.sendKeys(String.valueOf(s));
+                Thread.sleep(300);
             }
+
+            Thread.sleep(5000); // Wait even more for some reason?
         }
     }
 
@@ -389,10 +430,12 @@ public class SeleniumScripter {
         List strlist = new ArrayList<>();
         for(WebElement el : webElements){
             System.out.println("Capture Element Found: "+el.getText());
-            switch (type) {
-                case "text" -> strlist.add(el.getText());
-                case "elements" -> strlist.add(el);
-                case "xpath" -> strlist.add(getElementXPath(el));
+            if ("text".equals(type)) {
+                strlist.add(el.getText());
+            } else if ("elements".equals(type)) {
+                strlist.add(el);
+            } else if ("xpath".equals(type)) {
+                strlist.add(getElementXPath(el));
             }
         }
 
