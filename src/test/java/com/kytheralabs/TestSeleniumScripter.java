@@ -74,7 +74,7 @@ public class TestSeleniumScripter {
                                                                                     ParseException,
                                                                                     java.text.ParseException,
                                                                                     InterruptedException {
-        final Map<String, Object> script = (Map<String, Object>) switch (scriptType.toLowerCase()) {
+        final Map<String, Object> script = switch (scriptType.toLowerCase()) {
             case "json" -> loadJSONScript(scriptName);
             case "yaml" -> loadYAMLScript(scriptName);
             default -> throw new IllegalArgumentException("Unsuported script type: " + scriptType);

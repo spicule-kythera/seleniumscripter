@@ -1,5 +1,6 @@
 # Custom
 .idea
+*.iml
 target
 
 # Compiled class file

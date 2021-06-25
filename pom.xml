@@ -6,6 +6,18 @@
 
     <!-- Project Details -->
     <name>Selenium Scripter</name>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <configuration>
+                    <source>14</source>
+                    <target>14</target>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
     <groupId>com.kytheralabs</groupId>
     <artifactId>seleniumscripter</artifactId>
     <version>1.2</version>
