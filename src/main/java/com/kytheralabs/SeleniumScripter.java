@@ -1,105 +1,191 @@
 package com.kytheralabs;
 
-import java.util.*;
+import org.apache.commons.io.FileUtils;
+import org.openqa.selenium.NoSuchElementException;
+import org.openqa.selenium.*;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
+import org.openqa.selenium.support.ui.Select;
+import org.openqa.selenium.support.ui.WebDriverWait;
+
 import java.io.File;
 import java.io.IOException;
-import org.openqa.selenium.By;
-import org.openqa.selenium.*;
-import org.openqa.selenium.Keys;
+import java.text.ParseException;
+import java.time.Duration;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.apache.commons.io.FileUtils;
-import org.openqa.selenium.support.ui.*;
-import org.openqa.selenium.support.ui.Select;
-import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.NoSuchElementException;
-import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-
-import static java.util.concurrent.TimeUnit.SECONDS;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
-    private final FluentWait<WebDriver> waits;
-    private final FluentWait<WebDriver> wait;
-    private WebDriver driver;
-    private Map<String, Object> masterScript;
-    private final Map<String, List> captureLists = new HashMap<>();
-    private final List<String> snapshots = new ArrayList<>();
+    // Variables
     private Object loopValue;
+    private Map<String, Object> masterScript;
+
+    // Constants
+    private final WebDriver driver;
+    private final FluentWait<WebDriver> wait;
+    private final FluentWait<WebDriver> waits;
+    private final List<String> snapshots = new ArrayList<>();
+    private final Map<String, List> captureLists = new HashMap<>();
 
     public SeleniumScripter(WebDriver webDriver){
         driver = webDriver;
-        wait = new FluentWait<WebDriver>(driver)
-                .withTimeout(180, SECONDS)
-                .pollingEvery(5, SECONDS)
+        wait = new FluentWait<>(driver)
+                .withTimeout(Duration.ofSeconds(180))
+                .pollingEvery(Duration.ofSeconds(5))
                 .ignoring(NoSuchElementException.class).ignoring(ElementClickInterceptedException.class);
-        waits = new FluentWait<WebDriver>(driver)
-                .withTimeout(10, SECONDS)
-                .pollingEvery(5, SECONDS)
+        waits = new FluentWait<>(driver)
+                .withTimeout(Duration.ofSeconds(10))
+                .pollingEvery(Duration.ofSeconds(5))
                 .ignoring(NoSuchElementException.class).ignoring(ElementClickInterceptedException.class);
+    }
+
+    /**
+     * Find the position of the first matching string in the set.
+     * @param match search for this
+     * @param set search across this
+     * @return int the position in the set
+     */
+    private int firstMatch(String match, String[] set) {
+        for(int i = 0; i < set.length; i++) {
+            if(set[i].equals(match)) {
+                return i;
+            }
+        }
+        throw new IndexOutOfBoundsException("Instruction name does not exist: " + match);
     }
 
     /**
      * Run a selenium script, see wiki for more details.
      * @param script The Yaml() object containing the script
-     * @param iteration The number of crawl iterations to perform
-     * @param loopValue The set of the script to perform
-     * @throws Exception Throws this in the event of any number of selenium failures
+     * @throws IOException when a snapshot image failed to save to disk
+     * @throws ParseException when a parsing error was found in the script
+     * @throws InterruptedException when the process wakes up from a sleep event
      */
-    public void runScript(Map<String, Object> script, Integer iteration, Object loopValue) throws Exception {
+    public boolean runScript(Map<String, Object> script) throws IOException, ParseException, InterruptedException {
+        return runScript(script, null);
+    }
+
+    /**
+     * Run a selenium script, see wiki for more details.
+     * @param script The Yaml() object containing the script
+     * @param loopValue The set of the script to perform
+     * @throws IOException when a snapshot image failed to save to disk
+     * @throws ParseException when a parsing error was found in the script
+     * @throws InterruptedException when the process wakes up from a sleep event
+     */
+    public boolean runScript(Map<String, Object> script, Object loopValue) throws IOException, ParseException, InterruptedException {
+        boolean success = false;
         System.out.println("Processing Selenium Script");
-        System.out.println("Objects found: "+script.size());
+        System.out.println("Objects found: " + script.size());
         this.loopValue = loopValue;
         if(masterScript == null){
             masterScript = script;
         }
-        for (Map.Entry me : script.entrySet()) {
-            System.out.println("Key: "+me.getKey() + " & Value: " + me.getValue());
-            if(me.getValue() instanceof Map){
-                Map<String, Object> obj = (Map<String, Object>) me.getValue();
-                System.out.println("Operation found: "+ obj.get("operation"));
-                if(obj.containsKey("operation")) {
-                    if (obj.get("operation").equals("select")) {
-                        runSelect(obj);
-                    } else if (obj.get("operation").equals("keys")) {
-                        runKeys(obj);
-                    } else if (obj.get("operation").equals("wait")) {
-                        runWait(obj);
-                    }else if (obj.get("operation").equals("pause")) {
-                        runPause(obj);
-                    } else if (obj.get("operation").equals("captureList")) {
-                        captureList(obj);
-                    } else if (obj.get("operation").equals("loop")) {
-                        loop(obj);
-                    } else if (obj.get("operation").equals("click")) {
-                        click(obj);
-                    } else if (obj.get("operation").equals("clickListItem")) {
-                        clickListItem(obj);
-                    } else if (obj.get("operation").equals("screenshot")) {
-                        screenshot(obj);
-                    } else if (obj.get("operation").equals("snapshot")) {
-                        snapshot();
-                    } else if (obj.get("operation").equals("table")){
-                        iterateTable(obj);
-                    } else if (obj.get("operation").equals("jsclick")){
-                        jsclicker(obj);
+
+        int position;
+        String[] instructionNames = script.keySet().toArray(new String[0]);
+
+        try {
+            for (position = 0; position < instructionNames.length; position++) {
+                String instructionName = instructionNames[position];
+                Object instructionBlock = script.get(instructionName);
+
+                System.out.println("Key: " + instructionName + " & Value: " + instructionBlock);
+                if (instructionBlock instanceof Map) {
+                    Map<String, Object> subscript = (Map<String, Object>) instructionBlock;
+                    String operation = subscript.getOrDefault("operation", "{UNDEFINED}")
+                                                .toString()
+                                                .toLowerCase();
+
+                    switch (operation.toLowerCase()) {
+                        case "capturelist":
+                            captureList(subscript);
+                            break;
+                        case "click":
+                            click(subscript);
+                            break;
+                        case "clicklistitem":
+                            clickListItem(subscript);
+                            break;
+                        case "if":
+                            // Start processing the logic block
+                            // """"Validation""""
+                            String[] required = {"condition", "then"};
+                            for (String r : required) {
+                                if (!subscript.containsKey(r)) {
+                                    throw new ParseException("`if` block must specify `" + r + "` parameter!", 0);
+                                }
+                            }
+                            boolean willJump = false;
+                            Map<String, String> conditionBody = (Map<String, String>) subscript.get("condition");
+                            Map<String, Object> condition = new HashMap<>();
+                            condition.put("condition", conditionBody);
+                            String thenInstructionName = subscript.get("then").toString();
+                            String elseInstructionName = subscript.getOrDefault("else", "n/a").toString();
+                            if (runScript(condition)) {
+                                position = firstMatch(thenInstructionName, instructionNames);
+                                willJump = true;
+                            } else if (!elseInstructionName.equalsIgnoreCase("n/a")) {
+                                position = firstMatch(elseInstructionName, instructionNames);
+                                willJump = true;
+                            }
+                            if (willJump) {
+                                position -= 1; // Subtract 1, because the for loop is about to re-increment
+                                String newName = instructionNames[position + 1];
+                                System.err.println("Jumping to instruction: \"" + newName + "\"");
+                            } else {
+                                System.err.println("Condition did not meet, and no `else` clause was specified! Falling through...");
+                            }
+                            break;
+                        case "jsclick":
+                            jsclicker(subscript);
+                            break;
+                        case "select":
+                            select(subscript);
+                            break;
+                        case "{undefined}":
+                            System.err.println("Found the " + instructionName + " block with no defined operation! Skipping...");
+                            break;
+                        case "keys":
+                            sendKeys(subscript);
+                            break;
+                        case "loop":
+                            loop(subscript);
+                            break;
+                        case "screenshot":
+                            screenshot(subscript);
+                            break;
+                        case "snapshot":
+                            snapshot();
+                            break;
+                        case "table":
+                            iterateTable(subscript);
+                            break;
+                        case "wait":
+                            wait(subscript);
+                            break;
+                        default:
+                            throw new ParseException("Invalid operation: " + operation, 0);
                     }
                 }
             }
 
+            success = true;
+        } catch (NoSuchElementException e) {
+            e.printStackTrace();
         }
 
         System.out.println("SNAPSHOTS TAKEN: " + snapshots.size());
+        return success;
     }
 
     /**
      * Take a screenshot for debugging purposes
-     * @param script
-     * @throws IOException
+     * @param script the screenshot subscript operation
+     * @throws IOException when a screenshot image fails to write to disk
      */
     public void screenshot(Map<String, Object> script) throws IOException {
         TakesScreenshot scrShot =((TakesScreenshot)driver);
@@ -114,10 +200,12 @@ public class SeleniumScripter {
 
     /**
      * Iterate through a tables rows and perform a subscript on each row.
-     * @param script
-     * @throws Exception
+     * @param script the itterate-table subscript operation
+     * @throws IOException when a snapshot image failed to save to disk
+     * @throws ParseException when a parsing error was found in the script
+     * @throws InterruptedException when the process wakes up from a sleep event
      */
-    private void iterateTable(Map<String, Object> script) throws Exception {
+    private void iterateTable(Map<String, Object> script) throws IOException, ParseException, InterruptedException {
         int offset = Integer.parseInt(script.getOrDefault("rowoffset", "0").toString());
 
         while (true) {
@@ -134,7 +222,7 @@ public class SeleniumScripter {
                 allRows.get(0).click();
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
-                runScript(subscript, null, null);
+                runScript(subscript, null);
                 WebDriverWait wait = new WebDriverWait(driver, 180);
                 System.out.println("Waiting for object: "+script.get("name").toString());
                 wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
@@ -145,12 +233,12 @@ public class SeleniumScripter {
                 Map<String, Object> nextbuttonAttrs = (Map<String, Object>) script.get("nextbutton");
                 try{
                     selectElement(nextbuttonAttrs.get("selector").toString(), nextbuttonAttrs.get("name").toString());
-                    runScript(subscript, null, null);
+                    runScript(subscript, null);
                 } catch(org.openqa.selenium.NoSuchElementException e){
                     System.out.println("Can't find next button, exiting loop");
                     break;
                 }
-            } else{
+            } else {
                 System.out.println("Now more rows left to parse");
                 break;
             }
@@ -159,78 +247,56 @@ public class SeleniumScripter {
 
 
     /**
-     * Select an element by selector and nmme.
-     * @param selector
-     * @param name
-     * @return
-     * @throws Exception
+     * Select a single element.
+     * @param selector the method of HTML element selection
+     * @param name the attribute value of the element to select
+     * @return WebElement
      */
-    private WebElement selectElement(String selector, String name) throws Exception {
-        WebElement clickedEl = null;
+    private WebElement selectElement(String selector, String name) {
         switch (selector) {
             case "id":
-                clickedEl = driver.findElement(By.id(name));
-                break;
+                return driver.findElement(By.id(name));
             case "class":
-                clickedEl = driver.findElement(By.className(name));
-                break;
+                return driver.findElement(By.className(name));
             case "cssSelector":
-                clickedEl = driver.findElement(By.cssSelector(name));
-                break;
+                return driver.findElement(By.cssSelector(name));
             case "xpath":
-                clickedEl = driver.findElement(By.xpath(name));
-                break;
+                return driver.findElement(By.xpath(name));
             case "name":
-                clickedEl = driver.findElement(By.name(name));
-                break;
-        }
-
-        if(clickedEl != null){
-            return clickedEl;
-        } else{
-            throw new Exception("Could not find element");
+                return driver.findElement(By.name(name));
+            default:
+                throw new NotFoundException("Could not find element with " + selector + " of " + name);
         }
     }
 
     /**
-     * Select multiple elements by selector and name.
-     * @param selector
-     * @param name
-     * @return
-     * @throws Exception
+     * Select multiple elements.
+     * @param selector the method of HTML element selection
+     * @param name the attribute value of the element to select
+     * @return List<WebElement>
      */
-    private List<WebElement> selectElements(String selector, String name) throws Exception {
-        List<WebElement> clickedEl = null;
+    private List<WebElement> selectElements(String selector, String name) {
         switch (selector) {
             case "id":
-                clickedEl = driver.findElements(By.id(name));
-                break;
+                return driver.findElements(By.id(name));
             case "class":
-                clickedEl = driver.findElements(By.className(name));
-                break;
+                return driver.findElements(By.className(name));
             case "cssSelector":
-                clickedEl = driver.findElements(By.cssSelector(name));
-                break;
+                return driver.findElements(By.cssSelector(name));
             case "xpath":
-                clickedEl = driver.findElements(By.xpath(name));
-                break;
+                return driver.findElements(By.xpath(name));
             case "name":
-                clickedEl = driver.findElements(By.name(name));
-                break;
-        }
-
-        if(clickedEl != null){
-            return clickedEl;
-        } else{
-            throw new Exception("Could not find element");
+                return driver.findElements(By.name(name));
+            default:
+                throw new NotFoundException("Could not find element with " + selector + " of " + name);
         }
     }
 
     /**
      * Get a By Element object
-     * @param selector
-     * @param name
-     * @return
+     * @param selector the HTML selection method
+     * @param name the value of the selection attribute
+     * @return By the desired element
      */
     private By ByElement(String selector, String name) {
         switch (selector) {
@@ -244,17 +310,16 @@ public class SeleniumScripter {
                 return By.xpath(name);
             case "name":
                 return By.name(name);
+            default:
+                return null;
         }
-
-        return null;
     }
 
     /**
      * Interact with a select object on a webpage.
-     * @param script
-     * @throws Exception
+     * @param script the selection subscript operation
      */
-    private void runSelect(Map<String, Object> script) throws Exception {
+    private void select(Map<String, Object> script) {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
         Select selectObj = new Select(element);
         if(script.get("selectBy").equals("value")){
@@ -271,47 +336,43 @@ public class SeleniumScripter {
 
     /**
      * Type some keys into your website.
-     * @param script
-     * @throws Exception
+     * @param script the key-entry subscript operation
+     * @throws InterruptedException interruption signal that occurs after sleeping
      */
-    private void runKeys(Map<String, Object> script) throws Exception {
+    private void sendKeys(Map<String, Object> script) throws InterruptedException {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
-        String keystring = script.get("value").toString();
-        String target = keystring;
-//        if(this.loopValue != null && !(this.loopValue instanceof String)) {
-//            throw new Exception("Can't insert keys, value not string");
-//
-//        }
+        String input = script.get("value").toString().toLowerCase();
 
-        if (keystring.equals("${loopvalue}")) {
-            target = this.loopValue.toString();
-        } else if(keystring.equals("{enter}")){
+        if ("{enter}".equals(input)) {
             element.sendKeys(Keys.ENTER);
-            return;
-        }else if(keystring.equals("{return}")){
+        } else if ("{return}".equals(input)) {
             element.sendKeys(Keys.RETURN);
-            return;
-        }else if(keystring.equals("{down}")){
+        } else if ("{down}".equals(input)) {
             element.sendKeys(Keys.ARROW_DOWN);
-            return;
-        }
-        element.clear();
-        for (char s : target.toCharArray()) {
-            System.out.println("Inserting: " + String.valueOf(s));
-            element.sendKeys(String.valueOf(s));
-            Thread.sleep(300);
-        }
-        Thread.sleep(5000);
+        } else { // If input is none of the keywords then slow-type the input
+            // Convert the input to loop-value if it's said keyword
+            input = (input.equals("${loopvalue}")) ? this.loopValue.toString() : input;
 
+            // Clear the input field
+            element.clear();
+
+            // Slow-type each character
+            for (char s : input.toCharArray()) {
+                System.out.println("Inserting: " + String.valueOf(s));
+                element.sendKeys(String.valueOf(s));
+                Thread.sleep(300);
+            }
+
+            Thread.sleep(5000); // Wait even more for some reason?
+        }
     }
 
     /**
      * Wait for an element to become visible.
-     * @param script
-     * @throws Exception
+     * @param script the wait subscript operation
+     * @throws InterruptedException interruption signal that occurs after sleeping
      */
-
-    private void runWait(Map<String, Object> script) throws Exception {
+    private void wait(Map<String, Object> script) throws InterruptedException {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         Number timeout = 30;
 
@@ -326,15 +387,11 @@ public class SeleniumScripter {
             }
         }
 
-        if (script.get("selector").toString().equals("none")) {
+        if (!script.containsKey("selector")) {
             long delay = timeout.longValue() * 1000L;
             System.out.println("Sleeping for " + delay + " milliseconds!");
             Thread.sleep(delay);
         } else {
-            System.out.println("Waiting for object: " + script.get("name").toString());
-            //new WebDriverWait(driver, waittimeout)
-
-
             if (timeout.intValue() == 180) {
                 wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             } else {
@@ -356,20 +413,11 @@ public class SeleniumScripter {
         }
     }
 
-    private void runPause(Map<String, Object> script) throws Exception {
-        throw new Exception("Pause operation not implemented!");
-//        System.out.println("Started pause event: " + script);
-//        Scanner in = new Scanner(System.in);
-//        System.out.println("Press any key to continue...");
-//        String out = in.nextLine();
-//        System.out.println("Got: " + out);
-    }
     /**
      * Create a capture list. A capture list is a list of elements or labels which you can iterate over elsewhere in your script.
-     * @param script
-     * @throws Exception
+     * @param script the capture-list subscript operation
      */
-    private void captureList(Map<String, Object> script) throws Exception {
+    private void captureList(Map<String, Object> script) {
         System.out.println("Generating Capture List");
         List<WebElement> webElements = selectElements(script.get("selector").toString(), script.get("name").toString());
         String type = "text";
@@ -382,15 +430,15 @@ public class SeleniumScripter {
         List strlist = new ArrayList<>();
         for(WebElement el : webElements){
             System.out.println("Capture Element Found: "+el.getText());
-            if(type.equals("text")){
+            if ("text".equals(type)) {
                 strlist.add(el.getText());
-            } else if(type.equals("elements")){
+            } else if ("elements".equals(type)) {
                 strlist.add(el);
-            } else if(type.equals("xpath")){
-                strlist.add(getElementXPath(driver, el));
+            } else if ("xpath".equals(type)) {
+                strlist.add(getElementXPath(el));
             }
-
         }
+
         System.out.println("Storing capture list as: "+script.get("variable").toString());
         String append = "false";
         if(script.containsKey("append")){
@@ -405,15 +453,20 @@ public class SeleniumScripter {
             captureLists.put(script.get("variable").toString(), newList);
         }
     }
-    public String getElementXPath(WebDriver driver, WebElement element) {
-        return (String)((JavascriptExecutor)driver).executeScript("gPt=function(c){if(c.id!==''){return'[@id=\"'+c.id+'\"]'}if(c===document.body){return c.tagName}var a=0;var e=c.parentNode.childNodes;for(var b=0;b<e.length;b++){var d=e[b];if(d===c){return gPt(c.parentNode)+'/'+c.tagName+'['+(a+1)+']'}if(d.nodeType===1&&d.tagName===c.tagName){a++}}};return gPt(arguments[0]);", element);
+
+    /**
+     * @param element the element of focus
+     * @return String the full xpath
+     */
+    public String getElementXPath(WebElement element) {
+        return (String)((JavascriptExecutor) driver).executeScript("gPt=function(c){if(c.id!==''){return'[@id=\"'+c.id+'\"]'}if(c===document.body){return c.tagName}var a=0;var e=c.parentNode.childNodes;for(var b=0;b<e.length;b++){var d=e[b];if(d===c){return gPt(c.parentNode)+'/'+c.tagName+'['+(a+1)+']'}if(d.nodeType===1&&d.tagName===c.tagName){a++}}};return gPt(arguments[0]);", element);
     }
+
     /**
      * Loop over a variable and run a script on each iteration.
-     * @param script
-     * @throws Exception
+     * @param script the loop subscript operation
      */
-    private void loop(Map<String, Object> script) throws Exception {
+    private void loop(Map<String, Object> script) {
         String loopType = script.get("type").toString();
         List<String> vars = captureLists.get(script.get("variable").toString());
         if(loopType.equals("variable")) {
@@ -423,7 +476,7 @@ public class SeleniumScripter {
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 System.out.println("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
                 try {
-                    runScript(subscript, null, v);
+                    runScript(subscript, v);
                 } catch (Exception e){
                     if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
                         break;
@@ -435,10 +488,9 @@ public class SeleniumScripter {
 
     /**
      * Click on an element on your website.
-     * @param script
-     * @throws Exception
-     */
-    private void click(Map<String, Object> script) throws Exception {
+     * @param script the click subscript operation
+      */
+    private void click(Map<String, Object> script) {
         WebElement element = null;
         if(script.containsKey("selector") && script.get("selector").equals("element")){
             if(script.containsKey("variable") && script.get("variable").equals("${inputElement}")){
@@ -471,19 +523,18 @@ public class SeleniumScripter {
 
     /**
      * Uses JavascriptExecutor to click a button
-     * @param script
-     * @throws Exception
+     * @param script the jsClick subscript operation
      */
-
-    private void jsclicker(Map<String, Object> script) throws Exception {
+    private void jsclicker(Map<String, Object> script) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         WebElement element =null;
         if(script.containsKey("variable") && script.get("variable").equals(true)){
             String n = script.get("name").toString().replace("{variable}", this.loopValue.toString());
             element = selectElement(script.get("selector").toString(), n);
-        }else{
+        } else{
             element = selectElement(script.get("selector").toString(), script.get("name").toString());
         }
+
         if(element != null){
             System.out.println("Clicking Element");
             js.executeScript("arguments[0].click();", element);
@@ -508,10 +559,9 @@ public class SeleniumScripter {
 
     /**
      * Click on an item in a list.
-     * @param script
-     * @throws Exception
+     * @param script the click-list-item subscript operation
      */
-    private void clickListItem(Map<String, Object> script) throws Exception {
+    private void clickListItem(Map<String, Object> script) {
         List<WebElement> element = selectElements(script.get("selector").toString(), script.get("name").toString());
         int i = ((Double) script.get("item")).intValue();
         System.out.println("Clicking list item");
@@ -521,17 +571,16 @@ public class SeleniumScripter {
     /**
      * Take a snapshot and store the HTML content on the page.
      */
-    private void snapshot(){
+    private void snapshot() {
         System.out.println("Taking Snapshot");
         snapshots.add(driver.getPageSource());
     }
 
     /**
      * Return the snapshots
-     * @return
+     * @return List<String> the list of paths to snapshot images taken
      */
     public List<String> getSnapshots(){
         return this.snapshots;
     }
-
 }

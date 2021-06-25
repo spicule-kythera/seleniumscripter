@@ -27,5 +27,4 @@
   name: button
 '5':
   operation: wait
-  selector: none
   timeout: 3

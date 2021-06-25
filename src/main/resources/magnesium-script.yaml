@@ -1,0 +1,33 @@
+any_old_script_name:
+  - if:
+      operation: select
+      selector: id
+      name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_1
+  - then:
+      operation: wait
+      timeout: 1
+  - else:
+      operation: wait
+      timeout: 2
+  - if:
+      operation: wait
+      timeout: 3
+  - then:
+      operation: wait
+      timeout: 4
+  - else:
+      wait:
+        timeout: 2
+      select:
+        by: class
+        value: ui-autocomplete
+      send-keys:
+        by: id
+        value: medicationname
+        input: Zyvox
+  - select:
+      by: tag
+      value: table
+  - click:
+      by: class
+      value: btn-find-provider

@@ -1,0 +1,16 @@
+'a':
+  operation: if
+  condition:
+    operation: select
+    selector: id
+    name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_1
+  then: c
+'b':
+  operation: wait
+  timeout: 1
+'c':
+  operation: wait
+  timeout: 2
+'d':
+  operation: wait
+  timeout: 3
