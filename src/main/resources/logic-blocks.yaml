@@ -3,17 +3,20 @@
   condition:
     operation: wait
     selector: id
-    name: PDLClass
+    name: PDLClassa
   then:
     - operation: wait
       timeout: 1
-    - operation: wait
-      timeout: 1
   else:
-    - operation: wait
-      timeout: 2
-    - operation: wait
-      timeout: 2
+    - operation: injectContent
+      type: json
+      name: Zyvox
+    - operation: injectContent
+      type: html
+      name: Zyvox
+    - operation: injectContent
+      type: override
+      value: 'asdf'
 'b':
   operation: wait
   timeout: 3

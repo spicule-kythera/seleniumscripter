@@ -112,17 +112,17 @@ public class SeleniumScripter {
                         case "if":
                             ifBlock(subscript);
                             break;
-                        case "jsclick":
-                            jsclicker(subscript);
+                        case "injectcontent":
+                            injectContent(subscript);
                             break;
-                        case "put":
-                        case "putList":
-                            putList(subscript);
+                        case "jsclick":
+                            jsClicker(subscript);
+                            break;
                         case "jsback":
-                            jsback(subscript);
+                            jsBack(subscript);
                             break;
                         case "jsrefresh":
-                            jsrefresh(subscript);
+                            jsRefresh(subscript);
                             break;
                         case "select":
                             selectDropdown(subscript);
@@ -205,7 +205,7 @@ public class SeleniumScripter {
         condition.put("condition", conditionBody);
 
         if (runScript(condition)) {
-            System.out.println("Processing `then` block with " + thenBody.size() + " items!");
+            LOG.debug("Processing `then` block with " + thenBody.size() + " items!");
             for(Map<String, String> thenSubBlock: thenBody){
                 Map<String, Object> thenBlock = new HashMap<>();
                 thenBlock.put("else", thenSubBlock);
@@ -213,7 +213,7 @@ public class SeleniumScripter {
                 runScript(thenBlock);
             }
         } else if (elseBody != null) {
-            System.out.println("Processing `else` block with " + thenBody.size() + " items!");
+            LOG.debug("Processing `else` block with " + thenBody.size() + " items!");
             for(Map<String, String> elseSubBlock: elseBody){
                 Map<String, Object> elseBlock = new HashMap<>();
                 elseBlock.put("else", elseSubBlock);
@@ -222,7 +222,7 @@ public class SeleniumScripter {
             }
         }
         else {
-            System.out.println("Condition did not meet, and no `else` clause was specified! Falling through...");
+            LOG.debug("Condition did not meet, and no `else` clause was specified! Falling through...");
         }
     }
 
@@ -241,7 +241,7 @@ public class SeleniumScripter {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
             int elementcount = allRows.size();
 
-            LOG.info("ROWS FOUND IN TABLE: "+ elementcount);
+            LOG.debug("Found " + elementcount + " rows in table!");
 
             if(elementcount <= offset){
                 break;
@@ -255,7 +255,7 @@ public class SeleniumScripter {
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 runScript(subscript, null);
                 WebDriverWait wait = new WebDriverWait(driver, 180);
-                LOG.info("Waiting for object: "+script.get("name").toString());
+                LOG.debug("Waiting for object: "+script.get("name").toString());
                 wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             }
             if (script.containsKey("nextbuttonscript")) {
@@ -270,7 +270,7 @@ public class SeleniumScripter {
                     break;
                 }
             } else {
-                LOG.info("Now more rows left to parse");
+                LOG.debug("Now more rows left to parse");
                 break;
             }
         }
@@ -450,11 +450,35 @@ public class SeleniumScripter {
         }
     }
 
-    private void putList(Map<String, Object> script) throws ParseException {
-        validate(script, new String[] {"variable", "list"}); // Validation
+    /**
+     * Injects content onto the stack. By default, the content is an error message indicating token info was not found.
+     * @param script the inject-content subscript instruction
+     * @throws ParseException occurs when the `type` block is not specified or when an invalid type is specified
+     */
+    private void injectContent(Map<String, Object> script) throws ParseException {
+        validate(script, "type"); // Validation
 
-        List<String> list = (List<String>) script.get("list");
-        captureLists.put(script.get("variable").toString(), list);
+        String content;
+        final String type = script.get("type").toString().toLowerCase();
+        final String tokenName = script.getOrDefault("name", "null").toString();
+
+        switch (type) {
+            case "override":
+                validate(script, "value");
+                content = script.get("value").toString();
+                break;
+            case "html":
+                content = "<p id=\"error\">no results found</p><p id=\"token\">" + tokenName + "</p>";
+                break;
+            case "json":
+                content = "{\"error\": \"no results found\", \"token\": \"" + tokenName + "\"}";
+                break;
+            default:
+                throw new ParseException("Invalid `type`: " + type, 0);
+        }
+
+        LOG.warn("Injecting " + type + " content onto stack: `" + content + "`");
+        snapshots.add(content);
     }
 
     /**
@@ -576,7 +600,7 @@ public class SeleniumScripter {
      * Uses JavascriptExecutor to click a button
      * @param script the jsClick subscript operation
      */
-    private void jsclicker(Map<String, Object> script) {
+    private void jsClicker(Map<String, Object> script) {
         // validate(script, new String[] {""}); // Validation
 
         JavascriptExecutor js = (JavascriptExecutor) driver;
@@ -609,7 +633,7 @@ public class SeleniumScripter {
         }
     }
 
-    private void jsback(Map<String, Object> script) {
+    private void jsBack(Map<String, Object> script) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         if(script.containsKey("back") && script.get("back").equals(true)) {
             try {
@@ -625,7 +649,7 @@ public class SeleniumScripter {
         }
     }
 
-    private void jsrefresh(Map<String, Object> script) {
+    private void jsRefresh(Map<String, Object> script) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         if (script.containsKey("refresh") && script.get("refresh").equals(true)) {
             try {
@@ -652,7 +676,7 @@ public class SeleniumScripter {
     }
 
     /**
-     * Take a snapshot, (rasterized image), and store the HTML content on the page.
+     * Take a snapshot and store the HTML content on the page.
      */
     private void snapshot() {
         LOG.info("Taking Snapshot");
