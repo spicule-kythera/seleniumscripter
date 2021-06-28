@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 public class TestSeleniumScripter {
-    private boolean headless = true;
     private FirefoxOptions driverOptions = null;
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
@@ -36,11 +35,6 @@ public class TestSeleniumScripter {
 
     @Before
     public void setUp() {
-//        if(headless) {
-//            options.add("--headless");
-////                    .add("--headless");
-//        }
-
         driverOptions = new FirefoxOptions();
         options.forEach(driverOptions::addArguments);
         driver = new FirefoxDriver(driverOptions);
@@ -166,5 +160,15 @@ public class TestSeleniumScripter {
 
         // Start the crawl
         assert runScript(url, scriptName);
+    }
+
+    @Test
+    public void testBack() throws Exception {
+        // Crawl parameters
+        final String scriptName = "testback.yaml";
+        final String url = "https://www.nasa.gov";
+
+        // Start the crawl
+        runScript(url, scriptName);
     }
 }

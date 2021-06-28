@@ -1,0 +1,17 @@
+'0':
+  operation: wait
+  selector: id
+  name: nasa-main-menu
+  timeout: 30
+'1':
+  operation: click
+  selector: xpath
+  name: '/html/body/div[2]/div/nav/div[3]/ul/li[1]/ul/li[1]/a'
+'2':
+  operation: jsback
+  back: true
+'3':
+  operation: wait
+  selector: id
+  name: nasa-main-menu
+  timeout: 30
