@@ -1,16 +1,22 @@
 'a':
   operation: if
   condition:
-    operation: select
+    operation: wait
     selector: id
-    name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_1
-  then: c
+    name: PDLClassa
+  then:
+    - operation: wait
+      timeout: 1
+  else:
+    - operation: injectContent
+      type: json
+      name: Zyvox
+    - operation: injectContent
+      type: html
+      name: Zyvox
+    - operation: injectContent
+      type: override
+      value: 'asdf'
 'b':
-  operation: wait
-  timeout: 1
-'c':
-  operation: wait
-  timeout: 2
-'d':
   operation: wait
   timeout: 3
