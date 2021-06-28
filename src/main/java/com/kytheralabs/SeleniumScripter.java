@@ -146,6 +146,9 @@ public class SeleniumScripter {
                         case "jsback":
                             jsback(subscript);
                             break;
+                        case "jsrefresh":
+                            jsrefresh(subscript);
+                            break;
                         case "select":
                             select(subscript);
                             break;
@@ -562,7 +565,6 @@ public class SeleniumScripter {
 
     private void jsback(Map<String, Object> script) {
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        WebElement element =null;
         if(script.containsKey("back") && script.get("back").equals(true)) {
             try {
                 System.out.println("Going to last page");
@@ -572,15 +574,30 @@ public class SeleniumScripter {
                 js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
                 System.out.println("Page refreshed");
             } catch (org.openqa.selenium.NoSuchElementException e) {
-                System.out.println("Element not found but continuing.");
+                System.out.println("Back operation failed.");
             }
         }
     }
 
-    /**
-     * Click on an item in a list.
-     * @param script the click-list-item subscript operation
-     */
+    private void jsrefresh(Map<String, Object> script) {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        if (script.containsKey("refresh") && script.get("refresh").equals(true)) {
+            try {
+                System.out.println("Refreshing the page");
+                //Calling executeAsyncScript() method to go back a page
+                js.executeScript("location.reload();");
+                //waits for page to load
+                js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
+            } catch (org.openqa.selenium.NoSuchElementException e) {
+                System.out.println("Refresh failed");
+            }
+        }
+    }
+
+        /**
+         * Click on an item in a list.
+         * @param script the click-list-item subscript operation
+         */
     private void clickListItem(Map<String, Object> script) {
         List<WebElement> element = selectElements(script.get("selector").toString(), script.get("name").toString());
         int i = ((Double) script.get("item")).intValue();
