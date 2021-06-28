@@ -143,6 +143,9 @@ public class SeleniumScripter {
                         case "jsclick":
                             jsclicker(subscript);
                             break;
+                        case "jsback":
+                            jsback(subscript);
+                            break;
                         case "select":
                             select(subscript);
                             break;
@@ -553,6 +556,23 @@ public class SeleniumScripter {
             }else{
                 System.out.println("Element null, nothing to click.");
 
+            }
+        }
+    }
+
+    private void jsback(Map<String, Object> script) {
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        WebElement element =null;
+        if(script.containsKey("back") && script.get("back").equals(true)) {
+            try {
+                System.out.println("Going to last page");
+                //Calling executeAsyncScript() method to go back a page
+                js.executeScript("window.history.back();");
+                //waits for page to load
+                js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
+                System.out.println("Page refreshed");
+            } catch (org.openqa.selenium.NoSuchElementException e) {
+                System.out.println("Element not found but continuing.");
             }
         }
     }
