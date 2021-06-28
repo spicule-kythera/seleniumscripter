@@ -1,6 +1,8 @@
 package com.kytheralabs;
 
 import org.apache.commons.io.FileUtils;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -29,6 +31,8 @@ public class SeleniumScripter {
     private final FluentWait<WebDriver> waits;
     private final List<String> snapshots = new ArrayList<>();
     private final Map<String, List> captureLists = new HashMap<>();
+
+    private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class);
 
     public SeleniumScripter(WebDriver webDriver){
         driver = webDriver;
@@ -78,8 +82,8 @@ public class SeleniumScripter {
      */
     public boolean runScript(Map<String, Object> script, Object loopValue) throws IOException, ParseException, InterruptedException {
         boolean success = false;
-        System.out.println("Processing Selenium Script");
-        System.out.println("Objects found: " + script.size());
+        LOG.info("Processing Selenium Script");
+        LOG.info("Objects found: " + script.size());
         this.loopValue = loopValue;
         if(masterScript == null){
             masterScript = script;
@@ -93,7 +97,7 @@ public class SeleniumScripter {
                 String instructionName = instructionNames[position];
                 Object instructionBlock = script.get(instructionName);
 
-                System.out.println("Key: " + instructionName + " & Value: " + instructionBlock);
+                LOG.info("Key: " + instructionName + " & Value: " + instructionBlock);
                 if (instructionBlock instanceof Map) {
                     Map<String, Object> subscript = (Map<String, Object>) instructionBlock;
                     String operation = subscript.getOrDefault("operation", "{UNDEFINED}")
@@ -184,7 +188,7 @@ public class SeleniumScripter {
             e.printStackTrace();
         }
 
-        System.out.println("SNAPSHOTS TAKEN: " + snapshots.size());
+        LOG.info("SNAPSHOTS TAKEN: " + snapshots.size());
         return success;
     }
 
@@ -217,7 +221,7 @@ public class SeleniumScripter {
         while (true) {
             List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
             int elementcount = allRows.size();
-            System.out.println("ROWS FOUND IN TABLE: "+ elementcount);
+            LOG.info("ROWS FOUND IN TABLE: "+ elementcount);
             if(elementcount <= offset){
                 break;
             }
@@ -230,7 +234,7 @@ public class SeleniumScripter {
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 runScript(subscript, null);
                 WebDriverWait wait = new WebDriverWait(driver, 180);
-                System.out.println("Waiting for object: "+script.get("name").toString());
+                LOG.info("Waiting for object: "+script.get("name").toString());
                 wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             }
             if (script.containsKey("nextbuttonscript")) {
@@ -241,11 +245,11 @@ public class SeleniumScripter {
                     selectElement(nextbuttonAttrs.get("selector").toString(), nextbuttonAttrs.get("name").toString());
                     runScript(subscript, null);
                 } catch(org.openqa.selenium.NoSuchElementException e){
-                    System.out.println("Can't find next button, exiting loop");
+                    LOG.info("Can't find next button, exiting loop");
                     break;
                 }
             } else {
-                System.out.println("Now more rows left to parse");
+                LOG.info("Now more rows left to parse");
                 break;
             }
         }
@@ -329,13 +333,13 @@ public class SeleniumScripter {
         WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
         Select selectObj = new Select(element);
         if(script.get("selectBy").equals("value")){
-            System.out.println("Run select by value");
+            LOG.info("Run select by value");
             selectObj.selectByValue(script.get("value").toString());
         } else if(script.get("selectBy").equals("index")){
-            System.out.println("Run select by index");
+            LOG.info("Run select by index");
             selectObj.selectByIndex(((Double) script.get("value")).intValue());
         } else if(script.get("selectBy").equals("visible")){
-            System.out.println("Run select by visible text");
+            LOG.info("Run select by visible text");
             selectObj.selectByVisibleText(script.get("value").toString());
         }
     }
@@ -364,7 +368,7 @@ public class SeleniumScripter {
 
             // Slow-type each character
             for (char s : input.toCharArray()) {
-                System.out.println("Inserting: " + String.valueOf(s));
+                LOG.info("Inserting: " + String.valueOf(s));
                 element.sendKeys(String.valueOf(s));
                 Thread.sleep(300);
             }
@@ -395,7 +399,7 @@ public class SeleniumScripter {
 
         if (!script.containsKey("selector")) {
             long delay = timeout.longValue() * 1000L;
-            System.out.println("Sleeping for " + delay + " milliseconds!");
+            LOG.info("Sleeping for " + delay + " milliseconds!");
             Thread.sleep(delay);
         } else {
             if (timeout.intValue() == 180) {
@@ -404,7 +408,7 @@ public class SeleniumScripter {
                 waits.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
             }
 
-            System.out.println("Object found");
+            LOG.info("Object found");
           
             if (script.containsKey("asyncwait") && script.get("asyncwait").equals(true)) {
                 //To set the script timeout to 10 seconds
@@ -414,7 +418,7 @@ public class SeleniumScripter {
                 //Calling executeAsyncScript() method to wait for js
                 js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 20000);");
                 //To get the difference current time and start time
-                System.out.println("Wait time: " + (System.currentTimeMillis() - startTime));
+                LOG.info("Wait time: " + (System.currentTimeMillis() - startTime));
             }
         }
     }
@@ -424,7 +428,7 @@ public class SeleniumScripter {
      * @param script the capture-list subscript operation
      */
     private void captureList(Map<String, Object> script) {
-        System.out.println("Generating Capture List");
+        LOG.info("Generating Capture List");
         List<WebElement> webElements = selectElements(script.get("selector").toString(), script.get("name").toString());
         String type = "text";
         if(script.containsKey("collect")){
@@ -435,7 +439,7 @@ public class SeleniumScripter {
         }
         List strlist = new ArrayList<>();
         for(WebElement el : webElements){
-            System.out.println("Capture Element Found: "+el.getText());
+            LOG.info("Capture Element Found: "+el.getText());
             if ("text".equals(type)) {
                 strlist.add(el.getText());
             } else if ("elements".equals(type)) {
@@ -445,7 +449,7 @@ public class SeleniumScripter {
             }
         }
 
-        System.out.println("Storing capture list as: "+script.get("variable").toString());
+        LOG.info("Storing capture list as: "+script.get("variable").toString());
         String append = "false";
         if(script.containsKey("append")){
             append = script.get("append").toString();
@@ -476,11 +480,11 @@ public class SeleniumScripter {
         String loopType = script.get("type").toString();
         List<String> vars = captureLists.get(script.get("variable").toString());
         if(loopType.equals("variable")) {
-            System.out.println("Performing Variable Loop for: " + script.get("variable").toString());
+            LOG.info("Performing Variable Loop for: " + script.get("variable").toString());
             for (Object v : vars) {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
-                System.out.println("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
+                LOG.info("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
                 try {
                     runScript(subscript, v);
                 } catch (Exception e){
@@ -507,7 +511,7 @@ public class SeleniumScripter {
                 try{
                     element = selectElement(script.get("selector").toString(), script.get("name").toString());
                 } catch (org.openqa.selenium.NoSuchElementException e){
-                    System.out.println("Element not found but continuing.");
+                    LOG.info("Element not found but continuing.");
                 }
             } else {
                 if(script.containsKey("variable") && script.get("variable").equals(true)){
@@ -520,10 +524,10 @@ public class SeleniumScripter {
             }
         }
         if(element != null) {
-            System.out.println("Clicking Element");
+            LOG.info("Clicking Element");
             element.click();
         } else{
-            System.out.println("Element null, nothing to click.");
+            LOG.info("Element null, nothing to click.");
         }
     }
 
@@ -542,22 +546,22 @@ public class SeleniumScripter {
         }
 
         if(element != null){
-            System.out.println("Clicking Element");
+            LOG.info("Clicking Element");
             js.executeScript("arguments[0].click();", element);
         }else{
             if(script.containsKey("back") && script.get("back").equals(true)){
                 try{
-                    System.out.println("Going to last page");
+                    LOG.info("Going to last page");
                     //Calling executeAsyncScript() method to go back a page
                     js.executeScript("window.history.go(-1);");
                     //waits for page to load
                     js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
-                    System.out.println("Page refreshed");
+                    LOG.info("Page refreshed");
                 } catch (org.openqa.selenium.NoSuchElementException e){
-                    System.out.println("Element not found but continuing.");
+                    LOG.info("Element not found but continuing.");
                 }
             }else{
-                System.out.println("Element null, nothing to click.");
+                LOG.info("Element null, nothing to click.");
 
             }
         }
@@ -567,14 +571,14 @@ public class SeleniumScripter {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         if(script.containsKey("back") && script.get("back").equals(true)) {
             try {
-                System.out.println("Going to last page");
+                LOG.info("Going to last page");
                 //Calling executeAsyncScript() method to go back a page
                 js.executeScript("window.history.back();");
                 //waits for page to load
                 js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
-                System.out.println("Page refreshed");
+                LOG.info("Page refreshed");
             } catch (org.openqa.selenium.NoSuchElementException e) {
-                System.out.println("Back operation failed.");
+                LOG.info("Back operation failed.");
             }
         }
     }
@@ -583,13 +587,13 @@ public class SeleniumScripter {
         JavascriptExecutor js = (JavascriptExecutor) driver;
         if (script.containsKey("refresh") && script.get("refresh").equals(true)) {
             try {
-                System.out.println("Refreshing the page");
+                LOG.info("Refreshing the page");
                 //Calling executeAsyncScript() method to go back a page
                 js.executeScript("location.reload();");
                 //waits for page to load
                 js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
             } catch (org.openqa.selenium.NoSuchElementException e) {
-                System.out.println("Refresh failed");
+                LOG.info("Refresh failed");
             }
         }
     }
@@ -601,7 +605,7 @@ public class SeleniumScripter {
     private void clickListItem(Map<String, Object> script) {
         List<WebElement> element = selectElements(script.get("selector").toString(), script.get("name").toString());
         int i = ((Double) script.get("item")).intValue();
-        System.out.println("Clicking list item");
+        LOG.info("Clicking list item");
         element.get(i).click();
     }
 
@@ -609,7 +613,7 @@ public class SeleniumScripter {
      * Take a snapshot and store the HTML content on the page.
      */
     private void snapshot() {
-        System.out.println("Taking Snapshot");
+        LOG.info("Taking Snapshot");
         snapshots.add(driver.getPageSource());
     }
 
