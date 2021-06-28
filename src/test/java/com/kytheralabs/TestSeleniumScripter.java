@@ -25,7 +25,6 @@ public class TestSeleniumScripter {
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
                                                        "--ignore-certificate-errors",
-                                                       "--headless",
                                                        "--window-size=1920,1080",
                                                        "--start-maximized",
                                                        "--disable-gpu",
@@ -137,6 +136,16 @@ public class TestSeleniumScripter {
         // Crawl parameters
         final String scriptName = "humanservepa.yaml";
         final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
+    public void testBack() throws Exception {
+        // Crawl parameters
+        final String scriptName = "testback.yaml";
+        final String url = "https://www.nasa.gov";
 
         // Start the crawl
         runScript(url, scriptName);
