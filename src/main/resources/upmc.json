@@ -1,0 +1,143 @@
+{
+  "0": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//*[@id='frmMain']/*",
+    "timeout": "90",
+    "asyncwait": true
+  },
+  "1": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//select[@id=\"mcoveragetype\"]",
+    "timeout": "90",
+    "asyncwait": true
+  },
+  "2": {
+    "operation": "select",
+    "selector": "xpath",
+    "name": "//select[@id=\"mcoveragetype\"]",
+    "selectBy": "value",
+    "value": "+planval+"
+  },
+  "3": {
+    "operation": "select",
+    "selector": "id",
+    "name": "benefitYear",
+    "selectBy": "value",
+    "value": "2021"
+  },
+  "4": {
+    "operation": "wait",
+    "selector": "id",
+    "name": "medicationname",
+    "timeout": "90"
+  },
+  "5": {
+    "operation": "keys",
+    "selector": "id",
+    "name": "medicationname",
+    "value": "${token}"
+  },
+  "6": {
+    "operation": "wait",
+    "selector": "class",
+    "name": "ui-autocomplete",
+    "timeout": "90"
+  },
+  "7": {
+    "operation": "captureList",
+    "selector": "class",
+    "name": "ui-menu-item",
+    "variable": "autocompletelabels"
+  },
+  "8": {
+    "operation": "loop",
+    "type": "variable",
+    "variable": "autocompletelabels",
+    "subscript": "searchSubScript"
+  },
+  "subscripts": {
+    "searchSubScript": {
+      "0": {
+        "operation": "wait",
+        "selector": "id",
+        "name": "mcoveragetype",
+        "timeout": "90"
+      },
+      "1": {
+        "operation": "keys",
+        "selector": "id",
+        "name": "medicationname",
+        "value": "${loopvalue}"
+      },
+      "2": {
+        "operation": "wait",
+        "selector": "class",
+        "name": "ui-autocomplete",
+        "timeout": "90"
+      },
+      "3": {
+        "operation": "keys",
+        "selector": "id",
+        "name": "medicationname",
+        "value": "{enter}"
+      },
+      "4": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@id=\"sdrugstrength\"]",
+        "asyncwait": true
+      },
+      "6": {
+        "operation": "captureList",
+        "selector": "xpath",
+        "name": "//*[@id=\"sdrugstrength\"]/option[contains(@value,\"\")]",
+        "type": "xpath",
+        "variable": "doesList"
+      },
+      "7": {
+        "operation": "loop",
+        "type": "variable",
+        "variable": "doesList",
+        "subscript": "doesSubScript"
+      }
+    },
+    "doesSubScript": {
+      "0": {
+        "operation": "wait,",
+        "selector": "xpath,",
+        "name": "//div[@class=''medication-result'']",
+        "timeout": "90"
+      },
+      "1": {
+        "operation": "jsclick",
+        "selector": "xpath",
+        "name": "//*[@id=\"sdrugstrength\"]",
+        "variable": true
+      },
+      "2": {
+        "operation": "wait,",
+        "selector": "xpath,",
+        "name": "//div[@class=''medication-result'']",
+        "timeout": "90"
+      },
+      "3": {
+        "operation": "jsclick",
+        "selector": "xpath",
+        "name": "//*{variable}",
+        "variable": true
+      },
+      "4": {
+        "operation": "wait,",
+        "selector": "xpath,",
+        "name": "//div[@class=''medication-result'']",
+        "timeout": "300",
+        "asyncwait": true
+      },
+      "5": {
+        "operation": "snapshot"
+      }
+    }
+  }
+}

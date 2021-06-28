@@ -1,16 +1,19 @@
 'a':
   operation: if
   condition:
-    operation: select
+    operation: wait
     selector: id
-    name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_1
-  then: c
+    name: PDLClass
+  then:
+    - operation: wait
+      timeout: 1
+    - operation: wait
+      timeout: 1
+  else:
+    - operation: wait
+      timeout: 2
+    - operation: wait
+      timeout: 2
 'b':
-  operation: wait
-  timeout: 1
-'c':
-  operation: wait
-  timeout: 2
-'d':
   operation: wait
   timeout: 3
