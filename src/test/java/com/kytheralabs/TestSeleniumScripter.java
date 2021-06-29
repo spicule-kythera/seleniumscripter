@@ -24,7 +24,7 @@ public class TestSeleniumScripter {
     private FirefoxOptions driverOptions = null;
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
-                                                       "--headless",
+                                                       //"--headless",
                                                        "--ignore-certificate-errors",
                                                        "--window-size=1920,1080",
                                                        "--start-maximized",
