@@ -70,62 +70,75 @@
           "wait": 0
       },
       "c": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[@id=\"tyctnr\"]/button/i",
-        "timeout": 90
+      "operation": "wait",
+      "selector": "xpath",
+      "name": "//*[@id=\"tyctnr\"]/button/i",
+      "timeout": 90
       },
       "d": {
-        "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*[@id=\"tyctnr\"]/button/i"
+      "operation": "jsclick",
+      "selector": "xpath",
+      "name": "//*[@id=\"tyctnr\"]/button/i"
       },
       "e": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[contains(@class, \"drugNamep\") and (string-length(text()) > 1)]",
-        "timeout": 90,
-        "asyncwait": false
+      "operation": "wait",
+      "selector": "xpath",
+      "name": "//*[contains(@class, \"drugNamep\") and (string-length(text()) > 1)]",
+      "timeout": 90,
+      "asyncwait": false
       },
       "f": {
-        "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*{variable}",
-        "variable": true
+      "operation": "jsclick",
+      "selector": "xpath",
+      "name": "//*{variable}",
+      "variable": true
       },
       "g": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[contains(@class, 'btn') and text() = 'Coverage details']",
-        "timeout": 90,
-        "asyncwait": false
-      },
-      "h": {
-        "operation": "snapshot"
-      },
-      "i": {
-        "operation": "captureList",
-        "selector": "xpath",
-        "name": "//a[@class=\"btn no-link ng-binding\"]",
-        "type": "xpath",
-        "variable": "dosagelabels"
-      },
-      "j": {
-        "operation": "loop",
-        "type": "variable",
-        "variable": "dosagelabels",
-        "subscript": "doseSubScript"
-      },
-      "k": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]",
-        "timeout": 90
-      },
-      "l": {
-        "operation": "click",
-        "selector": "xpath",
-        "name": "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]"
+        "operation": "if",
+        "condition": [
+          {
+            "operation": "wait",
+            "selector": "xpath",
+            "name": "//*[contains(@class, 'btn') and text() = 'Coverage details']",
+            "timeout": 90,
+            "asyncwait": false
+          }
+        ],
+        "then": [
+          {
+            "operation": "snapshot"
+          },
+          {
+            "operation": "captureList",
+            "selector": "xpath",
+            "name": "//a[@class=\"btn no-link ng-binding\"]",
+            "type": "xpath",
+            "variable": "dosagelabels"
+          },
+          {
+            "operation": "loop",
+            "type": "variable",
+            "variable": "dosagelabels",
+            "subscript": "doseSubScript"
+          },
+          {
+            "operation": "wait",
+            "selector": "xpath",
+            "name": "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]",
+            "timeout": 90
+          },
+          {
+            "operation": "click",
+            "selector": "xpath",
+            "name": "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]"
+          }
+        ],
+        "else": [
+          {
+            "operation": "jsback",
+            "back": true
+          }
+        ]
       }
     },
     "doseSubScript": {
