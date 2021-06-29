@@ -26,7 +26,6 @@ public class TestSeleniumScripter {
                                                        "--log-level=3",
                                                        //"--headless",
                                                        "--ignore-certificate-errors",
-                                                       "--window-size=1920,1080",
                                                        "--start-maximized",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
@@ -175,7 +174,7 @@ public class TestSeleniumScripter {
     @Test
     public void testOptum() throws Exception {
         // Crawl parameters
-        final String scriptName = "optum.yaml";
+        final String scriptName = "optum.json";
         final String url = "https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA";
 
         // Start the crawl
