@@ -150,4 +150,14 @@ public class TestSeleniumScripter {
         // Start the crawl
         runScript(url, scriptName);
     }
+
+    @Test
+    public void testOptum() throws Exception {
+        // Crawl parameters
+        final String scriptName = "optum.yaml";
+        final String url = "https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
 }
