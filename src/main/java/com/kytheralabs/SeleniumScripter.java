@@ -398,7 +398,20 @@ public class SeleniumScripter {
                 Thread.sleep(300);
             }
 
-            Thread.sleep(5000); // Wait even more for some reason?
+            if(script.containsKey("wait")){
+                String rawTimeout = script.get("wait").toString();
+                Scanner typeChecker = new Scanner(rawTimeout);
+
+                Number timeout = 0;
+                if(typeChecker.hasNextDouble()){
+                    timeout = Double.parseDouble(rawTimeout);
+                } else if(typeChecker.hasNextInt()) {
+                    timeout = Integer.parseInt(rawTimeout);
+                }
+              Thread.sleep(timeout.longValue());
+            } else {
+                Thread.sleep(5000); // Wait even more for some reason?
+            }
         }
     }
 
