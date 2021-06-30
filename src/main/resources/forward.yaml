@@ -3,7 +3,7 @@
   operation: wait
   selector: id
   name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_0
-  timeout: 30
+  timeout: 1
 '1':
   operation: keys
   selector: id
@@ -24,7 +24,6 @@
   operation: wait
   selector: id
   name: MainContent_GenericPageCtrl1_Datalist
-  timeout: 30
 '5':
   operation: captureList
   selector: xpath

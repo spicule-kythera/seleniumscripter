@@ -26,7 +26,6 @@ public class TestSeleniumScripter {
                                                        "--log-level=3",
                                                        "--headless",
                                                        "--ignore-certificate-errors",
-                                                       "--window-size=1920,1080",
                                                        "--start-maximized",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
@@ -86,6 +85,7 @@ public class TestSeleniumScripter {
             default:
                 throw new IllegalArgumentException("Unsupported script type: " + scriptType);
         };
+        System.out.println("URL: " + url);
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver);
         return scriptRunner.runScript(script);
@@ -102,11 +102,12 @@ public class TestSeleniumScripter {
         assert runScript(url, scriptName);
     }
 
+    @Ignore
     @Test
-    public void bcbsms() throws Exception {
+    public void example() throws Exception {
         // Crawl parameters
-        final String scriptName = "bcbsms.yaml";
-        final String url = "https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do?year=2017&dotcom=true";
+        final String scriptName = "example.yaml";
+        final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl
         assert runScript(url, scriptName);
@@ -123,16 +124,6 @@ public class TestSeleniumScripter {
     }
 
     @Test
-    public void forwardJSON() throws Exception {
-        // Crawl parameters
-        final String scriptName = "forward.json";
-        final String url = "https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx";
-
-        // Start the crawl
-        assert runScript(url, scriptName);
-    }
-
-    @Test
     public void humanServePA() throws Exception {
         // Crawl parameters
         final String scriptName = "humanservepa.yaml";
@@ -142,14 +133,25 @@ public class TestSeleniumScripter {
         assert runScript(url, scriptName);
     }
 
+    @Ignore
     @Test
-    public void logicBlocks() throws Exception {
+    public void jsBack() throws Exception {
         // Crawl parameters
-        final String scriptName = "logic-blocks.yaml";
-        final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
+        final String scriptName = "js-back.yaml";
+        final String url = "https://www.nasa.gov";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
+    }
+
+    @Test
+    public void optum() throws Exception {
+        // Crawl parameters
+        final String scriptName = "optum.json";
+        final String url = "https://www.optumrx.com/ClientFormulary/formulary.asp?var=PHSCA&infoid=PHSCA";
+
+        // Start the crawl
+        runScript(url, scriptName);
     }
 
     @Test
@@ -160,15 +162,5 @@ public class TestSeleniumScripter {
 
         // Start the crawl
         assert runScript(url, scriptName);
-    }
-
-    @Test
-    public void testBack() throws Exception {
-        // Crawl parameters
-        final String scriptName = "testback.yaml";
-        final String url = "https://www.nasa.gov";
-
-        // Start the crawl
-        runScript(url, scriptName);
     }
 }

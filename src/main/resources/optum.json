@@ -1,0 +1,154 @@
+{
+  "a": {
+    "operation": "loadPage"
+  },
+  "e": {
+    "operation": "wait",
+    "selector": "id",
+    "name": "drugNameInput"
+  },
+  "f": {
+    "operation": "keys",
+    "selector": "id",
+    "name": "drugNameInput",
+    "value": "Zyvox"
+  },
+  "g": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//*[contains(@ng-repeat,'match in matches track by $index')]"
+  },
+  "h": {
+    "operation": "jsclick",
+    "selector": "xpath",
+    "name": "//*[@id=\"tyctnr\"]/button/i"
+  },
+  "i": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "/html/body"
+  },
+  "j": {
+    "operation": "snapshot"
+  },
+  "k": {
+    "operation": "captureList",
+    "selector": "xpath",
+    "name": "//a[contains(@class, 'btn no-link ng-binding')]",
+    "type": "xpath",
+    "variable": "bug"
+  },
+  "l": {
+    "operation": "captureList",
+    "selector": "xpath",
+    "name": "//ul/li/a/p",
+    "type": "xpath",
+    "variable": "drugList"
+  },
+  "m": {
+    "operation": "loop",
+    "type": "variable",
+    "variable": "drugList",
+    "subscript": "searchSubScript"
+  },
+  "n": {
+    "operation": "loop",
+    "type": "variable",
+    "variable": "bug",
+    "subscript": "doseSubScript",
+    "exitOnError": false
+  },
+  "subscripts": {
+    "searchSubScript": {
+      "a": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@id=\"drugNameInput\"]"
+      },
+      "b": {
+        "operation": "keys",
+        "selector": "xpath",
+        "name": "//*[@id=\"drugNameInput\"]",
+        "value": "${token}"
+      },
+      "c": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@id=\"drugNameInput\"]"
+      },
+      "d": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//*[@id=\"tyctnr\"]/button/i"
+      },
+      "e": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "/html/body"
+      },
+      "f": {
+        "operation": "jsclick",
+        "selector": "xpath",
+        "name": "//*{variable}",
+        "variable": true
+      },
+      "g": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//a[contains(@class, 'btn no-link ng-binding')]"
+      },
+      "h": {
+        "operation": "snapshot"
+      },
+      "i": {
+        "operation": "captureList",
+        "selector": "xpath",
+        "name": "//a[contains(@class, 'btn no-link ng-binding')]",
+        "type": "xpath",
+        "variable": "dosagelabels"
+      },
+      "j": {
+        "operation": "loop",
+        "type": "variable",
+        "variable": "dosagelabels",
+        "subscript": "doseSubScript"
+      },
+      "k": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]"
+      },
+      "l": {
+        "operation": "click",
+        "selector": "xpath",
+        "name": "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]"
+      }
+    },
+    "doseSubScript": {
+      "1": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "/html/body"
+      },
+      "2": {
+        "operation": "click",
+        "selector": "jsxpath",
+        "name": "//{variable}",
+        "variable": true
+      },
+      "3": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[text()= 'Search results']"
+      },
+      "4": {
+        "operation": "snapshot"
+      },
+      "5": {
+        "operation": "jsclick",
+        "selector": "xpath",
+        "name": "//*[text()= 'Search results']"
+      }
+    }
+  }
+}
