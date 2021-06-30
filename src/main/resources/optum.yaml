@@ -15,36 +15,55 @@ d:
   selector: xpath
   name: //*[@id="tyctnr"]/button
 e:
-  operation: wait
-  selector: xpath
-  name: //*[contains(@class, "drugNamep") and (string-length(text()) > 1)]
-  timeout: 90
-  asyncwait: false
-f:
-  operation: snapshot
-g:
-  operation: captureList
-  selector: xpath
-  name: "//a[contains(@class, 'btn no-link ng-binding')]"
-  type: xpath
-  variable: bug
-h:
-  operation: captureList
-  selector: xpath
-  name: "//ul/li/a/p"
-  type: xpath
-  variable: drugList
-i:
-  operation: loop
-  type: variable
-  variable: drugList
-  subscript: searchSubScript
-j:
-  operation: loop
-  type: variable
-  variable: bug
-  subscript: doseSubScript
-  exitOnError: false
+  operation: if
+  condition:
+    - operation: wait
+      selector: xpath
+      name: //*[contains(@class, "drugNamep") and (string-length(text()) > 1)]
+      timeout: 90
+      asyncwait: false
+  then:
+    - operation: snapshot
+    - operation: captureList
+      selector: xpath
+      name: "//a[contains(@class, 'btn no-link ng-binding')]"
+      type: xpath
+      variable: bug
+    - operation: captureList
+      selector: xpath
+      name: "//ul/li/a/p"
+      type: xpath
+      variable: drugList
+    - operation: loop
+      type: variable
+      variable: drugList
+      subscript: searchSubScript
+    - operation: loop
+      type: variable
+      variable: bug
+      subscript: doseSubScript
+      exitOnError: false
+  else:
+    - operation: captureList
+      selector: xpath
+      name: "//a[contains(@class, 'btn no-link ng-binding')]"
+      type: xpath
+      variable: bug
+    - operation: captureList
+      selector: xpath
+      name: "//ul/li/a/p"
+      type: xpath
+      variable: drugList
+    - operation: loop
+      type: variable
+      variable: drugList
+      subscript: searchSubScript
+    - operation: loop
+      type: variable
+      variable: bug
+      subscript: doseSubScript
+      exitOnError: false
+
 subscripts:
   searchSubScript:
     a:
