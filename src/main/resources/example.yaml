@@ -1,4 +1,4 @@
-#Setup the search - Populate the top 2 selects and enter the token value and wait for the auto complete to popup
+# Setup the search - Populate the top 2 selects and enter the token value and wait for the auto complete to popup
 0:
   operation: wait
   selector: id
@@ -31,19 +31,19 @@
   selector: class
   name: ui-autocomplete
   timeout: 30
-#Create an object called completelabels with the list output
+# Create an object called completelabels with the list output
 6:
   operation: captureList
   selector: class
   name: ui-menu-item
   variable: autocompletelabels
-#Loop - this takes my list object and a subscript to loop
+# Loop - this takes my list object and a subscript to loop
 7:
   operation: loop
   type: variable
   variable: autocompletelabels
   subscript: searchSubScript
-#Subscripts - a collection of subscripts, could be more than one.
+# Subscripts - a collection of subscripts, could be more than one.
 subscripts:
   searchSubScript:
   # Rather than searching the token, we take the value from the captureList

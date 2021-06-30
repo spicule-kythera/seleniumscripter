@@ -31,15 +31,19 @@
 subscripts:
   tablesnapshot:
     '1':
-      operation: wait
-      selector: class
-      name: iC_DataPanelContainer
+      operation: waitPageLoad
     '2':
       operation: click
       selector: xpath
       name: "//{variable}"
       variable: true
       failNotFound: false
+    'asdf':
+      operation: wait
+      selector: xpath
+      name: //*[@id="dnn_ctr347_NDCSearchPage_SearchPage_Datalist"]/tbody/tr
+      timeout: 20
+    'dingus':
     '3':
       operation: snapshot
   nextscript:
