@@ -5,8 +5,7 @@
   "11": {
     "operation": "wait",
     "selector": "id",
-    "name": "mcoveragetype",
-    "timeout": 5
+    "name": "mcoveragetype"
   },
   "1": {
     "operation": "select",
