@@ -1,57 +1,50 @@
 {
   "0": {
+    "operation": "loadPage"
+  },
+  "11": {
     "operation": "wait",
-    "selector": "xpath",
-    "name": "//*[@id='frmMain']/*",
-    "timeout": "90",
-    "asyncwait": true
+    "selector": "id",
+    "name": "mcoveragetype",
+    "timeout": 5
   },
   "1": {
-    "operation": "wait",
-    "selector": "xpath",
-    "name": "//select[@id=\"mcoveragetype\"]",
-    "timeout": "90",
-    "asyncwait": true
+    "operation": "select",
+    "selector": "id",
+    "name": "mcoveragetype",
+    "selectBy": "value",
+    "value": "8"
   },
   "2": {
-    "operation": "select",
-    "selector": "xpath",
-    "name": "//select[@id=\"mcoveragetype\"]",
-    "selectBy": "value",
-    "value": "+planval+"
-  },
-  "3": {
     "operation": "select",
     "selector": "id",
     "name": "benefitYear",
     "selectBy": "value",
     "value": "2021"
   },
-  "4": {
+  "3": {
     "operation": "wait",
     "selector": "id",
-    "name": "medicationname",
-    "timeout": "90"
+    "name": "medicationname"
   },
-  "5": {
+  "4": {
     "operation": "keys",
     "selector": "id",
     "name": "medicationname",
-    "value": "${token}"
+    "value": "Zyvox"
   },
-  "6": {
+  "5": {
     "operation": "wait",
     "selector": "class",
-    "name": "ui-autocomplete",
-    "timeout": "90"
+    "name": "ui-autocomplete"
   },
-  "7": {
+  "6": {
     "operation": "captureList",
     "selector": "class",
     "name": "ui-menu-item",
     "variable": "autocompletelabels"
   },
-  "8": {
+  "7": {
     "operation": "loop",
     "type": "variable",
     "variable": "autocompletelabels",
@@ -62,8 +55,7 @@
       "0": {
         "operation": "wait",
         "selector": "id",
-        "name": "mcoveragetype",
-        "timeout": "90"
+        "name": "mcoveragetype"
       },
       "1": {
         "operation": "keys",
@@ -74,8 +66,7 @@
       "2": {
         "operation": "wait",
         "selector": "class",
-        "name": "ui-autocomplete",
-        "timeout": "90"
+        "name": "ui-autocomplete"
       },
       "3": {
         "operation": "keys",
@@ -85,9 +76,8 @@
       },
       "4": {
         "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[@id=\"sdrugstrength\"]",
-        "asyncwait": true
+        "selector": "id",
+        "name": "sdrugstrength"
       },
       "6": {
         "operation": "captureList",
@@ -105,22 +95,20 @@
     },
     "doesSubScript": {
       "0": {
-        "operation": "wait,",
-        "selector": "xpath,",
-        "name": "//div[@class=''medication-result'']",
-        "timeout": "90"
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//div[@class=medication-result]"
       },
       "1": {
         "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*[@id=\"sdrugstrength\"]",
+        "selector": "id",
+        "name": "sdrugstrength",
         "variable": true
       },
       "2": {
         "operation": "wait,",
         "selector": "xpath,",
-        "name": "//div[@class=''medication-result'']",
-        "timeout": "90"
+        "name": "//div[@class=medication-result]"
       },
       "3": {
         "operation": "jsclick",
@@ -131,9 +119,7 @@
       "4": {
         "operation": "wait,",
         "selector": "xpath,",
-        "name": "//div[@class=''medication-result'']",
-        "timeout": "300",
-        "asyncwait": true
+        "name": "//div[@class=medication-result]"
       },
       "5": {
         "operation": "snapshot"
