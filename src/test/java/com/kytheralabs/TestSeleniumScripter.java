@@ -24,9 +24,8 @@ public class TestSeleniumScripter {
     private FirefoxOptions driverOptions = null;
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
-                                                       "--headless",
+//                                                       "--headless",
                                                        "--ignore-certificate-errors",
-                                                       "--window-size=1920,1080",
                                                        "--start-maximized",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
@@ -86,6 +85,7 @@ public class TestSeleniumScripter {
             default:
                 throw new IllegalArgumentException("Unsupported script type: " + scriptType);
         };
+        System.out.println("URL: " + url);
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver);
         return scriptRunner.runScript(script);
@@ -146,7 +146,7 @@ public class TestSeleniumScripter {
     public void logicBlocks() throws Exception {
         // Crawl parameters
         final String scriptName = "logic-blocks.yaml";
-        final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
+        final String url = "https://www.virginiamedicaidpharmacyservices.com/provider/drug-lookup";
 
         // Start the crawl
         assert runScript(url, scriptName);

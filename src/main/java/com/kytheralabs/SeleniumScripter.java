@@ -26,11 +26,12 @@ public class SeleniumScripter {
     private Map<String, Object> masterScript;
 
     // Constants
-    private final WebDriver driver;
-    private final FluentWait<WebDriver> wait;
-    private final FluentWait<WebDriver> waits;
-    private final List<String> snapshots = new ArrayList<>();
-    private final Map<String, List> captureLists = new HashMap<>();
+    private final WebDriver driver; // The web driver
+    private final long waitTimeoutDefault = 30; // The default wait timeout in seconds
+    private final FluentWait<WebDriver> wait; // TODO: Remove
+    private final FluentWait<WebDriver> waits; // TODO: Remove
+    private final List<String> snapshots = new ArrayList<>(); // The stack of HTML content to return to the crawl
+    private final Map<String, List> captureLists = new HashMap<>(); // Something?
 
     private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class);
 
@@ -44,6 +45,19 @@ public class SeleniumScripter {
                 .withTimeout(Duration.ofSeconds(10))
                 .pollingEvery(Duration.ofSeconds(5))
                 .ignoring(NoSuchElementException.class).ignoring(ElementClickInterceptedException.class);
+    }
+
+    private Number parseNumber(String number) throws ParseException {
+        Scanner scan = new Scanner(number);
+        if(scan.hasNextInt()){
+            return Integer.parseInt(number);
+        }
+        else if(scan.hasNextDouble()) {
+            return Double.parseDouble(number);
+        }
+        else {
+            throw new ParseException("Invalid numeric type: \"" + number + "\"", 0);
+        }
     }
 
     private void validate(Map<String, Object> script, String requiredField) throws ParseException {
@@ -132,6 +146,9 @@ public class SeleniumScripter {
                             break;
                         case "keys":
                             sendKeys(subscript);
+                            break;
+                        case "loadpage":
+                            loadPage(subscript);
                             break;
                         case "loop":
                             loop(subscript);
@@ -238,7 +255,7 @@ public class SeleniumScripter {
 
         int offset = Integer.parseInt(script.getOrDefault("rowoffset", "0").toString());
         while (true) {
-            List<WebElement>  allRows = selectElements(script.get("selector").toString(), script.get("name").toString());
+            List<WebElement>  allRows = findElements(script.get("selector").toString(), script.get("name").toString());
             int elementcount = allRows.size();
 
             LOG.debug("Found " + elementcount + " rows in table!");
@@ -249,7 +266,7 @@ public class SeleniumScripter {
             for (int i = offset; i < elementcount; i++) {
                 String xpath = script.get("name").toString();
                 xpath = xpath + "[" + i + "]";
-                allRows = selectElements(script.get("selector").toString(), xpath);
+                allRows = findElements(script.get("selector").toString(), xpath);
                 allRows.get(0).click();
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
@@ -263,7 +280,7 @@ public class SeleniumScripter {
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("nextbuttonscript"));
                 Map<String, Object> nextbuttonAttrs = (Map<String, Object>) script.get("nextbutton");
                 try{
-                    selectElement(nextbuttonAttrs.get("selector").toString(), nextbuttonAttrs.get("name").toString());
+                    findElement(nextbuttonAttrs.get("selector").toString(), nextbuttonAttrs.get("name").toString());
                     runScript(subscript, null);
                 } catch(org.openqa.selenium.NoSuchElementException e){
                     LOG.info("Can't find next button, exiting loop");
@@ -278,12 +295,13 @@ public class SeleniumScripter {
 
 
     /**
-     * Select a single element.
+     * Select a single element. UNSAFE! This function does not guarantee the existence or
+     *        visibility of the desired element!
      * @param selector the method of HTML element selection
      * @param name the attribute value of the element to select
      * @return WebElement
      */
-    private WebElement selectElement(String selector, String name) {
+    private WebElement findElement(String selector, String name) {
         switch (selector) {
             case "id":
                 return driver.findElement(By.id(name));
@@ -301,12 +319,13 @@ public class SeleniumScripter {
     }
 
     /**
-     * Select multiple elements.
+     * Select multiple elements. UNSAFE! This function does not guarantee the existence or
+     *        visibility of the desired element!
      * @param selector the method of HTML element selection
      * @param name the attribute value of the element to select
      * @return List<WebElement>
      */
-    private List<WebElement> selectElements(String selector, String name) {
+    private List<WebElement> findElements(String selector, String name) {
         switch (selector) {
             case "id":
                 return driver.findElements(By.id(name));
@@ -353,7 +372,7 @@ public class SeleniumScripter {
     private void selectDropdown(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name"}); // Validation
 
-        WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
+        WebElement element = findElement(script.get("selector").toString(), script.get("name").toString());
         Select selectObj = new Select(element);
         if(script.get("selectBy").equals("value")){
             LOG.info("Run select by value");
@@ -375,7 +394,7 @@ public class SeleniumScripter {
     private void sendKeys(Map<String, Object> script) throws InterruptedException, ParseException {
         validate(script, new String[] {"selector", "name", "value"}); // Validation
 
-        WebElement element = selectElement(script.get("selector").toString(), script.get("name").toString());
+        WebElement element = findElement(script.get("selector").toString(), script.get("name").toString());
         String input = script.get("value").toString().toLowerCase();
 
         if ("{enter}".equals(input)) {
@@ -403,51 +422,44 @@ public class SeleniumScripter {
     }
 
     /**
-     * Wait for an element to become visible.
-     * @param script the wait subscript operation
-     * @throws InterruptedException interruption signal that occurs after sleeping
+     * Wait for the web page ready-state to change to complete.
+     * @param script the load-page subscript operation
+     * @throws ParseException occurs if an invalid timeout value was specified
      */
-    private void wait(Map<String, Object> script) throws InterruptedException, TimeoutException {
-        // validate(script, new String[] {"selector", ""}); // Validation
+    private void loadPage(Map<String, Object> script) throws ParseException {
+        // Fetch or fill the default timeout value
+        long timeout = parseNumber(script.getOrDefault("timeout", waitTimeoutDefault).toString()).longValue();
 
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        Number timeout = 30;
+        // Wait for page-state
+        LOG.info("Forcefully waiting for page ready-state to complete within " + timeout + " seconds.");
+        new WebDriverWait(driver, timeout)
+                .until((driver) -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
+                                                                .toString()
+                                                                .equals("complete"));
+    }
 
-        if (script.containsKey("timeout")) {
-            String rawTimeout = script.get("timeout").toString();
-            Scanner typeChecker = new Scanner(rawTimeout);
+    /**
+     * Wait for an element to exist and become visible.
+     * @param script the wait subscript operation
+     * @throws ParseException occurs when either `selector` or `name` are not specified
+     */
+    private void wait(Map<String, Object> script) throws ParseException {
+        validate(script, new String[] {"selector", "name"}); // Validation
 
-            if(typeChecker.hasNextDouble()){
-                timeout = Double.parseDouble(rawTimeout);
-            } else if(typeChecker.hasNextInt()) {
-                timeout = Integer.parseInt(rawTimeout);
-            }
-        }
+        // Fetch or fill the default timeout value
+        long timeout = parseNumber(script.getOrDefault("timeout", waitTimeoutDefault).toString()).longValue();
 
-        if (!script.containsKey("selector")) {
-            long delay = timeout.longValue() * 1000L;
-            LOG.info("Sleeping for " + delay + " milliseconds!");
-            Thread.sleep(delay);
-        } else {
-            if (timeout.intValue() == 180) {
-                wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
-            } else {
-                waits.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
-            }
+        // Vars
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+        name = name.equals("{variable}") ? loopValue.toString() : name;
 
-            LOG.info("Object found");
-          
-            if (script.containsKey("asyncwait") && script.get("asyncwait").equals(true)) {
-                //To set the script timeout to 10 seconds
-                driver.manage().timeouts().setScriptTimeout(30, TimeUnit.SECONDS);
-                //To declare and set the start time
-                long startTime = System.currentTimeMillis();
-                //Calling executeAsyncScript() method to wait for js
-                js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 20000);");
-                //To get the difference current time and start time
-                LOG.info("Wait time: " + (System.currentTimeMillis() - startTime));
-            }
-        }
+        LOG.info("Waiting for element with " + selector +  " of `" + name + "` to appear within " + timeout + " seconds...");
+
+        // Wait for element
+        WebElement element = new WebDriverWait(driver, timeout)
+                .until(ExpectedConditions.visibilityOfElementLocated(ByElement(selector, name)));
+        assert element.isDisplayed();
     }
 
     /**
@@ -490,7 +502,7 @@ public class SeleniumScripter {
 
         LOG.info("Generating Capture List");
 
-        List<WebElement> webElements = selectElements(script.get("selector").toString(), script.get("name").toString());
+        List<WebElement> webElements = findElements(script.get("selector").toString(), script.get("name").toString());
         String type = "text";
         if(script.containsKey("collect")){
             type = script.get("collect").toString();
@@ -574,16 +586,17 @@ public class SeleniumScripter {
         } else {
             if(script.containsKey("failNotFound") && script.get("failNotFound").equals(false)){
                 try{
-                    element = selectElement(script.get("selector").toString(), script.get("name").toString());
+                    element = findElement(script.get("selector").toString(), script.get("name").toString());
                 } catch (org.openqa.selenium.NoSuchElementException e){
-                    LOG.info("Element not found but continuing.");
+                    LOG.error("Element not found but continuing.");
+                    e.printStackTrace();
                 }
             } else {
                 if(script.containsKey("variable") && script.get("variable").equals(true)){
                     String n = script.get("name").toString().replace("{variable}", this.loopValue.toString());
-                    element = selectElement(script.get("selector").toString(), n);
+                    element = findElement(script.get("selector").toString(), n);
                 } else{
-                    element = selectElement(script.get("selector").toString(), script.get("name").toString());
+                    element = findElement(script.get("selector").toString(), script.get("name").toString());
                 }
 
             }
@@ -607,9 +620,9 @@ public class SeleniumScripter {
         WebElement element =null;
         if(script.containsKey("variable") && script.get("variable").equals(true)){
             String n = script.get("name").toString().replace("{variable}", this.loopValue.toString());
-            element = selectElement(script.get("selector").toString(), n);
+            element = findElement(script.get("selector").toString(), n);
         } else{
-            element = selectElement(script.get("selector").toString(), script.get("name").toString());
+            element = findElement(script.get("selector").toString(), script.get("name").toString());
         }
 
         if(element != null){
@@ -669,7 +682,7 @@ public class SeleniumScripter {
          * @param script the click-list-item subscript operation
          */
     private void clickListItem(Map<String, Object> script) {
-        List<WebElement> element = selectElements(script.get("selector").toString(), script.get("name").toString());
+        List<WebElement> element = findElements(script.get("selector").toString(), script.get("name").toString());
         int i = ((Double) script.get("item")).intValue();
         LOG.info("Clicking list item");
         element.get(i).click();

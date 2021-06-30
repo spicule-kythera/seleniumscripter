@@ -1,22 +1,18 @@
 'a':
-  operation: if
-  condition:
-    operation: wait
-    selector: id
-    name: PDLClassa
-  then:
-    - operation: wait
-      timeout: 1
-  else:
-    - operation: injectContent
-      type: json
-      name: Zyvox
-    - operation: injectContent
-      type: html
-      name: Zyvox
-    - operation: injectContent
-      type: override
-      value: 'asdf'
+  operation: loadPage
+  timeout: 1
 'b':
+  operation: keys
+  selector: id
+  name: 'drug-list-search-input'
+  value: Zyvox
+'c':
+  operation: keys
+  selector: id
+  name: 'drug-list-search-input'
+  value: '{enter}'
+'d':
   operation: wait
-  timeout: 3
+  selector: xpath
+  name: /html/body/div[1]/div/main/div/div/div[3]/div
+  timeout: 1
