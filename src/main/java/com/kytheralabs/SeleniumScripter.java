@@ -386,8 +386,8 @@ public class SeleniumScripter {
 
         WebElement element = findElement(script.get("selector").toString(), script.get("name").toString());
         String input = script.get("value").toString().toLowerCase();
-        int charDelay = Integer.parseInt(script.getOrDefault("delay", 50).toString());
-        int postInputDelay = Integer.parseInt(script.getOrDefault("postDelay", 0).toString());
+        int charDelay = Integer.parseInt(script.getOrDefault("delay", 300).toString());
+        int postInputDelay = Integer.parseInt(script.getOrDefault("postDelay", 5000).toString());
 
         if ("{enter}".equals(input)) {
             element.sendKeys(Keys.ENTER);
