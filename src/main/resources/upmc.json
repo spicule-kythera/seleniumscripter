@@ -31,7 +31,9 @@
     "operation": "keys",
     "selector": "id",
     "name": "medicationname",
-    "value": "Zyvox"
+    "value": "Abilify",
+    "delay": 50,
+    "postDelay": 0
   },
   "5": {
     "operation": "wait",
@@ -61,7 +63,9 @@
         "operation": "keys",
         "selector": "id",
         "name": "medicationname",
-        "value": "${loopvalue}"
+        "value": "${loopvalue}",
+        "delay": 50,
+        "postDelay": 0
       },
       "2": {
         "operation": "wait",
@@ -72,7 +76,9 @@
         "operation": "keys",
         "selector": "id",
         "name": "medicationname",
-        "value": "{enter}"
+        "value": "{enter}",
+        "delay": 50,
+        "postDelay": 0
       },
       "4": {
         "operation": "wait",
@@ -97,7 +103,7 @@
       "0": {
         "operation": "wait",
         "selector": "xpath",
-        "name": "//div[@class=medication-result]"
+        "name": "//div[@class=\"medication-result\"]"
       },
       "1": {
         "operation": "jsclick",
@@ -108,7 +114,7 @@
       "2": {
         "operation": "wait,",
         "selector": "xpath,",
-        "name": "//div[@class=medication-result]"
+        "name": "//div[@class=\"medication-result\"]"
       },
       "3": {
         "operation": "jsclick",
@@ -119,7 +125,7 @@
       "4": {
         "operation": "wait,",
         "selector": "xpath,",
-        "name": "//div[@class=medication-result]"
+        "name": "//div[@class=\"medication-result\"]"
       },
       "5": {
         "operation": "snapshot"
