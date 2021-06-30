@@ -163,27 +163,4 @@ public class TestSeleniumScripter {
         // Start the crawl
         assert runScript(url, scriptName);
     }
-<<<<<<< HEAD
-
-    @Test
-    public void testBack() throws Exception {
-        // Crawl parameters
-        final String scriptName = "testback.yaml";
-        final String url = "https://www.nasa.gov";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Test
-    public void testOptum() throws Exception {
-        // Crawl parameters
-        final String scriptName = "optum.json";
-        final String url = "https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-=======
->>>>>>> main
 }
