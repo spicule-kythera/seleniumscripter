@@ -16,9 +16,7 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TestSeleniumScripter {
     private FirefoxOptions driverOptions = null;
@@ -52,7 +50,9 @@ public class TestSeleniumScripter {
             throw new FileNotFoundException("Embedded resource not found: " + filename);
         }
         FileReader reader = new FileReader(filepath.getPath());
-        return (Map<String, Object>) new JSONParser().parse(reader);
+        Map<String, Object> map = (Map<String, Object>) new JSONParser().parse(reader);
+        Map<String, Object> treeMap = new TreeMap<>(map);
+        return treeMap;
     }
 
     private static Map<String, Object> loadYAMLScript(String filename) {
@@ -174,7 +174,7 @@ public class TestSeleniumScripter {
     @Test
     public void testOptum() throws Exception {
         // Crawl parameters
-        final String scriptName = "optum.json";
+        final String scriptName = "optum.yaml";
         final String url = "https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA";
 
         // Start the crawl

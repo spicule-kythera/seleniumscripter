@@ -196,7 +196,7 @@ public class SeleniumScripter {
         validate(script, new String[] {"condition", "then"}); // Validation
 
         // Fetch the instruction blocks
-        Map<String, String> conditionBody = (Map<String, String>) script.get("condition");
+        Map<String, String> conditionBody = (Map<String, String>) ((ArrayList)script.get("condition")).get(0);
         List<Map<String, String>> thenBody = (List<Map<String, String>>) script.get("then");
         List<Map<String, String>> elseBody = (List<Map<String, String>>) script.get("else");
 
@@ -564,6 +564,7 @@ public class SeleniumScripter {
                 try {
                     runScript(subscript, v);
                 } catch (Exception e){
+                    LOG.error(e);
                     if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
                         break;
                     }
