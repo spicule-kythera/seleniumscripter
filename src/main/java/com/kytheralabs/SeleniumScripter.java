@@ -27,6 +27,7 @@ public class SeleniumScripter {
 
     // Constants
     private final WebDriver driver;
+    private final String url;
     private final FluentWait<WebDriver> wait;
     private final FluentWait<WebDriver> waits;
     private final List<String> snapshots = new ArrayList<>();
@@ -34,8 +35,9 @@ public class SeleniumScripter {
 
     private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class);
 
-    public SeleniumScripter(WebDriver webDriver){
-        driver = webDriver;
+    public SeleniumScripter(WebDriver driver){
+        this.driver = driver;
+        url = driver.getCurrentUrl();
         wait = new FluentWait<>(driver)
                 .withTimeout(Duration.ofSeconds(180))
                 .pollingEvery(Duration.ofSeconds(5))
@@ -136,6 +138,9 @@ public class SeleniumScripter {
                         case "loop":
                             loop(subscript);
                             break;
+                        case "restore":
+                            restore(subscript);
+                            break;
                         case "screenshot":
                             screenshot(subscript);
                             break;
@@ -164,6 +169,15 @@ public class SeleniumScripter {
 
         LOG.info("SNAPSHOTS TAKEN: " + snapshots.size());
         return success;
+    }
+
+    /**
+     * Restores the browser to the original URL.
+     * @param script the restore subscript operation
+     */
+    private void restore(Map<String, Object> script) {
+        String url = script.getOrDefault("url", this.url).toString();
+        driver.get(url);
     }
 
     /**
