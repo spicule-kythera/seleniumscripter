@@ -6,7 +6,6 @@ import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -203,13 +202,13 @@ public class SeleniumScripter {
                             injectContentOperation(subscript);
                             break;
                         case "jsback":
-                            jsBackOperation(subscript);
+                            jsBackOperation();
                             break;
                         case "jsclick":
                             jsClickOperation(subscript);
                             break;
                         case "jsrefresh":
-                            jsRefreshOperation(subscript);
+                            jsRefreshOperation();
                             break;
                         case "keys":
                             keysOperation(subscript);
@@ -221,7 +220,7 @@ public class SeleniumScripter {
                             loopOperation(subscript);
                             break;
                         case "restore":
-                            restore(subscript);
+                            restoreOperation(subscript);
                             break;
                         case "screenshot":
                             screenshotOperation(subscript);
@@ -305,37 +304,23 @@ public class SeleniumScripter {
      * @param script the click subscript operation
      */
     private void clickOperation(Map<String, Object> script) throws ParseException {
-         validate(script, new String[] {"selector", "name"}); // Validation
+        validate(script, new String[] {"selector", "name"}); // Validation
 
-        WebElement element = null;
-        if(script.containsKey("selector") && script.get("selector").equals("element")){
-            if(script.containsKey("variable") && script.get("variable").equals("${inputElement}")){
-                element = (WebElement) this.loopValue;
-            }
-        } else {
-            if(script.containsKey("failNotFound") && script.get("failNotFound").equals(false)){
-                try{
-                    element = findElement(script.get("selector").toString(), script.get("name").toString());
-                } catch (org.openqa.selenium.NoSuchElementException e){
-                    LOG.error("Element not found but continuing.");
-                    e.printStackTrace();
-                }
-            } else {
-                if(script.containsKey("variable") && script.get("variable").equals(true)){
-                    String n = script.get("name").toString().replace("{variable}", this.loopValue.toString());
-                    element = findElement(script.get("selector").toString(), n);
-                } else{
-                    element = findElement(script.get("selector").toString(), script.get("name").toString());
-                }
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
 
-            }
+        if(name.contains("{variable}")) {
+            name = name.replace("{variable}", this.loopValue.toString());
         }
-        if(element != null) {
-            LOG.info("Clicking Element");
-            element.click();
-        } else{
-            LOG.info("Element null, nothing to click.");
+
+        WebElement element = driver.findElement(ByElement(selector, name));
+        if(element == null) { // If the element wasn't found, pass that info back
+            throw new NoSuchElementException("Attempted to click element with a " + selector + " of `" + name + "` but no such element was found!");
         }
+
+        LOG.info("Clicking element with " + selector + " of `" + name + "`");
+        element.click();
     }
 
     /**
@@ -431,23 +416,20 @@ public class SeleniumScripter {
 
     /**
      * Go back to the previous page using JS.
-     * @param script the js-back subscript operation
      */
-    private void jsBackOperation(Map<String, Object> script) {
-        validate(script, "type"); // Validation
-
+    private void jsBackOperation() {
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        if(script.containsKey("back") && script.get("back").equals(true)) {
-            try {
-                LOG.info("Going to last page");
-                //Calling executeAsyncScript() method to go back a page
-                js.executeScript("window.history.back();");
-                //waits for page to load
-                js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
-                LOG.info("Page refreshed");
-            } catch (org.openqa.selenium.NoSuchElementException e) {
-                LOG.info("Back operation failed.");
-            }
+        try {
+            LOG.info("Going to last page");
+
+            //Calling executeAsyncScript() method to go back a page
+            js.executeScript("window.history.back();");
+
+            //waits for page to load
+            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
+            LOG.info("Page refreshed");
+        } catch (org.openqa.selenium.NoSuchElementException e) {
+            LOG.error("Back operation failed!");
         }
     }
 
@@ -455,55 +437,40 @@ public class SeleniumScripter {
      * Click on a web element using JS.
      * @param script the js-click subscript operation
      */
-    private void jsClickOperation(Map<String, Object> script) {
-        // validate(script, new String[] {""}); // Validation
+    private void jsClickOperation(Map<String, Object> script) throws ParseException, NoSuchElementException {
+        validate(script, new String[] {"selector", "name"}); // Validation
 
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        WebElement element =null;
-        if(script.containsKey("variable") && script.get("variable").equals(true)){
-            String n = script.get("name").toString().replace("{variable}", this.loopValue.toString());
-            element = findElement(script.get("selector").toString(), n);
-        } else{
-            element = findElement(script.get("selector").toString(), script.get("name").toString());
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+
+        if(name.contains("{variable}")) {
+            name = name.replace("{variable}", this.loopValue.toString());
         }
 
-        if(element != null){
-            LOG.info("Clicking Element");
-            js.executeScript("arguments[0].click();", element);
-        } else{
-            if(script.containsKey("back") && script.get("back").equals(true)){
-                try{
-                    LOG.info("Going to last page");
-                    //Calling executeAsyncScript() method to go back a page
-                    js.executeScript("window.history.go(-1);");
-                    //waits for page to load
-                    js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
-                    LOG.info("Page refreshed");
-                } catch (org.openqa.selenium.NoSuchElementException e){
-                    LOG.info("Element not found but continuing.");
-                }
-            } else{
-                LOG.info("Element null, nothing to click.");
-            }
+        WebElement element = driver.findElement(ByElement(selector, name));
+        if(element == null) { // If the element wasn't found, pass that info back
+            throw new NoSuchElementException("Attempted to click element with a " + selector + " of `" + name + "` but no such element was found!");
         }
+
+        LOG.info("JS-clicking element with " + selector + " of `" + name + "`");
+        ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
     }
 
     /**
      * Refresh the current page using JS.
-     * @param script the js-refresh subscript operation
      */
-    private void jsRefreshOperation(Map<String, Object> script) {
+    private void jsRefreshOperation() {
         JavascriptExecutor js = (JavascriptExecutor) driver;
-        if (script.containsKey("refresh") && script.get("refresh").equals(true)) {
-            try {
-                LOG.info("Refreshing the page");
-                //Calling executeAsyncScript() method to go back a page
-                js.executeScript("location.reload();");
-                //waits for page to load
-                js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
-            } catch (org.openqa.selenium.NoSuchElementException e) {
-                LOG.info("Refresh failed");
-            }
+        try {
+            LOG.info("Refreshing the page");
+
+            //Calling executeAsyncScript() method to go back a page
+            js.executeScript("location.reload();");
+
+            //waits for page to load
+            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
+        } catch (NoSuchElementException e) {
+            LOG.info("Refresh failed");
         }
     }
 
@@ -566,23 +533,22 @@ public class SeleniumScripter {
      * @param script the loop subscript operation
      */
     private void loopOperation(Map<String, Object> script) throws ParseException {
-        validate(script, new String[] {"type", "variable"}); // Validation
+        validate(script, new String[] {"variable", "subscript"}); // Validation
 
-        String loopType = script.get("type").toString();
-        List<String> vars = captureLists.get(script.get("variable").toString());
-        if(loopType.equals("variable")) {
-            LOG.info("Performing Variable Loop for: " + script.get("variable").toString());
-            for (Object v : vars) {
-                Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
-                Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
-                LOG.info("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
-                try {
-                    runScript(subscript, v);
-                } catch (Exception e){
-                    LOG.error(e);
-                    if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
-                        break;
-                    }
+        String variableName = script.get("variable").toString();
+        List<String> vars = captureLists.get(variableName);
+
+        LOG.info("Performing Variable Loop for: " + variableName);
+        for (Object v : vars) {
+            Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
+            Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
+            LOG.info("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
+            try {
+                runScript(subscript, v);
+            } catch (Exception e){
+                LOG.error(e);
+                if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
+                    break;
                 }
             }
         }
@@ -592,25 +558,24 @@ public class SeleniumScripter {
      * Restores the browser to the original URL.
      * @param script the restore subscript operation
      */
-    private void restore(Map<String, Object> script) {
+    private void restoreOperation(Map<String, Object> script) {
         String url = script.getOrDefault("url", this.url).toString();
         driver.get(url);
     }
 
     /**
-     * Take a screenshot of the current page.
+     * Take a screenshot (rasterize image) of the current page.
      * @param script the screenshot subscript operation
      * @throws IOException when a screenshot image fails to write to disk
      */
     public void screenshotOperation(Map<String, Object> script) throws IOException, ParseException {
-        validate(script, "type"); // Validation
-        TakesScreenshot scrShot =((TakesScreenshot)driver);
+        validate(script, "targetdir"); // Validation
 
-        if(script.get("type").equals("file")) {
-            File f = scrShot.getScreenshotAs(OutputType.FILE);
-            File dest = new File((String) script.get("targetdir"));
-            FileUtils.copyFile(f, dest);
-        }
+        TakesScreenshot scrShot = ((TakesScreenshot) driver);
+
+        File f = scrShot.getScreenshotAs(OutputType.FILE);
+        File dest = new File((String) script.get("targetdir"));
+        FileUtils.copyFile(f, dest);
     }
 
     /**
@@ -619,19 +584,30 @@ public class SeleniumScripter {
      * @throws ParseException occurs when the required fields are not specified
      */
     private void selectOperation(Map<String, Object> script) throws ParseException {
-        validate(script, new String[] {"selector", "name"}); // Validation
+        validate(script, new String[] {"selector", "name", "selectBy", "value"}); // Validation
 
-        WebElement element = findElement(script.get("selector").toString(), script.get("name").toString());
-        Select selectObj = new Select(element);
-        if(script.get("selectBy").equals("value")){
-            LOG.info("Run select by value");
-            selectObj.selectByValue(script.get("value").toString());
-        } else if(script.get("selectBy").equals("index")){
-            LOG.info("Run select by index");
-            selectObj.selectByIndex(((Double) script.get("value")).intValue());
-        } else if(script.get("selectBy").equals("visible")){
-            LOG.info("Run select by visible text");
-            selectObj.selectByVisibleText(script.get("value").toString());
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+        String selectBy = script.get("selectBy").toString();
+        String value = script.get("value").toString();
+
+        Select selectElement = new Select(driver.findElement(ByElement(selector, name)));
+
+        LOG.info("Selecting option in dropdown by `" + selectBy + "`...");
+        switch(selectBy.toLowerCase()) {
+            case "value":
+                selectElement.selectByValue(value);
+                break;
+            case "index":
+                selectElement.selectByIndex(Integer.parseInt(value));
+                break;
+            case "visible":
+                LOG.warn("The selectBy option `visible` is deprecated in favor of `visible-text`.");
+            case "visible-text":
+                selectElement.selectByVisibleText(value);
+                break;
+            default:
+                throw new ParseException("Invalid `selectBy` option: " + selectBy, 0);
         }
     }
 
@@ -661,7 +637,8 @@ public class SeleniumScripter {
     private void tableOperation(Map<String, Object> script) throws IOException, ParseException, InterruptedException {
         // validate(script, new String[] {""}); // Validation
 
-        int offset = Integer.parseInt(script.getOrDefault("rowoffset", "0").toString());
+        int offset = Integer.parseInt(script.getOrDefault("rowoffset", 0).toString());
+
         while (true) {
             List<WebElement>  allRows = findElements(script.get("selector").toString(), script.get("name").toString());
             int tableSize = allRows.size();

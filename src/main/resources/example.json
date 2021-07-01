@@ -1,4 +1,8 @@
 {
+  "00": {
+    "operation": "loadPage",
+    "timeout": 3
+  },
   "0": {
     "operation": "wait",
     "selector": "id",
@@ -45,9 +49,9 @@
   },
   "7": {
     "operation": "loop",
-    "type": "variable",
     "variable": "autocompletelabels",
-    "subscript": "searchSubScript"
+    "subscript": "searchSubScript",
+    "exitOnError": true
   },
   "subscripts": {
     "searchSubScript": {
@@ -56,6 +60,10 @@
         "selector": "id",
         "name": "medicationname",
         "value": "${loopvalue}"
+      },
+      "example_name": {
+        "operation": "screenshot",
+        "targetdir": "/home/me/webpage.png"
       },
       "2": {
         "operation": "if",
@@ -85,8 +93,19 @@
         ],
         "else": [
           {
-            "operation": "jsBack",
-            "back":  true
+            "operation": "restore",
+            "url": "https://duckduckgo.com"
+          },
+          {
+            "operation": "jsBack"
+          },
+          {
+            "operation": "jsClick",
+            "selector": "class",
+            "name": "btn-find-provider"
+          },
+          {
+            "operation": "jsRefresh"
           }
         ]
       }
