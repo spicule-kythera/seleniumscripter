@@ -1,0 +1,95 @@
+{
+  "0": {
+    "operation": "wait",
+    "selector": "id",
+    "name": "mcoveragetype",
+    "timeout": 30
+  },
+  "1": {
+    "operation": "select",
+    "selector": "id",
+    "name": "mcoveragetype",
+    "selectBy": "value",
+    "value": 6
+  },
+  "2": {
+    "operation": "select",
+    "selector": "id",
+    "name": "benefitYear",
+    "selectBy": "value",
+    "value": 2021
+  },
+  "3": {
+    "operation": "wait",
+    "selector": "id",
+    "name": "medicationname",
+    "timeout": 30
+  },
+  "4": {
+    "operation": "keys",
+    "selector": "id",
+    "name": "medicationname",
+    "value": "Zyvox"
+  },
+  "5": {
+    "operation": "wait",
+    "selector": "class",
+    "name": "ui-autocomplete",
+    "timeout": 30
+  },
+  "6": {
+    "operation": "captureList",
+    "selector": "class",
+    "name": "ui-menu-item",
+    "variable": "autocompletelabels"
+  },
+  "7": {
+    "operation": "loop",
+    "type": "variable",
+    "variable": "autocompletelabels",
+    "subscript": "searchSubScript"
+  },
+  "subscripts": {
+    "searchSubScript": {
+      "1": {
+        "operation": "keys",
+        "selector": "id",
+        "name": "medicationname",
+        "value": "${loopvalue}"
+      },
+      "2": {
+        "operation": "if",
+        "condition": [
+          {
+            "operation": "wait",
+            "selector": "class",
+            "name": "ui-autocomplete",
+            "timeout": 30
+          }
+        ],
+        "then": [
+          {
+            "operation": "clickListItem",
+            "selector": "class",
+            "name": "ui-menu-item",
+            "item": 0
+          },
+          {
+            "operation": "click",
+            "selector": "class",
+            "name": "btn-find-provider"
+          },
+          {
+            "operation": "snapshot"
+          }
+        ],
+        "else": [
+          {
+            "operation": "jsBack",
+            "back":  true
+          }
+        ]
+      }
+    }
+  }
+}
