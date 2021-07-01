@@ -16,15 +16,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 public class TestSeleniumScripter {
     private FirefoxOptions driverOptions = null;
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
-                                                       "--headless",
+                                                       //"--headless",
                                                        "--ignore-certificate-errors",
                                                        "--start-maximized",
                                                        "--disable-gpu",
@@ -52,7 +50,9 @@ public class TestSeleniumScripter {
             throw new FileNotFoundException("Embedded resource not found: " + filename);
         }
         FileReader reader = new FileReader(filepath.getPath());
-        return (Map<String, Object>) new JSONParser().parse(reader);
+        Map<String, Object> map = (Map<String, Object>) new JSONParser().parse(reader);
+        Map<String, Object> treeMap = new TreeMap<>(map);
+        return treeMap;
     }
 
     private static Map<String, Object> loadYAMLScript(String filename) {
