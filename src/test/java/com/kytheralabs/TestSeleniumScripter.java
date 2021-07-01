@@ -22,7 +22,7 @@ public class TestSeleniumScripter {
     private FirefoxOptions driverOptions = null;
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
-                                                       //"--headless",
+                                                       "--headless",
                                                        "--ignore-certificate-errors",
                                                        "--start-maximized",
                                                        "--disable-gpu",
