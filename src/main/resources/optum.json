@@ -11,7 +11,7 @@
     "operation": "keys",
     "selector": "id",
     "name": "drugNameInput",
-    "value": "Zyvox"
+    "value": "tri-luma"
   },
   "g": {
     "operation": "wait",
@@ -69,7 +69,7 @@
         "operation": "keys",
         "selector": "xpath",
         "name": "//*[@id=\"drugNameInput\"]",
-        "value": "${token}"
+        "value": "tri-luma"
       },
       "c": {
         "operation": "wait",

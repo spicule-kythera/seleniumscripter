@@ -5,6 +5,8 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -13,6 +15,9 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
@@ -218,6 +223,9 @@ public class SeleniumScripter {
                             break;
                         case "loop":
                             loopOperation(subscript);
+                            break;
+                        case "parallel":
+                            parallelBlock(subscript);
                             break;
                         case "restore":
                             restoreOperation(subscript);
@@ -628,11 +636,82 @@ public class SeleniumScripter {
     }
 
     /**
+     * Loop over a variable and run a subscript on each iteration.
+     * @param script the loop subscript operation
+     */
+    private void parallelBlock(Map<String, Object> script) throws ParseException {
+        validate(script, new String[] {"type", "variable"}); // Validation
+
+        String loopType = script.get("type").toString();
+        List<String> vars = captureLists.get(script.get("variable").toString());
+        if(loopType.equals("variable")) {
+            LOG.info("Performing Variable Loop for: " + script.get("variable").toString());
+            String u = this.url;
+            ExecutorService executor = Executors.newFixedThreadPool((int) script.getOrDefault("parallelizm", 5));
+
+            List<String> foundSnapshots = new ArrayList<>();
+            for (Object v : vars) {
+                Thread t1 = new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try{
+                            Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
+                            Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
+                            LOG.info("Looping for variable: " + v + " . Using subscript: " + script.get("subscript"));
+                            WebDriver wdriver = newWebDriver();
+                            wdriver.get(u);
+                            SeleniumScripter s = new SeleniumScripter(wdriver);
+                            s.runScript(subscript, v);
+                            foundSnapshots.addAll(s.getSnapshots());
+                            wdriver.quit();
+                        } catch (Exception e){
+                            //LOG.error(e);
+                            System.out.println(e);
+                        }
+                    }
+                });
+                executor.execute(t1);
+
+            }
+            executor.shutdown();
+            try {
+                executor.awaitTermination(360, TimeUnit.SECONDS);
+            } catch (InterruptedException e) {
+                e.printStackTrace();
+            }
+            this.snapshots.addAll(foundSnapshots);
+            LOG.info("Finished Parallel Block");
+        }
+    }
+
+    public static WebDriver newWebDriver() {
+
+
+            List<String> options = Arrays.asList("--no-sandbox",
+                    "--log-level=3",
+                    "--ignore-certificate-errors",
+                    "--start-maximized",
+                    "--disable-gpu",
+                    //"--headless",
+                    "--disable-extensions",
+                    "--disable-infobars");
+
+            FirefoxOptions driverOptions = new FirefoxOptions();
+            options.forEach(driverOptions::addArguments);
+            FirefoxDriver wdriver = new FirefoxDriver(driverOptions);
+
+
+
+        return wdriver;
+    }
+
+    /**
      * Iterate through a tables rows and perform a subscript on each row.
      * @param script the iterate-table subscript operation
      * @throws IOException when a snapshot image failed to save to disk
      * @throws ParseException when a parsing error was found in the script
      * @throws InterruptedException when the process wakes up from a sleep event
+     * @param script the click subscript operation
      */
     private void tableOperation(Map<String, Object> script) throws IOException, ParseException, InterruptedException {
         // validate(script, new String[] {""}); // Validation
