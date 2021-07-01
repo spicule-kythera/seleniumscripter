@@ -6,6 +6,7 @@ import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
@@ -24,6 +25,7 @@ public class SeleniumScripter {
 
     // Constants
     private final WebDriver driver; // The web driver
+    private final String url;
     private final long defaultWaitTimeout = 30; // The default element wait timeout in seconds
     private final List<String> snapshots = new ArrayList<>(); // The stack of HTML content to return to the crawl
     private final Map<String, List> captureLists = new HashMap<>(); // Something?
@@ -33,6 +35,7 @@ public class SeleniumScripter {
 
     public SeleniumScripter(WebDriver driver){
         this.driver = driver;
+        url = driver.getCurrentUrl();
     }
 
     private Number parseNumber(String number) throws ParseException {
@@ -217,6 +220,9 @@ public class SeleniumScripter {
                         case "loop":
                             loopOperation(subscript);
                             break;
+                        case "restore":
+                            restore(subscript);
+                            break;
                         case "screenshot":
                             screenshotOperation(subscript);
                             break;
@@ -358,7 +364,7 @@ public class SeleniumScripter {
         validate(script, new String[] {"condition", "then"}); // Validation
 
         // Fetch the instruction blocks
-        Map<String, String> conditionBody = (Map<String, String>) script.get("condition");
+        Map<String, String> conditionBody = (Map<String, String>) ((ArrayList)script.get("condition")).get(0);
         List<Map<String, String>> thenBody = (List<Map<String, String>>) script.get("then");
         List<Map<String, String>> elseBody = (List<Map<String, String>>) script.get("else");
 
@@ -428,6 +434,8 @@ public class SeleniumScripter {
      * @param script the js-back subscript operation
      */
     private void jsBackOperation(Map<String, Object> script) {
+        validate(script, "type"); // Validation
+
         JavascriptExecutor js = (JavascriptExecutor) driver;
         if(script.containsKey("back") && script.get("back").equals(true)) {
             try {
@@ -532,7 +540,6 @@ public class SeleniumScripter {
                 element.sendKeys(String.valueOf(s));
                 Thread.sleep(charDelay);
             }
-
             Thread.sleep(postInputDelay); // Wait even more for some reason?
         }
     }
@@ -572,12 +579,22 @@ public class SeleniumScripter {
                 try {
                     runScript(subscript, v);
                 } catch (Exception e){
+                    LOG.error(e);
                     if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
                         break;
                     }
                 }
             }
         }
+    }
+
+    /**
+     * Restores the browser to the original URL.
+     * @param script the restore subscript operation
+     */
+    private void restore(Map<String, Object> script) {
+        String url = script.getOrDefault("url", this.url).toString();
+        driver.get(url);
     }
 
     /**
