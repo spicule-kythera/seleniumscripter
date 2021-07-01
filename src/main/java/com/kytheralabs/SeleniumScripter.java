@@ -5,8 +5,11 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
+import org.openqa.selenium.chrome.ChromeDriver;
+import org.openqa.selenium.chrome.ChromeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
+import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -643,6 +646,7 @@ public class SeleniumScripter {
         validate(script, new String[] {"type", "variable"}); // Validation
 
         String loopType = script.get("type").toString();
+        String browserFlavour = script.getOrDefault("browser", "chrome").toString();
         List<String> vars = captureLists.get(script.get("variable").toString());
         if(loopType.equals("variable")) {
             LOG.info("Performing Variable Loop for: " + script.get("variable").toString());
@@ -658,7 +662,13 @@ public class SeleniumScripter {
                             Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                             Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                             LOG.info("Looping for variable: " + v + " . Using subscript: " + script.get("subscript"));
-                            WebDriver wdriver = newWebDriver();
+
+                            WebDriver wdriver = null;
+                            if(browserFlavour.equals("chrome")){
+                                wdriver = newChromeWebDriver();
+                            } else if(browserFlavour.equals("firefox")){
+                                wdriver = newFirefoxWebDriver();
+                            }
                             wdriver.get(u);
                             SeleniumScripter s = new SeleniumScripter(wdriver);
                             s.runScript(subscript, v);
@@ -684,7 +694,7 @@ public class SeleniumScripter {
         }
     }
 
-    public static WebDriver newWebDriver() {
+    public static WebDriver newFirefoxWebDriver() {
 
 
             List<String> options = Arrays.asList("--no-sandbox",
@@ -700,6 +710,43 @@ public class SeleniumScripter {
             options.forEach(driverOptions::addArguments);
             FirefoxDriver wdriver = new FirefoxDriver(driverOptions);
 
+
+
+        return wdriver;
+    }
+
+    public static WebDriver newChromeWebDriver() {
+        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+
+        final ChromeOptions chromeOptions = new ChromeOptions();
+        chromeOptions.addArguments("--no-sandbox");
+        chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--disable-gpu");
+        chromeOptions.addArguments("--disable-extensions");
+        chromeOptions.addArguments("--ignore-certificate-errors");
+        chromeOptions.addArguments("--incognito");
+        chromeOptions.addArguments("--window-size=1920,1080");
+        chromeOptions.addArguments("--proxy-server='direct://");
+        chromeOptions.addArguments("--proxy-bypass-list=*");
+        chromeOptions.addArguments("--disable-background-networking");
+        chromeOptions.addArguments("--safebrowsing-disable-auto-update");
+        chromeOptions.addArguments("--disable-sync");
+        chromeOptions.addArguments("--metrics-recording-only");
+        chromeOptions.addArguments("--disable-default-apps");
+        chromeOptions.addArguments("--no-first-run");
+        chromeOptions.addArguments("--disable-setuid-sandbox");
+        chromeOptions.addArguments("--hide-scrollbars");
+        chromeOptions.addArguments("--no-zygote");
+        chromeOptions.addArguments("--disable-notifications");
+        chromeOptions.addArguments("--disable-logging");
+        chromeOptions.addArguments("--disable-permissions-api");
+
+        chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+        //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
+        capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
+
+        ChromeDriver wdriver = new ChromeDriver(capabilities);
+        wdriver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
 
 
         return wdriver;
