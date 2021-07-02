@@ -38,6 +38,7 @@ e:
       type: variable
       variable: drugList
       subscript: searchSubScript
+      parallelizm: 5
   else:
     - operation: captureList
       selector: xpath
@@ -47,8 +48,9 @@ e:
     - operation: parallel
       type: variable
       variable: dosagelabels
-      subscript: doseSubScript
+      subscript: otherDoseSubScript
       exitOnError: false
+      parallelizm: 5
 
 subscripts:
   searchSubScript:
@@ -90,7 +92,6 @@ subscripts:
           selector: xpath
           name: "//*[contains(@class, 'btn') and text() = 'Coverage details']"
           timeout: 10
-          asyncwait: false
       then:
         - operation: snapshot
         - operation: captureList
@@ -104,27 +105,29 @@ subscripts:
           subscript: doseSubScript
     subscripts:
       doseSubScript:
-        '1':
+        '1-wait':
           operation: wait
           selector: xpath
           name: "//*[contains(@class, 'btn') and text() = 'Coverage details']"
-          timeout: 10
-          asyncwait: false
-        '2':
+          timeout: 20
+        '2-click':
           operation: jsclick
           selector: xpath
           name: "//{variable}"
           variable: true
-        '3':
+        '3-wait':
           operation: wait
           selector: xpath
-          name: "//*[contains(@class, 'data-table')]/tr/td[2][string-length(text()) >
-            5]"
-          timeout: 10
-          asyncwait: false
-        '4':
+          name: "//*[contains(@class, 'data-table')]/tr[1]/td[2][string-length(text()) > 0]"
+          timeout: 20
+        '4-subscript':
           operation: snapshot
-  doseSubScript:
+        '5-backup':
+          operation: "click"
+          selector: "xpath"
+          name: "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]"
+
+  otherDoseSubScript:
     a:
       operation: wait
       selector: xpath
@@ -159,8 +162,7 @@ subscripts:
     g:
       operation: wait
       selector: xpath
-      name: "//*[contains(@class, 'data-table')]/tr/td[2][string-length(text()) >
-        5]"
+      name: "//*[contains(@class, 'data-table')]/tr[1]/td[2][string-length(text()) > 0]"
       timeout: 10
       asyncwait: false
     h:

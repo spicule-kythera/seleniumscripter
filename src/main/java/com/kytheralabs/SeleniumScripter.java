@@ -649,7 +649,8 @@ public class SeleniumScripter {
         String browserFlavour = script.getOrDefault("browser", "chrome").toString();
         List<String> vars = captureLists.get(script.get("variable").toString());
         if(loopType.equals("variable")) {
-            LOG.info("Performing Variable Loop for: " + script.get("variable").toString());
+            int threadCount = Runtime.getRuntime().availableProcessors();
+            LOG.info("Performing Parallel Variable Execution for: " + script.get("variable").toString() +". There are "+threadCount+" processors available.");
             String u = this.url;
             ExecutorService executor = Executors.newFixedThreadPool((int) script.getOrDefault("parallelizm", 5));
 

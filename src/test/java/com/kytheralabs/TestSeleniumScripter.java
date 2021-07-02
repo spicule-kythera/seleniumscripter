@@ -88,7 +88,10 @@ public class TestSeleniumScripter {
         System.out.println("URL: " + url);
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver);
-        return scriptRunner.runScript(script);
+        boolean e = scriptRunner.runScript(script);
+        List<String> s = scriptRunner.getSnapshots();
+        System.out.println("Total Snapshots found: "+s.size());
+        return e;
     }
 
     @Ignore
@@ -159,6 +162,16 @@ public class TestSeleniumScripter {
         // Crawl parameters
         final String scriptName = "upmc.json";
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
+
+        // Start the crawl
+        assert runScript(url, scriptName);
+    }
+
+    @Test
+    public void cmsgov() throws Exception {
+        // Crawl parameters
+        final String scriptName = "cmsgov.yaml";
+        final String url = "https://www.cms.gov/medicare-coverage-database/new-search/handlers/tour-end.ashx?t=1625154700997&which=report";
 
         // Start the crawl
         assert runScript(url, scriptName);
