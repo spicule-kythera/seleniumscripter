@@ -681,7 +681,7 @@ public class SeleniumScripter {
                         }
                     }
                 });
-                executor.execute(t1);
+                executor.submit(t1);
 
             }
             executor.shutdown();
