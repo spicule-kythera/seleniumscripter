@@ -691,6 +691,7 @@ public class SeleniumScripter {
             try {
                 executor.awaitTermination(7200, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
+                LOG.info("Executor went wrong: "+e.getLocalizedMessage());
                 e.printStackTrace();
             }
             this.snapshots.addAll(foundSnapshots);
