@@ -197,7 +197,7 @@ public class SeleniumScripter {
 
                 LOG.info("Key: " + instructionName + " & Value: " + instructionBlock);
                 if (instructionBlock instanceof Map) {
-                    Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) instructionBlock);
+                    Map<String, Object> subscript = (Map<String, Object>) instructionBlock;
                     String operation = subscript.getOrDefault("operation", "{UNDEFINED}")
                                                 .toString()
                                                 .toLowerCase();
@@ -564,7 +564,7 @@ public class SeleniumScripter {
         LOG.info("Performing Variable Loop for: " + variableName);
         for (Object v : vars) {
             Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
-            Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
+            Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) subscripts.get(script.get("subscript")));
             LOG.info("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
             try {
                 runScript(subscript, v);
@@ -677,7 +677,7 @@ public class SeleniumScripter {
                     public void run() {
                         try{
                             Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
-                            Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
+                            Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) subscripts.get(script.get("subscript")));
                             LOG.info("Looping for variable: " + v + " . Using subscript: " + script.get("subscript"));
 
                             WebDriver wdriver = null;
