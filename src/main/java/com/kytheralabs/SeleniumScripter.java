@@ -652,8 +652,10 @@ public class SeleniumScripter {
             int threadCount = Runtime.getRuntime().availableProcessors();
             LOG.info("Performing Parallel Variable Execution for: " + script.get("variable").toString() +". There are "+threadCount+" processors available.");
             String u = this.url;
-            ExecutorService executor = Executors.newFixedThreadPool((int) script.getOrDefault("parallelizm", 5));
+            //(int) script.getOrDefault("parallelizm", 5)
+            ExecutorService executor = Executors.newFixedThreadPool(1);
 
+            LOG.info("Here we go");
             List<String> foundSnapshots = new ArrayList<>();
             for (Object v : vars) {
                 LOG.info("Loop for "+ v);
