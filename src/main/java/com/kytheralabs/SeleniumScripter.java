@@ -656,6 +656,7 @@ public class SeleniumScripter {
 
             List<String> foundSnapshots = new ArrayList<>();
             for (Object v : vars) {
+                LOG.info("Loop for "+ v);
                 Thread t1 = new Thread(new Runnable() {
                     @Override
                     public void run() {
@@ -686,7 +687,7 @@ public class SeleniumScripter {
             }
             executor.shutdown();
             try {
-                executor.awaitTermination(360, TimeUnit.SECONDS);
+                executor.awaitTermination(7200, TimeUnit.SECONDS);
             } catch (InterruptedException e) {
                 e.printStackTrace();
             }
