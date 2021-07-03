@@ -1,90 +1,109 @@
 {
   "a": {
-    "operation": "loadPage"
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//*[@id=\"drugNameInput\"]",
+    "timeout": 90
+  },
+  "b": {
+    "operation": "keys",
+    "selector": "xpath",
+    "name": "//*[@id=\"drugNameInput\"]",
+    "value": "tri-luma",
+    "wait": 0
+  },
+  "d": {
+    "operation": "click",
+    "selector": "xpath",
+    "name": "//*[@id=\"tyctnr\"]/button"
   },
   "e": {
-    "operation": "wait",
-    "selector": "id",
-    "name": "drugNameInput"
-  },
-  "f": {
-    "operation": "keys",
-    "selector": "id",
-    "name": "drugNameInput",
-    "value": "tri-luma"
-  },
-  "g": {
-    "operation": "wait",
-    "selector": "xpath",
-    "name": "//*[contains(@ng-repeat,'match in matches track by $index')]"
-  },
-  "h": {
-    "operation": "jsclick",
-    "selector": "xpath",
-    "name": "//*[@id=\"tyctnr\"]/button/i"
-  },
-  "i": {
-    "operation": "wait",
-    "selector": "xpath",
-    "name": "/html/body"
-  },
-  "j": {
-    "operation": "snapshot"
-  },
-  "k": {
-    "operation": "captureList",
-    "selector": "xpath",
-    "name": "//a[contains(@class, 'btn no-link ng-binding')]",
-    "type": "xpath",
-    "variable": "bug"
-  },
-  "l": {
-    "operation": "captureList",
-    "selector": "xpath",
-    "name": "//ul/li/a/p",
-    "type": "xpath",
-    "variable": "drugList"
-  },
-  "m": {
-    "operation": "loop",
-    "type": "variable",
-    "variable": "drugList",
-    "subscript": "searchSubScript"
-  },
-  "n": {
-    "operation": "loop",
-    "type": "variable",
-    "variable": "bug",
-    "subscript": "doseSubScript",
-    "exitOnError": false
+    "operation": "if",
+    "condition": [
+      {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[contains(@class, \"drugNamep\") and (string-length(text()) > 1)]",
+        "timeout": 10,
+        "asyncwait": false
+      }
+    ],
+    "then": [
+      {
+        "operation": "snapshot"
+      },
+      {
+        "operation": "captureList",
+        "selector": "xpath",
+        "name": "//a[contains(@class, 'btn no-link ng-binding')]",
+        "type": "xpath",
+        "variable": "bug"
+      },
+      {
+        "operation": "captureList",
+        "selector": "xpath",
+        "name": "//ul/li/a/p",
+        "type": "xpath",
+        "variable": "drugList"
+      },
+      {
+        "operation": "parallel",
+        "type": "variable",
+        "variable": "drugList",
+        "subscript": "searchSubScript",
+        "parallelizm": 5
+      }
+    ],
+    "else": [
+      {
+        "operation": "captureList",
+        "selector": "xpath",
+        "name": "//a[@class=\"btn no-link ng-binding\"]",
+        "type": "xpath",
+        "variable": "dosagelabels"
+      },
+      {
+        "operation": "parallel",
+        "type": "variable",
+        "variable": "dosagelabels",
+        "subscript": "otherDoseSubScript",
+        "exitOnError": false,
+        "parallelizm": 5
+      }
+    ]
   },
   "subscripts": {
     "searchSubScript": {
       "a": {
         "operation": "wait",
         "selector": "xpath",
-        "name": "//*[@id=\"drugNameInput\"]"
+        "name": "//*[@id=\"drugNameInput\"]",
+        "timeout": 30
       },
       "b": {
         "operation": "keys",
         "selector": "xpath",
         "name": "//*[@id=\"drugNameInput\"]",
-        "value": "tri-luma"
+        "value": "tri-luma",
+        "wait": 0
       },
       "c": {
         "operation": "wait",
         "selector": "xpath",
-        "name": "//*[@id=\"drugNameInput\"]"
+        "name": "//*[@id=\"tyctnr\"]/button",
+        "timeout": 10
       },
       "d": {
         "operation": "click",
         "selector": "xpath",
-        "name": "//*[@id=\"tyctnr\"]/button/i"
+        "name": "//*[@id=\"tyctnr\"]/button"
       },
       "e": {
         "operation": "wait",
         "selector": "xpath",
-        "name": "/html/body"
+        "name": "//*[contains(@class, \"drugNamep\") and (string-length(text()) > 1)]",
+        "timeout": 10,
+        "asyncwait": false
       },
       "f": {
         "operation": "jsclick",
@@ -93,61 +112,112 @@
         "variable": true
       },
       "g": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//a[contains(@class, 'btn no-link ng-binding')]"
+        "operation": "if",
+        "condition": [
+          {
+            "operation": "wait",
+            "selector": "xpath",
+            "name": "//*[contains(@class, 'btn') and text() = 'Coverage details']",
+            "timeout": 10
+          }
+        ],
+        "then": [
+          {
+            "operation": "snapshot"
+          },
+          {
+            "operation": "captureList",
+            "selector": "xpath",
+            "name": "//a[@class=\"btn no-link ng-binding\"]",
+            "type": "xpath",
+            "variable": "dosagelabels"
+          },
+          {
+            "operation": "loop",
+            "type": "variable",
+            "variable": "dosagelabels",
+            "subscript": "doseSubScript"
+          }
+        ]
       },
-      "h": {
-        "operation": "snapshot"
-      },
-      "i": {
-        "operation": "captureList",
-        "selector": "xpath",
-        "name": "//a[contains(@class, 'btn no-link ng-binding')]",
-        "type": "xpath",
-        "variable": "dosagelabels"
-      },
-      "j": {
-        "operation": "loop",
-        "type": "variable",
-        "variable": "dosagelabels",
-        "subscript": "doseSubScript"
-      },
-      "k": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]"
-      },
-      "l": {
-        "operation": "click",
-        "selector": "xpath",
-        "name": "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]"
+      "subscripts": {
+        "doseSubScript": {
+          "1-wait": {
+            "operation": "wait",
+            "selector": "xpath",
+            "name": "//*[contains(@class, 'btn') and text() = 'Coverage details']",
+            "timeout": 20
+          },
+          "2-click": {
+            "operation": "jsclick",
+            "selector": "xpath",
+            "name": "//{variable}",
+            "variable": true
+          },
+          "3-wait": {
+            "operation": "wait",
+            "selector": "xpath",
+            "name": "//*[contains(@class, 'data-table')]/tr[1]/td[2][string-length(text()) > 0]",
+            "timeout": 20
+          },
+          "4-subscript": {
+            "operation": "snapshot"
+          },
+          "5-backup": {
+            "operation": "click",
+            "selector": "xpath",
+            "name": "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]"
+          }
+        }
       }
     },
-    "doseSubScript": {
-      "1": {
+    "otherDoseSubScript": {
+      "a": {
         "operation": "wait",
         "selector": "xpath",
-        "name": "/html/body"
+        "name": "//*[@id=\"drugNameInput\"]",
+        "timeout": 30
       },
-      "2": {
+      "b": {
+        "operation": "keys",
+        "selector": "xpath",
+        "name": "//*[@id=\"drugNameInput\"]",
+        "value": "tri-luma",
+        "wait": 0
+      },
+      "c": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@id=\"tyctnr\"]/button/i",
+        "timeout": 10
+      },
+      "d": {
         "operation": "click",
-        "selector": "jsxpath",
+        "selector": "xpath",
+        "name": "//*[@id=\"tyctnr\"]/button"
+      },
+      "e": {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[contains(@class, 'btn') and text() = 'Coverage details']",
+        "timeout": 10,
+        "asyncwait": false
+      },
+      "f": {
+        "operation": "jsclick",
+        "selector": "xpath",
         "name": "//{variable}",
         "variable": true
       },
-      "3": {
+      "g": {
         "operation": "wait",
         "selector": "xpath",
-        "name": "//*[text()= 'Search results']"
+        "name": "//*[contains(@class, 'data-table')]/tr[1]/td[2][string-length(text()) > 0]",
+        "timeout": 10,
+        "asyncwait": false
       },
-      "4": {
+      "h": {
         "operation": "snapshot"
-      },
-      "5": {
-        "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*[text()= 'Search results']"
       }
     }
   }

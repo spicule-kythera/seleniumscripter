@@ -160,6 +160,18 @@ public class SeleniumScripter {
         return runScript(script, null);
     }
 
+    public static <K, V> Map<K, V> convertToTreeMap(Map<K, V> hashMap)
+    {
+        // Create a new TreeMap
+        Map<K, V> treeMap = new TreeMap<>();
+
+        // Pass the hashMap to putAll() method
+        treeMap.putAll(hashMap);
+
+        // Return the TreeMap
+        return treeMap;
+    }
+
     /**
      * Run a selenium script.
      * @param script the serialized selenium script
@@ -185,7 +197,7 @@ public class SeleniumScripter {
 
                 LOG.info("Key: " + instructionName + " & Value: " + instructionBlock);
                 if (instructionBlock instanceof Map) {
-                    Map<String, Object> subscript = (Map<String, Object>) instructionBlock;
+                    Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) instructionBlock);
                     String operation = subscript.getOrDefault("operation", "{UNDEFINED}")
                                                 .toString()
                                                 .toLowerCase();
