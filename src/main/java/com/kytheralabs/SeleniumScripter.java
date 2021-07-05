@@ -508,8 +508,8 @@ public class SeleniumScripter {
 
         WebElement element = findElement(script.get("selector").toString(), script.get("name").toString());
         String input = script.get("value").toString().toLowerCase();
-        Number charDelay = parseNumber(script.getOrDefault("delay", 300).toString());
-        Number postInputDelay = parseNumber(script.getOrDefault("postDelay", 5000).toString());
+        Number charDelay = parseNumber(script.getOrDefault("delay", "300").toString());
+        Number postInputDelay = parseNumber(script.getOrDefault("postDelay", "5000").toString());
         //search fix, currently for optum but could be useful elsewhere
         boolean searchFix = Boolean.parseBoolean(script.getOrDefault("searchfix", "false").toString());
 
