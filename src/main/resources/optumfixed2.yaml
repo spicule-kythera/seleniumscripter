@@ -6,7 +6,6 @@ b:
   url: https://www.optumrx.com/bin/oauth/token
 c:
   operation: extendablefetcher
-  url: https://www.optumrx.com/public-services/formularydrugs?ctime=1625495192512&drugName=A&formularyId=PHSCA&userType=other&viewMode=NAME
   authheader: true
   extendedheaders:
     - Accept: Application/json
