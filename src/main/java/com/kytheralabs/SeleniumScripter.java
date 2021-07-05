@@ -508,10 +508,10 @@ public class SeleniumScripter {
 
         WebElement element = findElement(script.get("selector").toString(), script.get("name").toString());
         String input = script.get("value").toString().toLowerCase();
-        int charDelay = Integer.parseInt(script.getOrDefault("delay", 300).toString());
-        int postInputDelay = Integer.parseInt(script.getOrDefault("postDelay", 5000).toString());
+        Number charDelay = parseNumber(script.getOrDefault("delay", 300).toString());
+        Number postInputDelay = parseNumber(script.getOrDefault("postDelay", 5000).toString());
         //search fix, currently for optum but could be useful elsewhere
-        boolean searchFix = Boolean.valueOf(script.getOrDefault("searchfix", "false").toString());
+        boolean searchFix = Boolean.parseBoolean(script.getOrDefault("searchfix", "false").toString());
 
         if ("{enter}".equals(input)) {
             element.sendKeys(Keys.ENTER);
@@ -530,13 +530,13 @@ public class SeleniumScripter {
             for (char s : input.toCharArray()) {
                 LOG.info("Inserting: " + s);
                 element.sendKeys(String.valueOf(s));
-                Thread.sleep(charDelay);
+                Thread.sleep(charDelay.longValue());
             }
             if(searchFix){
                 element.sendKeys(Keys.BACK_SPACE);
                 element.sendKeys(input.substring(input.length() - 1));
             }
-            Thread.sleep(postInputDelay); // Wait even more for some reason?
+            Thread.sleep(postInputDelay.longValue()); // Wait even more for some reason?
         }
     }
 
