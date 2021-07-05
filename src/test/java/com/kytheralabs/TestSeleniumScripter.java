@@ -22,7 +22,7 @@ public class TestSeleniumScripter {
     private FirefoxOptions driverOptions = null;
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
-                                                       "--headless",
+                                                       //"--headless",
                                                        "--ignore-certificate-errors",
                                                        "--start-maximized",
                                                        "--disable-gpu",
@@ -150,7 +150,7 @@ public class TestSeleniumScripter {
     @Test
     public void optum() throws Exception {
         // Crawl parameters
-        final String scriptName = "optum.json";
+        final String scriptName = "optumfixed.yaml";
         final String url = "https://www.optumrx.com/ClientFormulary/formulary.asp?var=PHSCA&infoid=PHSCA";
 
         // Start the crawl

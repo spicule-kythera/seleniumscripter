@@ -36,7 +36,7 @@ public class SeleniumScripter {
     private final long defaultWaitTimeout = 30; // The default element wait timeout in seconds
     private final List<String> snapshots = new ArrayList<>(); // The stack of HTML content to return to the crawl
     private final Map<String, List> captureLists = new HashMap<>(); // Something?
-
+    private final List<String> capturedlabel = new ArrayList<>();
     // Logger
     private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class);
 
@@ -252,7 +252,7 @@ public class SeleniumScripter {
                             selectOperation(subscript);
                             break;
                         case "snapshot":
-                            snapshotOperation();
+                            snapshotOperation(subscript);
                             break;
                         case "table":
                             tableOperation(subscript);
@@ -510,6 +510,8 @@ public class SeleniumScripter {
         String input = script.get("value").toString().toLowerCase();
         int charDelay = Integer.parseInt(script.getOrDefault("delay", 300).toString());
         int postInputDelay = Integer.parseInt(script.getOrDefault("postDelay", 5000).toString());
+        //search fix, currently for optum but could be useful elsewhere
+        boolean searchFix = (boolean) script.getOrDefault("searchfix", true);
 
         if ("{enter}".equals(input)) {
             element.sendKeys(Keys.ENTER);
@@ -529,6 +531,10 @@ public class SeleniumScripter {
                 LOG.info("Inserting: " + s);
                 element.sendKeys(String.valueOf(s));
                 Thread.sleep(charDelay);
+            }
+            if(searchFix){
+                element.sendKeys(Keys.BACK_SPACE);
+                element.sendKeys(input.substring(input.length() - 1));
             }
             Thread.sleep(postInputDelay); // Wait even more for some reason?
         }
@@ -637,9 +643,14 @@ public class SeleniumScripter {
     /**
      * Take a "snapshot" of the current page HTML and store it on the snapshots stack.
      */
-    private void snapshotOperation() {
+    private void snapshotOperation(Map<String, Object> script) {
         LOG.info("Taking snapshot of page: " + driver.getCurrentUrl());
         snapshots.add(driver.getPageSource());
+        if (script.containsKey("capturedlabel")) {
+            WebElement element = findElement(script.get("selector").toString(), script.get("capturedlabel").toString());
+            capturedlabel.add(element.getText());
+        }
+
     }
 
     /**
@@ -739,7 +750,7 @@ public class SeleniumScripter {
 
         final ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--no-sandbox");
-        chromeOptions.addArguments("--headless");
+        //chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--disable-gpu");
         chromeOptions.addArguments("--disable-extensions");
         chromeOptions.addArguments("--ignore-certificate-errors");
