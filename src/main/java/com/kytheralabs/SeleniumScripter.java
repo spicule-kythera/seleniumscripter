@@ -1,15 +1,20 @@
 package com.kytheralabs;
 
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.JSONException;
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.chrome.ChromeOptions;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
-import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.devtools.DevTools;
+import org.openqa.selenium.devtools.v85.network.Network;
+import org.openqa.selenium.devtools.v85.network.model.Headers;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -21,6 +26,9 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+
+import static com.kytheralabs.BrowserConfig.newChromeWebDriver;
+import static com.kytheralabs.BrowserConfig.newFirefoxWebDriver;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
@@ -39,6 +47,7 @@ public class SeleniumScripter {
     private final List<String> capturedlabel = new ArrayList<>();
     // Logger
     private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class);
+    private String bearertoken;
 
     public SeleniumScripter(WebDriver driver){
         this.driver = driver;
@@ -260,6 +269,18 @@ public class SeleniumScripter {
                         case "wait":
                             waitOperation(subscript);
                             break;
+                        case "token":
+                            getTokenOperation(subscript);
+                            break;
+                        case "extendablefetcher":
+                            extendableFetcherOperation(subscript);
+                            break;
+                        case "filter":
+                            filterOperation(subscript);
+                            break;
+                        case "capturelisttosnapshots":
+                            capturelisttosnapshotsOperation(subscript);
+                            break;
                         default:
                             throw new ParseException("Invalid operation: " + operation, 0);
                     }
@@ -276,6 +297,15 @@ public class SeleniumScripter {
 
         LOG.info(snapshots.size() + " snapshots taken at the end of this block!");
         return success;
+    }
+
+    private void capturelisttosnapshotsOperation(Map<String, Object> subscript) {
+        List l = captureLists.get(subscript.get("variable").toString());
+
+        for(Object m : l){
+            String sshot = JSONValue.toJSONString(m);
+            this.snapshots.add(sshot);
+        }
     }
 
     /**
@@ -589,8 +619,102 @@ public class SeleniumScripter {
      */
     private void restoreOperation(Map<String, Object> script) {
         String url = script.getOrDefault("url", this.url).toString();
+
         driver.get(url);
     }
+
+    public void filterOperation(Map<String, Object> script){
+        String tovariable = script.get("tovariable").toString();
+        String filterType = script.get("type").toString();
+        if(filterType.equals("filtermap")) {
+            List<Map> matches = new ArrayList<>();
+            matches = (List<Map>) executeGroovyScript(script.get("evaluation").toString());
+            captureLists.put(tovariable, matches);
+        }
+    }
+
+    public Object executeGroovyScript(String script){
+
+        Binding sharedData = new Binding();
+        GroovyShell shell = new GroovyShell(sharedData);
+        Date now = new Date();
+        sharedData.setProperty("capturelists", captureLists);
+
+        Object result = shell.evaluate(script);
+
+        return result;
+    }
+    public void extendableFetcherOperation(Map<String, Object> script){
+        Boolean sendauth = Boolean.parseBoolean(script.getOrDefault("authheader", false).toString());
+
+            DevTools chromeDevTools = ((ChromeDriver) driver).getDevTools();
+            chromeDevTools.createSession();
+            //enable Network
+            chromeDevTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
+
+            //set custom header
+            Map m = new HashMap();
+            if(sendauth) {
+                m.put("Authorization", "bearer " + bearertoken);
+            }
+            if(script.containsKey("extendedheaders")) {
+                ArrayList<Map> injectedHeaders = (ArrayList<Map>) script.get("extendedheaders");
+                for(Map iheader : injectedHeaders){
+                    m.putAll(iheader);
+                }
+
+            }
+            Headers h = new Headers(m);
+            chromeDevTools.send(Network.setExtraHTTPHeaders(h));
+
+            if(script.containsKey("javascriptOperator")){
+                String name = script.get("javascriptOperator").toString();
+                if(name.contains("{variable}")) {
+                    if(script.containsKey("variableMapValue") && loopValue instanceof Map){
+                        String mapvalue = ((Map) loopValue).get(script.get("variableMapValue").toString()).toString();
+                        name = name.replace("{variable}", mapvalue);
+                    } else{
+                        name = name.replace("{variable}", loopValue.toString());
+                    }
+
+                }
+                Object resp = ((JavascriptExecutor) driver).executeAsyncScript(name);
+                //captureLists.put(script.get("variable").toString(), (ArrayList)resp);
+                List list = captureLists.get(script.get("variable"));
+                List<String> newList = new ArrayList();
+                if(list != null){
+                    newList = new ArrayList<>(list);
+                }
+                if(resp != null) {
+                    newList.addAll((ArrayList) resp);
+                    captureLists.put(script.get("variable").toString(), newList);
+                }
+            }
+            /*Object resp = ((JavascriptExecutor) driver).executeAsyncScript("var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?ctime=1625497138985&drugName=A&formularyId=PHSCA&userType=other&viewMode=NAME', \n" +
+                    "      { mode: 'no-cors',headers: {'Accept': 'application/json',\n" +
+                    "                        }})\n" +
+                    "                      .then(response => response.json())\n" +
+                    "                      .then(data => {callback(data);});");*/
+            /*ArrayList<Map> z = (ArrayList) ((Map) resp).get("Drugs");
+            ArrayList<Map> matches = new ArrayList();
+            for (Map z1 : z) {
+                if (z1.containsKey("BrandName") && ((String) z1.get("BrandName")).contains("ABILIFY")) {
+                    matches.add(z1);
+                }
+            }
+
+            for(Map z2: matches) {
+                String drugid = z2.get("Id").toString();
+                Object respDetail = ((JavascriptExecutor) driver).executeAsyncScript("var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=PHSCA&userType=other&viewMode=id&drugId="+drugid+"&ctime=1625499684610', \n" +
+                        "      { mode: 'no-cors',headers: {'Accept': 'application/json',\n" +
+                        "                        }})\n" +
+                        "                      .then(response => response.json())\n" +
+                        "                      .then(data => {callback(data);});");
+
+            }*/
+        }
+
+
 
     /**
      * Take a screenshot (rasterize image) of the current page.
@@ -724,63 +848,9 @@ public class SeleniumScripter {
         }
     }
 
-    public static WebDriver newFirefoxWebDriver() {
-
-
-            List<String> options = Arrays.asList("--no-sandbox",
-                    "--log-level=3",
-                    "--ignore-certificate-errors",
-                    "--start-maximized",
-                    "--disable-gpu",
-                    "--headless",
-                    "--disable-extensions",
-                    "--disable-infobars");
-
-            FirefoxOptions driverOptions = new FirefoxOptions();
-            options.forEach(driverOptions::addArguments);
-            FirefoxDriver wdriver = new FirefoxDriver(driverOptions);
 
 
 
-        return wdriver;
-    }
-
-    public static WebDriver newChromeWebDriver() {
-        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-
-        final ChromeOptions chromeOptions = new ChromeOptions();
-        chromeOptions.addArguments("--no-sandbox");
-        chromeOptions.addArguments("--headless");
-        chromeOptions.addArguments("--disable-gpu");
-        chromeOptions.addArguments("--disable-extensions");
-        chromeOptions.addArguments("--ignore-certificate-errors");
-        chromeOptions.addArguments("--incognito");
-        chromeOptions.addArguments("--window-size=1920,1080");
-        chromeOptions.addArguments("--proxy-server='direct://");
-        chromeOptions.addArguments("--proxy-bypass-list=*");
-        chromeOptions.addArguments("--disable-background-networking");
-        chromeOptions.addArguments("--safebrowsing-disable-auto-update");
-        chromeOptions.addArguments("--disable-sync");
-        chromeOptions.addArguments("--metrics-recording-only");
-        chromeOptions.addArguments("--disable-default-apps");
-        chromeOptions.addArguments("--no-first-run");
-        chromeOptions.addArguments("--disable-setuid-sandbox");
-        chromeOptions.addArguments("--hide-scrollbars");
-        chromeOptions.addArguments("--no-zygote");
-        chromeOptions.addArguments("--disable-notifications");
-        chromeOptions.addArguments("--disable-logging");
-        chromeOptions.addArguments("--disable-permissions-api");
-
-        chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
-        //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
-        capabilities.setCapability(ChromeOptions.CAPABILITY, chromeOptions);
-
-        ChromeDriver wdriver = new ChromeDriver(capabilities);
-        wdriver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
-
-
-        return wdriver;
-    }
 
     /**
      * Iterate through a tables rows and perform a subscript on each row.
@@ -860,5 +930,16 @@ public class SeleniumScripter {
         WebElement element = new WebDriverWait(driver, timeout)
                 .until(ExpectedConditions.visibilityOfElementLocated(ByElement(selector, name)));
         assert element.isDisplayed();
+    }
+
+    private void getTokenOperation(Map<String, Object> script){
+
+        String url = script.get("url").toString();
+        driver.get(url);
+        WebElement element = driver.findElement(By.tagName("pre"));
+
+        Object o = JSONValue.parse(element.getText());
+        JSONObject jsonObject = (JSONObject) o;
+        bearertoken = (String) jsonObject.get("access_token");
     }
 }

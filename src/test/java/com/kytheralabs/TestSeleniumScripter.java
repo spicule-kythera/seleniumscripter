@@ -18,30 +18,27 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.*;
 
+import static com.kytheralabs.BrowserConfig.newChromeWebDriver;
+import static com.kytheralabs.BrowserConfig.newFirefoxWebDriver;
+
 public class TestSeleniumScripter {
-    private FirefoxOptions driverOptions = null;
-    private final List<String> options = Arrays.asList("--no-sandbox",
-                                                       "--log-level=3",
-                                                       //"--headless",
-                                                       "--ignore-certificate-errors",
-                                                       "--start-maximized",
-                                                       "--disable-gpu",
-                                                       "--disable-extensions",
-                                                       "--disable-infobars");
+
     private RemoteWebDriver driver = null;
 
+    private String browserFlavour = "chrome";
     @Before
     public void setUp() {
-        driverOptions = new FirefoxOptions();
-        options.forEach(driverOptions::addArguments);
-        driver = new FirefoxDriver(driverOptions);
+        if(browserFlavour.equals("chrome")){
+            driver = newChromeWebDriver();
+        } else if(browserFlavour.equals("firefox")){
+            driver = newFirefoxWebDriver();
+        }
     }
 
     @After
     public void tearDown() {
         driver.close();
         driver = null;
-        driverOptions = null;
     }
 
     private static Map<String, Object> loadJSONScript(String filename) throws IOException, ParseException {
@@ -150,7 +147,7 @@ public class TestSeleniumScripter {
     @Test
     public void optum() throws Exception {
         // Crawl parameters
-        final String scriptName = "optum.json";
+        final String scriptName = "optumfixed2.yaml";
         final String url = "https://www.optumrx.com/ClientFormulary/formulary.asp?var=PHSCA&infoid=PHSCA";
 
         // Start the crawl
