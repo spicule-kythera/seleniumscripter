@@ -732,7 +732,7 @@ public class SeleniumScripter {
                     "--ignore-certificate-errors",
                     "--start-maximized",
                     "--disable-gpu",
-                    //"--headless",
+                    "--headless",
                     "--disable-extensions",
                     "--disable-infobars");
 
@@ -750,7 +750,7 @@ public class SeleniumScripter {
 
         final ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--no-sandbox");
-        //chromeOptions.addArguments("--headless");
+        chromeOptions.addArguments("--headless");
         chromeOptions.addArguments("--disable-gpu");
         chromeOptions.addArguments("--disable-extensions");
         chromeOptions.addArguments("--ignore-certificate-errors");
