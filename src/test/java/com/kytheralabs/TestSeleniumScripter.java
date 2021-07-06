@@ -110,6 +110,17 @@ public class TestSeleniumScripter {
 
     @Ignore
     @Test
+    public void tryBlock() throws Exception {
+        // Crawl parameters
+        final String scriptName = "try-block.yaml";
+        final String url = "https://www.nasa.gov";
+
+        // Start the crawl
+        assert runScript(url, scriptName);
+    }
+
+    @Ignore
+    @Test
     public void newIfCondition() throws Exception {
         // Crawl parameters
         final String scriptName = "new-if-condition.yaml";

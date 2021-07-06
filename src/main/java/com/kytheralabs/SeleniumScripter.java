@@ -3,6 +3,7 @@ package com.kytheralabs;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.omg.CORBA.ExceptionList;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedConditions;
@@ -714,42 +715,27 @@ public class SeleniumScripter {
                                                                  AttributeNotFoundException,
                                                                  IOException,
                                                                  InterruptedException {
-        validate(script, new String[] {"try", "catch"}); // Validation
+        validate(script, new String[] {"try", "catch"});
 
         // Fetch the instruction blocks
         List<Map<String, String>> tryBody = (List<Map<String, String>>) script.get("try");
         List<Map<String, String>> catchBody = (List<Map<String, String>>) script.get("catch");
-        List<String> errorNames = (List<String>) script.getOrDefault("errors", new String[] {"timeout", "no-such-element"});
 
-        // Prepare the condition block
-        Map<String, Object> condition = new HashMap<>();
-        condition.put("condition", errorNames);
-        LOG.info("Processing `condition` block with " + errorNames.size() + " instructions: " + condition);
-
-        // If the condition passes, i.e. no TimeoutException's or NoSuchElementException's are thrown during
-        //      execution, then run the `then` block, otherwise run the `else` block
-        try{
-            runScript(condition);
-
-            LOG.info("Try block succeeded!");
-            for(Map<String, String> thenSubBlock: tryBody){
-                Map<String, Object> thenBlock = new HashMap<>();
-                thenBlock.put("else", thenSubBlock);
-
-                runScript(thenBlock);
+        try {
+            for (Map<String, String> trySubBlock : tryBody) {
+                Map<String, Object> tryBlock = new HashMap<>();
+                tryBlock.put("try", trySubBlock);
+                runScript(tryBlock);
             }
-        } catch (NoSuchElementException | TimeoutException e) {
-            LOG.info("Condition block failed!");
+        } catch (NoSuchElementException | TimeoutException | AttributeNotFoundException e) {
+            LOG.error("Caught a " + e.getClass() + " error inside of a try operation:");
             e.printStackTrace();
 
-            for(Map<String, String> elseSubBlock: catchBody){
-                Map<String, Object> elseBlock = new HashMap<>();
-                elseBlock.put("else", elseSubBlock);
-
-                runScript(elseBlock);
+            for (Map<String, String> catchSubBlock : catchBody) {
+                Map<String, Object> catchBlock = new HashMap<>();
+                catchBlock.put("catch", catchSubBlock);
+                runScript(catchBlock);
             }
-        } catch (Exception e) {
-            LOG.warn("Condition did not meet, and no `else` clause was specified! Falling through...");
         }
     }
 
