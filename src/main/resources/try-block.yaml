@@ -1,0 +1,26 @@
+0:
+  operation: loadPage
+  timeout: 2
+1:
+  operation: try
+  try:
+    - operation: if
+      selector: css
+      name: "#ember35 > div > div"
+      condition:
+        - textContent
+        - contains
+        - "elsa"
+      then:
+        - operation: keys
+          selector: id
+          name: ember25
+          value: dingus
+        - operation: keys
+          selector: id
+          name: ember25
+          value: '{enter}'
+  catch:
+    - operation: injectContent
+      type: html
+      name: ember25
