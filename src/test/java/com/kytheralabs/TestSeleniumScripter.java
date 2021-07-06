@@ -157,7 +157,7 @@ public class TestSeleniumScripter {
     @Test
     public void upmc() throws Exception {
         // Crawl parameters
-        final String scriptName = "upmc.json";
+        final String scriptName = "upmc2.json";
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl

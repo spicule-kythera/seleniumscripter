@@ -10,9 +10,6 @@ import org.json.simple.JSONValue;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.chrome.ChromeDriver;
-import org.openqa.selenium.devtools.DevTools;
-import org.openqa.selenium.devtools.v85.network.Network;
-import org.openqa.selenium.devtools.v85.network.model.Headers;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
@@ -644,29 +641,11 @@ public class SeleniumScripter {
     }
     public void extendableFetcherOperation(Map<String, Object> script){
         Boolean sendauth = Boolean.parseBoolean(script.getOrDefault("authheader", false).toString());
-
-            DevTools chromeDevTools = ((ChromeDriver) driver).getDevTools();
-            chromeDevTools.createSession();
-            //enable Network
-            chromeDevTools.send(Network.enable(Optional.empty(), Optional.empty(), Optional.empty()));
-
-            //set custom header
-            Map m = new HashMap();
-            if(sendauth) {
-                m.put("Authorization", "bearer " + bearertoken);
-            }
-            if(script.containsKey("extendedheaders")) {
-                ArrayList<Map> injectedHeaders = (ArrayList<Map>) script.get("extendedheaders");
-                for(Map iheader : injectedHeaders){
-                    m.putAll(iheader);
-                }
-
-            }
-            Headers h = new Headers(m);
-            chromeDevTools.send(Network.setExtraHTTPHeaders(h));
-
             if(script.containsKey("javascriptOperator")){
                 String name = script.get("javascriptOperator").toString();
+                if(sendauth) {
+                    name = name.replace("{bearertoken}", bearertoken);
+                }
                 if(name.contains("{variable}")) {
                     if(script.containsKey("variableMapValue") && loopValue instanceof Map){
                         String mapvalue = ((Map) loopValue).get(script.get("variableMapValue").toString()).toString();
@@ -688,28 +667,6 @@ public class SeleniumScripter {
                     captureLists.put(script.get("variable").toString(), newList);
                 }
             }
-            /*Object resp = ((JavascriptExecutor) driver).executeAsyncScript("var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?ctime=1625497138985&drugName=A&formularyId=PHSCA&userType=other&viewMode=NAME', \n" +
-                    "      { mode: 'no-cors',headers: {'Accept': 'application/json',\n" +
-                    "                        }})\n" +
-                    "                      .then(response => response.json())\n" +
-                    "                      .then(data => {callback(data);});");*/
-            /*ArrayList<Map> z = (ArrayList) ((Map) resp).get("Drugs");
-            ArrayList<Map> matches = new ArrayList();
-            for (Map z1 : z) {
-                if (z1.containsKey("BrandName") && ((String) z1.get("BrandName")).contains("ABILIFY")) {
-                    matches.add(z1);
-                }
-            }
-
-            for(Map z2: matches) {
-                String drugid = z2.get("Id").toString();
-                Object respDetail = ((JavascriptExecutor) driver).executeAsyncScript("var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=PHSCA&userType=other&viewMode=id&drugId="+drugid+"&ctime=1625499684610', \n" +
-                        "      { mode: 'no-cors',headers: {'Accept': 'application/json',\n" +
-                        "                        }})\n" +
-                        "                      .then(response => response.json())\n" +
-                        "                      .then(data => {callback(data);});");
-
-            }*/
         }
 
 

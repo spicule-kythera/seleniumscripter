@@ -7,21 +7,12 @@ b:
 c:
   operation: extendablefetcher
   authheader: true
-  extendedheaders:
-    - Accept: Application/json
-    - actor: RXP
-    - bypass_saml: "true"
-    - impersonating: "false"
-    - iris_resilient: "true"
-    - Referer: https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA
-    - scope: Read
-    - Sec-Fetch-Dest: empty
-    - Sec-Fetch-Mode: cors
-    - Sec-Fetch-Site: same-origin
   javascriptOperator: |
     var callback = arguments[arguments.length - 1];
     fetch('https://www.optumrx.com/public-services/formularydrugs?ctime=1625497138985&drugName=A&formularyId=PHSCA&userType=other&viewMode=NAME',
-    { mode: 'no-cors',headers: { 'Accept': 'application/json'}})
+    { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
+    'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
+    'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
     .then(response => response.json())
     .then(data => {callback(data.Drugs);});
   variable: druglist
@@ -52,20 +43,11 @@ subscripts:
     a:
       operation: extendablefetcher
       authheader: true
-      extendedheaders:
-        - Accept: Application/json
-        - actor: RXP
-        - bypass_saml: "true"
-        - impersonating: "false"
-        - iris_resilient: "true"
-        - Referer: https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA
-        - scope: Read
-        - Sec-Fetch-Dest: empty
-        - Sec-Fetch-Mode: cors
-        - Sec-Fetch-Site: same-origin
       javascriptOperator: |
         var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=PHSCA&userType=other&viewMode=id&drugId={variable}&ctime=1625499684610',
-        { mode: 'no-cors',headers: {'Accept': 'application/json'}})
+        { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
+              'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
+              'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
         .then(response => response.json())
         .then(data => {callback(data.Drugs);});
       variable: drugResults
