@@ -147,7 +147,7 @@ public class TestSeleniumScripter {
     @Test
     public void optum() throws Exception {
         // Crawl parameters
-        final String scriptName = "optumfixed2.yaml";
+        final String scriptName = "optumfixed3.yaml";
         final String url = "https://www.optumrx.com/ClientFormulary/formulary.asp?var=PHSCA&infoid=PHSCA";
 
         // Start the crawl

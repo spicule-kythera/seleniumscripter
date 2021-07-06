@@ -15,30 +15,57 @@ c:
     'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
     .then(response => response.json())
     .then(data => {callback(data.Drugs);});
-  variable: druglist
+  variable: autocompletelist
 d:
   operation: filter
-  fromvariable: druglist
-  tovariable: filtereddruglist
+  fromvariable: autocompletelist
+  tovariable: filteredautocompletelist
   type: filtermap
   evaluation: |
     def newlist = [];
-    capturelists.get('druglist').each { g ->
-        if(g.containsKey('BrandName') && g.get('BrandName').toString().toLowerCase().contains('combivir'.toLowerCase())){
-            newlist.add(g)
+    capturelists.get('autocompletelist').each { g ->
+     if( g.containsKey('BrandName') && g.get('BrandName').toString().toUpperCase().contains('Halog'.toUpperCase())){
+      newlist.add(g.BrandName)
+    }
+    else if( g.containsKey('AltBrandName') && g.get('AltBrandName').toString().toUpperCase().contains('Halog'.toUpperCase())){
+            newlist.add(g.AltBrandName)
+          }
+    else if((g.containsKey('FormularyAlternatives') && "Halog" in g.get('FormularyAlternatives').AltBrandName)){
+         g.get('FormularyAlternatives').each{ h ->
+            if(h.AltBrandName == "Halog".toUpperCase()){
+                newlist.add(h.AltBrandName)
+            }
         }
-    };
-    return newlist;
+    }
+    }
+    return newlist.unique();
 e:
   operation: loop
   type: variable
-  variable: filtereddruglist
-  subscript: druglookup
+  variable: filteredautocompletelist
+  subscript: autocompleteloop
 f:
+  operation: loop
+  type: variable
+  variable: druglist
+  subscript: druglookup
+g:
   operation: capturelisttosnapshots
   variable: drugResults
-
 subscripts:
+  autocompleteloop:
+    e:
+      operation: extendablefetcher
+      authheader: true
+      javascriptOperator: |
+        var callback = arguments[arguments.length - 1];
+        fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=PHSCA&userType=other&viewMode=NAME&drugName={variable}&ctime=1625570965087',
+        { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
+        'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
+        'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
+        .then(response => response.json())
+        .then(data => {callback(data.Drugs);});
+      variable: druglist
   druglookup:
     a:
       operation: extendablefetcher
