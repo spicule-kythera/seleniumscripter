@@ -22,7 +22,7 @@ public class TestSeleniumScripter {
     private FirefoxOptions driverOptions = null;
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
-                                                       "--headless",
+//                                                       "--headless",
                                                        "--ignore-certificate-errors",
                                                        "--start-maximized",
                                                        "--disable-gpu",
@@ -88,7 +88,13 @@ public class TestSeleniumScripter {
         System.out.println("URL: " + url);
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver);
-        return scriptRunner.runScript(script);
+        try {
+            scriptRunner.runScript(script);
+            return true;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 
     @Ignore
@@ -97,6 +103,17 @@ public class TestSeleniumScripter {
         // Crawl parameters
         final String scriptName = "alabama.yaml";
         final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
+
+        // Start the crawl
+        assert runScript(url, scriptName);
+    }
+
+    @Ignore
+    @Test
+    public void newIfCondition() throws Exception {
+        // Crawl parameters
+        final String scriptName = "new-if-condition.yaml";
+        final String url = "https://www.nasa.gov";
 
         // Start the crawl
         assert runScript(url, scriptName);
