@@ -8,7 +8,7 @@
       selector: css
       name: "#ember35 > div > div"
       condition:
-        - valuae
+        - textContent
         - contains
         - "elsa"
       then:

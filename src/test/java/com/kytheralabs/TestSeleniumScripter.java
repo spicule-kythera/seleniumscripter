@@ -9,8 +9,10 @@ import org.junit.Test;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.w3c.dom.Attr;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.management.AttributeNotFoundException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -22,7 +24,7 @@ public class TestSeleniumScripter {
     private FirefoxOptions driverOptions = null;
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
-//                                                       "--headless",
+                                                       "--headless",
                                                        "--ignore-certificate-errors",
                                                        "--start-maximized",
                                                        "--disable-gpu",
@@ -51,8 +53,7 @@ public class TestSeleniumScripter {
         }
         FileReader reader = new FileReader(filepath.getPath());
         Map<String, Object> map = (Map<String, Object>) new JSONParser().parse(reader);
-        Map<String, Object> treeMap = new TreeMap<>(map);
-        return treeMap;
+        return new TreeMap<>(map);
     }
 
     private static Map<String, Object> loadYAMLScript(String filename) {
@@ -62,14 +63,15 @@ public class TestSeleniumScripter {
         return new Yaml().load(inputStream);
     }
 
-    private boolean runScript(String url, String scriptName) throws Exception {
+    private void runScript(String url, String scriptName) throws Exception {
         String[] parts = scriptName.split("\\.");
         String extension = parts[parts.length - 1];
         System.out.println("Using " + extension + " parser!");
-        return runScript(url, scriptName, extension);
+        runScript(url, scriptName, extension);
     }
 
-    private boolean runScript(String url, String scriptName, String scriptType) throws IOException,
+    private void runScript(String url, String scriptName, String scriptType) throws IOException,
+                                                                                    AttributeNotFoundException,
                                                                                     ParseException,
                                                                                     java.text.ParseException,
                                                                                     InterruptedException {
@@ -88,13 +90,7 @@ public class TestSeleniumScripter {
         System.out.println("URL: " + url);
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver);
-        try {
-            scriptRunner.runScript(script);
-            return true;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return false;
-        }
+        scriptRunner.runScript(script);
     }
 
     @Ignore
@@ -105,7 +101,7 @@ public class TestSeleniumScripter {
         final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 
     @Ignore
@@ -116,7 +112,7 @@ public class TestSeleniumScripter {
         final String url = "https://www.nasa.gov";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 
     @Ignore
@@ -127,7 +123,7 @@ public class TestSeleniumScripter {
         final String url = "https://www.nasa.gov";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 
     @Ignore
@@ -138,7 +134,7 @@ public class TestSeleniumScripter {
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 
     @Test
@@ -148,7 +144,7 @@ public class TestSeleniumScripter {
         final String url = "https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 
     @Test
@@ -158,7 +154,7 @@ public class TestSeleniumScripter {
         final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 
     @Ignore
@@ -189,6 +185,6 @@ public class TestSeleniumScripter {
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 }
