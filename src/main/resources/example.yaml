@@ -53,6 +53,7 @@ subscripts:
       name: medicationname
       value: ${loopvalue}
     2:
+      operation: try
       operation: wait
       selector: class
       name: ui-autocomplete

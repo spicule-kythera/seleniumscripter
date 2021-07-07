@@ -1,134 +1,28 @@
 {
   "a": {
-    "operation": "wait",
-    "selector": "xpath",
-    "name": "//*[@id='frmMain']/*",
-    "timeout": "90"
+    "operation": "loadpage"
   },
   "b": {
-    "operation": "wait",
-    "selector": "xpath",
-    "name": "//*[@id=\"mcoveragetype\"]",
-    "timeout": "90"
+    "operation": "restore",
+    "url": "https://www.upmchealthplan.com/"
   },
   "c": {
-    "operation": "click",
-    "selector": "xpath",
-    "name": "//select[@id=\"mcoveragetype\"]"
+    "operation": "loadpage"
   },
-  "d": {
-    "operation": "wait",
-    "selector": "xpath",
-    "name": "//*[@id=\"mcoveragetype\"]",
-    "timeout": "90"
+  "d":{
+    "operation": "restore",
+    "url": "https://www.upmchealthplan.com/find-a-medication"
   },
-  "e": {
-    "operation": "select",
-    "selector": "id",
-    "name": "mcoveragetype",
-    "selectBy": "value",
-    "value": "5"
-  },
+
   "f": {
     "operation": "wait",
     "selector": "xpath",
-    "name": "//*[@id=\"benefitYear\"]",
-    "selectBy": "value",
-    "value": "+planval+",
-    "timeout": "90"
+    "name": "//*[@id=\"mcoveragetype1\"]",
+    "timeout": "10",
+    "failnotfound": "false"
   },
-  "g": {
-    "operation": "select",
-    "selector": "id",
-    "name": "benefitYear",
-    "selectBy": "value",
-    "value": "2021"
-  },
-  "h": {
-    "operation": "wait",
-    "selector": "id",
-    "name": "medicationname",
-    "timeout": "90"
-  },
-  "i": {
-    "operation": "keys",
-    "selector": "id",
-    "name": "medicationname",
-    "value": "abilify"
-  },
-  "j": {
-    "operation": "wait",
-    "selector": "class",
-    "name": "ui-autocomplete",
-    "timeout": "90"
-  },
-  "k": {
-    "operation": "captureList",
-    "selector": "class",
-    "name": "ui-menu-item",
-    "variable": "autocompletelabels"
-  },
-  "l": {
-    "operation": "loop",
-    "type": "variable",
-    "variable": "autocompletelabels",
-    "subscript": "searchSubScript"
-  },
-  "subscripts": {
-    "searchSubScript": {
-      "0": {
-        "operation": "wait",
-        "selector": "id",
-        "name": "medicationname",
-        "timeout": "120"
-      },
-      "1": {
-        "operation": "keys",
-        "selector": "id",
-        "name": "medicationname",
-        "value": "${loopvalue}"
-      },
-      "2": {
-        "operation": "wait",
-        "selector": "class",
-        "name": "ui-autocomplete",
-        "timeout": "90"
-      },
-      "3": {
-        "operation": "keys",
-        "selector": "id",
-        "name": "medicationname",
-        "value": "{enter}"
-      },
-      "4": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[@id=\"sdrugstrength\"]"
-      },
-      "6": {
-        "operation": "captureList",
-        "selector": "xpath",
-        "name": "//*[@id=\"sdrugstrength\"]/option[contains(@value,\"\")]",
-        "type": "xpath",
-        "variable": "doesList"
-      },
-      "7": {
-        "operation": "loop",
-        "type": "variable",
-        "variable": "doesList",
-        "subscript": "doesSubScript"
-      }
-    },
-    "doesSubScript": {
-      "0": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//div[@class=\"notices\"]",
-        "timeout": "90"
-      },
-      "6": {
-        "operation": "snapshot"
-      }
-    }
+  "g":{
+    "operation": "screenshot",
+    "targetdir": "/dbfs/FileStore/screenshot2.png"
   }
 }

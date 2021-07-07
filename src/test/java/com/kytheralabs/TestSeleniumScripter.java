@@ -9,8 +9,10 @@ import org.junit.Test;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.w3c.dom.Attr;
 import org.yaml.snakeyaml.Yaml;
 
+import javax.management.AttributeNotFoundException;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
@@ -48,8 +50,7 @@ public class TestSeleniumScripter {
         }
         FileReader reader = new FileReader(filepath.getPath());
         Map<String, Object> map = (Map<String, Object>) new JSONParser().parse(reader);
-        Map<String, Object> treeMap = new TreeMap<>(map);
-        return treeMap;
+        return new TreeMap<>(map);
     }
 
     private static Map<String, Object> loadYAMLScript(String filename) {
@@ -59,14 +60,15 @@ public class TestSeleniumScripter {
         return new Yaml().load(inputStream);
     }
 
-    private boolean runScript(String url, String scriptName) throws Exception {
+    private void runScript(String url, String scriptName) throws Exception {
         String[] parts = scriptName.split("\\.");
         String extension = parts[parts.length - 1];
         System.out.println("Using " + extension + " parser!");
-        return runScript(url, scriptName, extension);
+        runScript(url, scriptName, extension);
     }
 
-    private boolean runScript(String url, String scriptName, String scriptType) throws IOException,
+    private void runScript(String url, String scriptName, String scriptType) throws IOException,
+                                                                                    AttributeNotFoundException,
                                                                                     ParseException,
                                                                                     java.text.ParseException,
                                                                                     InterruptedException {
@@ -85,10 +87,9 @@ public class TestSeleniumScripter {
         System.out.println("URL: " + url);
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver);
-        boolean e = scriptRunner.runScript(script);
-        List<String> s = scriptRunner.getSnapshots();
-        System.out.println("Total Snapshots found: "+s.size());
-        return e;
+        scriptRunner.runScript(script);
+
+
     }
 
     @Ignore
@@ -99,7 +100,29 @@ public class TestSeleniumScripter {
         final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
+    }
+
+    @Ignore
+    @Test
+    public void tryBlock() throws Exception {
+        // Crawl parameters
+        final String scriptName = "try-block.yaml";
+        final String url = "https://www.nasa.gov";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Ignore
+    @Test
+    public void newIfCondition() throws Exception {
+        // Crawl parameters
+        final String scriptName = "new-if-condition.yaml";
+        final String url = "https://www.nasa.gov";
+
+        // Start the crawl
+        runScript(url, scriptName);
     }
 
     @Ignore
@@ -110,7 +133,7 @@ public class TestSeleniumScripter {
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 
     @Test
@@ -120,7 +143,7 @@ public class TestSeleniumScripter {
         final String url = "https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 
     @Test
@@ -130,7 +153,7 @@ public class TestSeleniumScripter {
         final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        runScript(url, scriptName);
     }
 
     @Ignore
@@ -161,7 +184,11 @@ public class TestSeleniumScripter {
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+        try {
+            runScript(url, scriptName);
+        } catch(Exception e){
+            System.out.println("here");
+        }
     }
 
     @Test
@@ -171,7 +198,8 @@ public class TestSeleniumScripter {
         final String url = "https://www.cms.gov/medicare-coverage-database/new-search/handlers/tour-end.ashx?t=1625154700997&which=report";
 
         // Start the crawl
-        assert runScript(url, scriptName);
+
+        runScript(url, scriptName);
     }
 
     @Test
@@ -179,7 +207,9 @@ public class TestSeleniumScripter {
         final String scriptName = "myprime.yaml";
         final String url = "https://www.myprime.com/es/boeing/plan-preview/medicines.html#find-medicine";
 
-        assert runScript(url, scriptName);
+
+            runScript(url, scriptName);
+
 
     }
 }

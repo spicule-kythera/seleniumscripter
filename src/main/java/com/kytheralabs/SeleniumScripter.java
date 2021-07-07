@@ -14,6 +14,7 @@ import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import javax.management.AttributeNotFoundException;
 import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
@@ -132,6 +133,7 @@ public class SeleniumScripter {
                 return By.id(name);
             case "class":
                 return By.className(name);
+            case "css":
             case "cssSelector":
                 return By.cssSelector(name);
             case "xpath":
@@ -157,11 +159,15 @@ public class SeleniumScripter {
      *      A wrapper for `SeleniumScripter::runScript(script, loopValue) where loopValue is null.
      * @param script the serialized selenium script
      * @throws IOException occurs when a snapshot image failed to save to disk
+     * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
      * @throws ParseException occurs when one of the required fields is missing
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
-    public boolean runScript(Map<String, Object> script) throws IOException, ParseException, InterruptedException {
-        return runScript(script, null);
+    public void runScript(Map<String, Object> script) throws IOException,
+                                                             AttributeNotFoundException,
+                                                             ParseException,
+                                                             InterruptedException {
+        runScript(script, null);
     }
 
     public static <K, V> Map<K, V> convertToTreeMap(Map<K, V> hashMap)
@@ -180,13 +186,14 @@ public class SeleniumScripter {
      * Run a selenium script.
      * @param script the serialized selenium script
      * @throws IOException occurs when a snapshot image failed to save to disk
+     * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
      * @throws ParseException occurs when one of the required fields is missing
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
-    public boolean runScript(Map<String, Object> script, Object loopValue) throws IOException,
-                                                                                  ParseException,
-                                                                                  InterruptedException {
-        boolean success = false;
+    public void runScript(Map<String, Object> script, Object loopValue) throws IOException,
+                                                                               AttributeNotFoundException,
+                                                                               ParseException,
+                                                                               InterruptedException {
         LOG.info("Processing Selenium Script with " + script.size() + " objects!");
 
         this.loopValue = loopValue;
@@ -194,7 +201,6 @@ public class SeleniumScripter {
             masterScript = script;
         }
 
-        try {
             for (Map.Entry instruction : script.entrySet()) {
                 String instructionName = instruction.getKey().toString();
                 Object instructionBlock = instruction.getValue();
@@ -203,8 +209,8 @@ public class SeleniumScripter {
                 if (instructionBlock instanceof Map) {
                     Map<String, Object> subscript = (Map<String, Object>) instructionBlock;
                     String operation = subscript.getOrDefault("operation", "{UNDEFINED}")
-                                                .toString()
-                                                .toLowerCase();
+                            .toString()
+                            .toLowerCase();
 
                     switch (operation.toLowerCase()) {
                         case "{undefined}":
@@ -264,6 +270,9 @@ public class SeleniumScripter {
                         case "wait":
                             waitOperation(subscript);
                             break;
+                        case "try":
+                            tryOperation(subscript);
+                            break;
                         case "token":
                             getTokenOperation(subscript);
                             break;
@@ -279,19 +288,14 @@ public class SeleniumScripter {
                         default:
                             throw new ParseException("Invalid operation: " + operation, 0);
                     }
-                }
-                else {
+                } else {
                     throw new ParseException("Subscript did not convert to map!", 0);
+
                 }
             }
 
-            success = true;
-        } catch (NoSuchElementException | TimeoutException e) {
-            e.printStackTrace();
-        }
 
         LOG.info(snapshots.size() + " snapshots taken at the end of this block!");
-        return success;
     }
 
     private void capturelisttosnapshotsOperation(Map<String, Object> subscript) {
@@ -388,40 +392,60 @@ public class SeleniumScripter {
      * Process a logical `if` block.
      * @param script if-block subscript operation
      * @throws ParseException occurs when one of the required fields is missing
+     * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
      * @throws IOException occurs when a snapshot in a child-instruction fails to write to disk
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
     private void ifOperation(Map<String, Object> script) throws ParseException,
-                                                            IOException,
-                                                            InterruptedException {
-        validate(script, new String[] {"condition", "then"}); // Validation
+                                                                AttributeNotFoundException,
+                                                                IOException,
+                                                                InterruptedException {
+        validate(script, new String[] {"selector", "name", "condition", "then"}); // Validation
+
+        // Fetch element of focus
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+        WebElement e = new WebDriverWait(driver, 0)
+                .until(ExpectedConditions.presenceOfElementLocated(ByElement(selector, name)));
 
         // Fetch the instruction blocks
-        Map<String, String> conditionBody = (Map<String, String>) ((ArrayList)script.get("condition")).get(0);
+        List<String> condition = (List<String>) script.get("condition");
         List<Map<String, String>> thenBody = (List<Map<String, String>>) script.get("then");
         List<Map<String, String>> elseBody = (List<Map<String, String>>) script.get("else");
 
-        // Prepare the condition block
-        Map<String, Object> condition = new HashMap<>();
-        condition.put("condition", conditionBody);
-        LOG.info("Processing `condition` block with " + conditionBody.size() + " instructions: " + condition);
+        // Fetch condition details
+        String left_operand = e.getAttribute(condition.get(0));
+        if(left_operand == null) {
+            throw new AttributeNotFoundException("Element with " + selector + " of `" + name + "` does not have the attribute `" + condition.get(0) + "`!");
+        }
+        left_operand = left_operand.toLowerCase();
+        String operator = condition.get(1).toLowerCase();
+        String right_operand = condition.get(2).toLowerCase();
 
-        // If the condition passes, i.e. no TimeoutException's or NoSuchElementException's are thrown during
-        //      execution, then run the `then` block, otherwise run the `else` block
-        if (runScript(condition)) {
-            LOG.info("Condition block succeeded!");
-            for(Map<String, String> thenSubBlock: thenBody){
+        // Run the comparison
+        boolean comparison;
+        switch (operator) {
+            case "equals":
+                comparison = left_operand.equals(right_operand);
+                break;
+            case "contains":
+                comparison = left_operand.contains(right_operand);
+                break;
+            default:
+                comparison = false;
+        }
+
+        // Run the resulting logic block
+        if(comparison) {
+            for (Map<String, String> thenSubBlock : thenBody) {
                 Map<String, Object> thenBlock = new HashMap<>();
-                thenBlock.put("else", thenSubBlock);
-
+                thenBlock.put("then", thenSubBlock);
                 runScript(thenBlock);
             }
-        } else if (elseBody != null) {
-            LOG.info("Condition block failed!");
-            for(Map<String, String> elseSubBlock: elseBody){
+        } else if(elseBody != null) {
+            for (Map<String, String> elseSubBlock : elseBody) {
                 Map<String, Object> elseBlock = new HashMap<>();
-                elseBlock.put("else", elseSubBlock);
-
+                elseBlock.put("then", elseSubBlock);
                 runScript(elseBlock);
             }
         }
@@ -810,12 +834,13 @@ public class SeleniumScripter {
     /**
      * Iterate through a tables rows and perform a subscript on each row.
      * @param script the iterate-table subscript operation
-     * @throws IOException when a snapshot image failed to save to disk
+     * @throws IOException when a snapshot image failed to save to disk\
+     * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
      * @throws ParseException when a parsing error was found in the script
      * @throws InterruptedException when the process wakes up from a sleep event
      * @param script the click subscript operation
      */
-    private void tableOperation(Map<String, Object> script) throws IOException, ParseException, InterruptedException {
+    private void tableOperation(Map<String, Object> script) throws IOException, AttributeNotFoundException, ParseException, InterruptedException {
         // validate(script, new String[] {""}); // Validation
 
         int offset = Integer.parseInt(script.getOrDefault("rowoffset", 0).toString());
@@ -855,6 +880,42 @@ public class SeleniumScripter {
             } else {
                 LOG.debug("Now more rows left to parse");
                 break;
+            }
+        }
+    }
+
+    /**
+     * Process a logical `try` block.
+     * @param script if-block subscript operation
+     * @throws ParseException occurs when one of the required fields is missing
+     * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
+     * @throws IOException occurs when a snapshot in a child-instruction fails to write to disk
+     * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
+     */
+    private void tryOperation(Map<String, Object> script) throws ParseException,
+                                                                 AttributeNotFoundException,
+                                                                 IOException,
+                                                                 InterruptedException {
+        validate(script, new String[] {"try", "catch"});
+
+        // Fetch the instruction blocks
+        List<Map<String, String>> tryBody = (List<Map<String, String>>) script.get("try");
+        List<Map<String, String>> catchBody = (List<Map<String, String>>) script.get("catch");
+
+        try {
+            for (Map<String, String> trySubBlock : tryBody) {
+                Map<String, Object> tryBlock = new HashMap<>();
+                tryBlock.put("try", trySubBlock);
+                runScript(tryBlock);
+            }
+        } catch (NoSuchElementException | TimeoutException | AttributeNotFoundException e) {
+            LOG.error("Caught a " + e.getClass() + " error inside of a try operation:");
+            e.printStackTrace();
+
+            for (Map<String, String> catchSubBlock : catchBody) {
+                Map<String, Object> catchBlock = new HashMap<>();
+                catchBlock.put("catch", catchSubBlock);
+                runScript(catchBlock);
             }
         }
     }
