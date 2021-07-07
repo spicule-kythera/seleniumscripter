@@ -173,4 +173,13 @@ public class TestSeleniumScripter {
         // Start the crawl
         assert runScript(url, scriptName);
     }
+
+    @Test
+    public void myprime() throws Exception{
+        final String scriptName = "myprime.yaml";
+        final String url = "https://www.myprime.com/es/boeing/plan-preview/medicines.html#find-medicine";
+
+        assert runScript(url, scriptName);
+
+    }
 }

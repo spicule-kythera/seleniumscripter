@@ -1,0 +1,4 @@
+a:
+    operation: loadpage
+b:
+   operation: snapshot

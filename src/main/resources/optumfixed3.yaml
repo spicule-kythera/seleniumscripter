@@ -9,7 +9,9 @@ c:
   authheader: true
   javascriptOperator: |
     var callback = arguments[arguments.length - 1];
-    fetch('https://www.optumrx.com/public-services/formularydrugs?ctime=1625497138985&drugName=A&formularyId=PHSCA&userType=other&viewMode=NAME',
+    var strFirstThree = 'IMATINIB'.substring(0,3);
+    var url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=PHSCA&userType=other&viewMode=NAME'
+    fetch(url,
     { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
     'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
     'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
@@ -24,15 +26,15 @@ d:
   evaluation: |
     def newlist = [];
     capturelists.get('autocompletelist').each { g ->
-     if( g.containsKey('BrandName') && g.get('BrandName').toString().toUpperCase().contains('Halog'.toUpperCase())){
+     if( g.containsKey('BrandName') && g.get('BrandName').toString().toUpperCase().contains('IMATINIB'.toUpperCase())){
       newlist.add(g.BrandName)
     }
-    else if( g.containsKey('AltBrandName') && g.get('AltBrandName').toString().toUpperCase().contains('Halog'.toUpperCase())){
+    else if( g.containsKey('AltBrandName') && g.get('AltBrandName').toString().toUpperCase().contains('IMATINIB'.toUpperCase())){
             newlist.add(g.AltBrandName)
           }
-    else if((g.containsKey('FormularyAlternatives') && "Halog" in g.get('FormularyAlternatives').AltBrandName)){
+    else if((g.containsKey('FormularyAlternatives') && "IMATINIB".toUpperCase() in g.get('FormularyAlternatives').AltBrandName)){
          g.get('FormularyAlternatives').each{ h ->
-            if(h.AltBrandName == "Halog".toUpperCase()){
+            if(h.AltBrandName == "IMATINIB".toUpperCase()){
                 newlist.add(h.AltBrandName)
             }
         }
