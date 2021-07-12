@@ -3,98 +3,54 @@
     "operation": "loadpage"
   },
   "b": {
-    "operation": "keys",
-    "selector": "xpath",
-    "name": "//*[@id=\"drugNameInput\"]",
-    "value": "abilify",
-    "searchfix": true,
-    "postDelay": 50,
-    "delay": 500
+    "operation": "token",
+    "url": "https://www.optumrx.com/bin/oauth/token"
   },
   "c": {
-    "operation": "captureList",
-    "selector": "xpath",
-    "name": "//ul[contains(@class,\"dropdown-menu\")]//a",
-    "type": "text",
-    "variable": "searchterms"
+    "operation": "extendablefetcher",
+    "authheader": true,
+    "javascriptOperator": "var callback = arguments[arguments.length-1];\\nvar strFirstThree = 'Abilify'.substring(0,3);\\nvar url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=$planval&userType=$userval&viewMode=NAME'\\nfetch(url,\\n{ headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',\\n'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',\\n'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})\\n.then(response => response.json())\\n.then(data => {callback(data.Drugs);});\\n",
+    "variable": "autocompletelist"
   },
   "d": {
-    "operation": "parallel",
+    "operation": "filter",
+    "fromvariable": "autocompletelist",
+    "tovariable": "filteredautocompletelist",
+    "type": "filtermap",
+    "evaluation": "def newlist = [];\\ncapturelists.get('autocompletelist').each { g->\\n if( g.containsKey('BrandName') && g.get('BrandName').toString().toUpperCase().contains('Abilify'.toUpperCase())){\\n  newlist.add(g.BrandName)\\n}\\nelse if( g.containsKey('AltBrandName') && g.get('AltBrandName').toString().toUpperCase().contains('Abilify'.toUpperCase())){\\n        newlist.add(g.AltBrandName)\\n      }\\nelse if((g.containsKey('FormularyAlternatives') && 'Abilify' in g.get('FormularyAlternatives').AltBrandName)){\\n     g.get('FormularyAlternatives').each{ h->\\n        if(h.AltBrandName == 'Abilify'.toUpperCase()){\\n            newlist.add(h.AltBrandName)\\n        }\\n    }}\\nreturn newlist.unique();\\n"
+  },
+  "e": {
+    "operation": "loop",
     "type": "variable",
-    "variable": "searchterms",
-    "subscript": "searchitem",
-    "parallelizm": 3
+    "variable": "filteredautocompletelist",
+    "subscript": "autocompleteloop"
+  },
+  "f": {
+    "operation": "loop",
+    "type": "variable",
+    "variable": "druglist",
+    "subscript": "druglookup"
+  },
+  "g": {
+    "operation": "capturelisttosnapshots",
+    "variable": "drugResults"
   },
   "subscripts": {
-    "searchitem": {
-      "a": {
-        "operation": "loadpage"
-      },
-      "b": {
-        "operation": "keys",
-        "selector": "xpath",
-        "name": "//*[@id=\"drugNameInput\"]",
-        "value": "${loopvalue}",
-        "searchfix": true,
-        "postDelay": 50,
-        "delay": 500
-      },
-      "c": {
-        "operation": "click",
-        "selector": "xpath",
-        "name": "//ul[contains(@class,\"dropdown-menu\")]//a[1]"
-      },
-      "d": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[contains(@class, 'btn') and text() = 'Coverage details']",
-        "timeout": 20
-      },
+    "autocompleteloop": {
       "e": {
-        "operation": "snapshot"
-      },
-      "f": {
-        "operation": "captureList",
-        "selector": "xpath",
-        "name": "//a[@class=\"btn no-link ng-binding\"]",
-        "type": "xpath",
-        "variable": "dosagelabels"
-      },
-      "g": {
-        "operation": "loop",
-        "type": "variable",
-        "variable": "dosagelabels",
-        "subscript": "doseSubScript"
-      },
-      "subscripts": {
-        "doseSubScript": {
-          "1-wait": {
-            "operation": "wait",
-            "selector": "xpath",
-            "name": "//*[contains(@class, 'btn') and text() = 'Coverage details']",
-            "timeout": 20
-          },
-          "2-click": {
-            "operation": "jsclick",
-            "selector": "xpath",
-            "name": "//{variable}",
-            "variable": true
-          },
-          "3-wait": {
-            "operation": "wait",
-            "selector": "xpath",
-            "name": "//*[contains(@class, 'data-table')]/tr[1]/td[2][string-length(text()) > 0]",
-            "timeout": 20
-          },
-          "4-subscript": {
-            "operation": "snapshot"
-          },
-          "5-backup": {
-            "operation": "click",
-            "selector": "xpath",
-            "name": "//div/p/a[@data-ng-click='backToMedicationCabinet()']"
-          }
-        }
+        "operation": "extendablefetcher",
+        "authheader": true,
+        "javascriptOperator": "var callback = arguments[arguments.length-1];\\nfetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=$planval&userType=$userval&viewMode=NAME&drugName={variable}&ctime=1625570965087',\\n{ headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',\\n'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',\\n'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})\\n.then(response => response.json())\\n.then(data => {callback(data.Drugs);});\\n",
+        "variable": "druglist"
+      }
+    },
+    "druglookup": {
+      "a": {
+        "operation": "extendablefetcher",
+        "authheader": true,
+        "javascriptOperator": "var callback = arguments[arguments.length-1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=$planval&userType=$userval&viewMode=id&drugId={variable}&ctime=1625499684610',\\n{ headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',\\n      'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',\\n      'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})\\n.then(response => response.json())\\n.then(data => {callback(data.Drugs);});",
+        "variable": "drugResults",
+        "variableMapValue": "Id"
       }
     }
   }
