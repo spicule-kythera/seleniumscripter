@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
@@ -148,7 +149,7 @@ public class SeleniumScripter {
      * @param script the serialized selenium script
      * @throws IOException occurs when a snapshot image failed to save to disk
      * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
-     * @throws ParseException occurs when one of the required fields is missing
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
     public void runScript(Map<String, Object> script) throws IOException,
@@ -163,7 +164,7 @@ public class SeleniumScripter {
      * @param script the serialized selenium script
      * @throws IOException occurs when a snapshot image failed to save to disk
      * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
-     * @throws ParseException occurs when one of the required fields is missing
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
     public void runScript(Map<String, Object> script, Object loopValue) throws IOException,
@@ -259,10 +260,25 @@ public class SeleniumScripter {
     }
 
     /**
+     * Runs a sequence of instructions
+     * @param sequence
+     */
+    private void runSubsequence(List<Map<String, String>> sequence) throws IOException,
+                                                                        AttributeNotFoundException,
+                                                                        ParseException,
+                                                                        InterruptedException {
+        for (Map<String, String> instruction : sequence) {
+            Map<String, Object> catchBlock = new HashMap<>();
+            catchBlock.put("catch", instruction);
+            runScript(catchBlock);
+        }
+    }
+
+    /**
      * Create a capture list.
      *      A "captured list" is a list of elements or labels which can be iterated over, elsewhere.
      * @param script the capture-list subscript operation
-     * @throws ParseException occurs when the required fields are not specified
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      */
     private void captureListOperation(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name"}); // Validation
@@ -342,7 +358,7 @@ public class SeleniumScripter {
     /**
      * Process a logical `if` block.
      * @param script if-block subscript operation
-     * @throws ParseException occurs when one of the required fields is missing
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
      * @throws IOException occurs when a snapshot in a child-instruction fails to write to disk
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
@@ -383,22 +399,14 @@ public class SeleniumScripter {
                 comparison = left_operand.contains(right_operand);
                 break;
             default:
-                comparison = false;
+                throw new ParseException("Invalid comparison operator: `" + operator + "`!", 0);
         }
 
         // Run the resulting logic block
         if(comparison) {
-            for (Map<String, String> thenSubBlock : thenBody) {
-                Map<String, Object> thenBlock = new HashMap<>();
-                thenBlock.put("then", thenSubBlock);
-                runScript(thenBlock);
-            }
+            runSubsequence(thenBody);
         } else if(elseBody != null) {
-            for (Map<String, String> elseSubBlock : elseBody) {
-                Map<String, Object> elseBlock = new HashMap<>();
-                elseBlock.put("then", elseSubBlock);
-                runScript(elseBlock);
-            }
+            runSubsequence(elseBody);
         }
         else {
             LOG.warn("Condition did not meet, and no `else` clause was specified! Falling through...");
@@ -409,7 +417,7 @@ public class SeleniumScripter {
      * Inject content onto the snapshot stack.
      *      If unspecified, the content is an error message indicating token info was not found.
      * @param script the inject-content subscript instruction
-     * @throws ParseException occurs when the required fields are not specified
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      */
     private void injectContentOperation(Map<String, Object> script) throws ParseException {
         validate(script, "type"); // Validation
@@ -501,7 +509,7 @@ public class SeleniumScripter {
      * Send keyboard input to specified web element.
      * @param script the send-key subscript operation
      * @throws InterruptedException occurs when  an interruption signal is raised after sleeping
-     * @throws ParseException occurs when the required fields are not specified
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      */
     private void keysOperation(Map<String, Object> script) throws InterruptedException, ParseException {
         validate(script, new String[] {"selector", "name", "value"}); // Validation
@@ -604,7 +612,7 @@ public class SeleniumScripter {
     /**
      * Interact with a select-dropdown web element.
      * @param script the select subscript operation
-     * @throws ParseException occurs when the required fields are not specified
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      */
     private void selectOperation(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name", "selectBy", "value"}); // Validation
@@ -705,7 +713,7 @@ public class SeleniumScripter {
     /**
      * Process a logical `try` block.
      * @param script if-block subscript operation
-     * @throws ParseException occurs when one of the required fields is missing
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
      * @throws IOException occurs when a snapshot in a child-instruction fails to write to disk
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
@@ -714,26 +722,32 @@ public class SeleniumScripter {
                                                                  AttributeNotFoundException,
                                                                  IOException,
                                                                  InterruptedException {
-        validate(script, new String[] {"try", "catch"});
+        validate(script, new String[] {"try", "catch", "expect"}); // Validation
 
         // Fetch the instruction blocks
         List<Map<String, String>> tryBody = (List<Map<String, String>>) script.get("try");
         List<Map<String, String>> catchBody = (List<Map<String, String>>) script.get("catch");
+        List<String> raw_expect = ((List<String>) script.get("expect"))
+                                                        .stream()
+                                                        .map(String::toLowerCase)
+                                                        .collect(Collectors.toList());
 
         try {
-            for (Map<String, String> trySubBlock : tryBody) {
-                Map<String, Object> tryBlock = new HashMap<>();
-                tryBlock.put("try", trySubBlock);
-                runScript(tryBlock);
-            }
-        } catch (NoSuchElementException | TimeoutException | AttributeNotFoundException e) {
-            LOG.error("Caught a " + e.getClass() + " error inside of a try operation:");
-            e.printStackTrace();
+            // Try to run the sequence of instructions
+            runSubsequence(tryBody);
+        } catch (Exception e) {
+            // Fetch the error root name
+            String[] parts = e.getClass().toString().split("\\.");
+            String name = parts[parts.length - 1].toLowerCase();
 
-            for (Map<String, String> catchSubBlock : catchBody) {
-                Map<String, Object> catchBlock = new HashMap<>();
-                catchBlock.put("catch", catchSubBlock);
-                runScript(catchBlock);
+            if(raw_expect.contains(name)) { // If the error type was specified, run the catch block
+                // Run the catch sequence of instructions if any of the special exceptions occur
+                LOG.warn("Caught specified error of type " + e.getClass() + " inside a try operation:");
+                e.printStackTrace();
+
+                runSubsequence(catchBody);
+            } else { // Otherwise, re-throw the error
+                throw e;
             }
         }
     }
@@ -741,7 +755,7 @@ public class SeleniumScripter {
     /**
      * Wait for an element to exist and become visible in the browser viewport.
      * @param script the wait subscript operation
-     * @throws ParseException occurs when the required fields are not specified
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      */
     private void waitOperation(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name"}); // Validation
