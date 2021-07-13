@@ -3,10 +3,12 @@
   timeout: 2
 1:
   operation: try
+  expect:
+    - TimeoutException
   try:
     - operation: if
       selector: css
-      name: "#ember35 > div > div"
+      name: "#embear35 > div > div"
       condition:
         - textContent
         - contains
