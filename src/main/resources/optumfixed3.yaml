@@ -9,7 +9,7 @@ c:
   authheader: true
   javascriptOperator: |
     var callback = arguments[arguments.length - 1];
-    var strFirstThree = 'IMATINIB'.substring(0,3);
+    var strFirstThree = 'Abilify'.substring(0,3);
     var url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=PHSCA&userType=other&viewMode=NAME'
     fetch(url,
     { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
@@ -26,15 +26,15 @@ d:
   evaluation: |
     def newlist = [];
     capturelists.get('autocompletelist').each { g ->
-     if( g.containsKey('BrandName') && g.get('BrandName').toString().toUpperCase().contains('IMATINIB'.toUpperCase())){
+     if( g.containsKey('BrandName') && g.get('BrandName').toString().toUpperCase().contains('Abilify'.toUpperCase())){
       newlist.add(g.BrandName)
     }
-    else if( g.containsKey('AltBrandName') && g.get('AltBrandName').toString().toUpperCase().contains('IMATINIB'.toUpperCase())){
+    else if( g.containsKey('AltBrandName') && g.get('AltBrandName').toString().toUpperCase().contains('Abilify'.toUpperCase())){
             newlist.add(g.AltBrandName)
           }
-    else if((g.containsKey('FormularyAlternatives') && "IMATINIB".toUpperCase() in g.get('FormularyAlternatives').AltBrandName)){
+    else if((g.containsKey('FormularyAlternatives') && "Abilify".toUpperCase() in g.get('FormularyAlternatives').AltBrandName)){
          g.get('FormularyAlternatives').each{ h ->
-            if(h.AltBrandName == "IMATINIB".toUpperCase()){
+            if(h.AltBrandName == "Abilify".toUpperCase()){
                 newlist.add(h.AltBrandName)
             }
         }

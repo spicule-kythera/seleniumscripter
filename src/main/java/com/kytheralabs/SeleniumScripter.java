@@ -299,11 +299,15 @@ public class SeleniumScripter {
     }
 
     private void capturelisttosnapshotsOperation(Map<String, Object> subscript) {
-        List l = captureLists.get(subscript.get("variable").toString());
+        if(captureLists.containsKey(subscript.get("variable").toString())) {
+            List l = captureLists.get(subscript.get("variable").toString());
 
-        for(Object m : l){
-            String sshot = JSONValue.toJSONString(m);
-            this.snapshots.add(sshot);
+            for (Object m : l) {
+                String sshot = JSONValue.toJSONString(m);
+                this.snapshots.add(sshot);
+            }
+        } else{
+            LOG.info("No capturelists named "+subscript.get("variable").toString()+" to convert to snapshots.");
         }
     }
 
@@ -614,21 +618,25 @@ public class SeleniumScripter {
         validate(script, new String[] {"variable", "subscript"}); // Validation
 
         String variableName = script.get("variable").toString();
-        List<String> vars = captureLists.get(variableName);
+        if(captureLists.containsKey(variableName)) {
+            List<String> vars = captureLists.get(variableName);
 
-        LOG.info("Performing Variable Loop for: " + variableName);
-        for (Object v : vars) {
-            Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
-            Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) subscripts.get(script.get("subscript")));
-            LOG.info("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
-            try {
-                runScript(subscript, v);
-            } catch (Exception e){
-                LOG.error(e);
-                if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
-                    break;
+            LOG.info("Performing Variable Loop for: " + variableName);
+            for (Object v : vars) {
+                Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
+                Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) subscripts.get(script.get("subscript")));
+                LOG.info("Looping for variable: " + v + " . Using subscript: " + script.get("subscript"));
+                try {
+                    runScript(subscript, v);
+                } catch (Exception e) {
+                    LOG.error(e);
+                    if (!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)) {
+                        break;
+                    }
                 }
             }
+        } else{
+            LOG.info("No capturelist of that name found");
         }
     }
 
@@ -656,7 +664,6 @@ public class SeleniumScripter {
 
         Binding sharedData = new Binding();
         GroovyShell shell = new GroovyShell(sharedData);
-        Date now = new Date();
         sharedData.setProperty("capturelists", captureLists);
 
         Object result = shell.evaluate(script);
