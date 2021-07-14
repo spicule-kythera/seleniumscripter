@@ -65,58 +65,13 @@ public class SeleniumScripter {
     }
 
     /**
-     * Find a single web element. THIS IS AN UNSAFE FUNCTION, it does not guarantee existence or visibility.
-     * @param selector the method of HTML element selection
-     * @param name the attribute value of the element to select
-     * @return WebElement
-     */
-    private WebElement findElement(String selector, String name) {
-        switch (selector) {
-            case "id":
-                return driver.findElement(By.id(name));
-            case "class":
-                return driver.findElement(By.className(name));
-            case "cssSelector":
-                return driver.findElement(By.cssSelector(name));
-            case "xpath":
-                return driver.findElement(By.xpath(name));
-            case "name":
-                return driver.findElement(By.name(name));
-            default:
-                throw new NotFoundException("Could not find element with " + selector + " of " + name);
-        }
-    }
-
-    /**
-     * Find multiple web elements. THIS IS AN UNSAFE FUNCTION, it does not guarantee existence or visibility.
-     * @param selector the method of HTML element selection
-     * @param name the attribute value of the element to select
-     * @return List<WebElement>
-     */
-    private List<WebElement> findElements(String selector, String name) {
-        switch (selector) {
-            case "id":
-                return driver.findElements(By.id(name));
-            case "class":
-                return driver.findElements(By.className(name));
-            case "cssSelector":
-                return driver.findElements(By.cssSelector(name));
-            case "xpath":
-                return driver.findElements(By.xpath(name));
-            case "name":
-                return driver.findElements(By.name(name));
-            default:
-                throw new NotFoundException("Could not find element with " + selector + " of " + name);
-        }
-    }
-
-    /**
      * Convert selector and value string to a `selenium.By` object
      * @param selector the HTML selection method
      * @param name the value of the selection attribute
+     * @throws ParseException occurs when an invalid selector value is specified
      * @return By the desired element
      */
-    private By ByElement(String selector, String name) {
+    private By by(String selector, String name) throws ParseException {
         switch (selector) {
             case "id":
                 return By.id(name);
@@ -130,7 +85,7 @@ public class SeleniumScripter {
             case "name":
                 return By.name(name);
             default:
-                return null;
+                throw new ParseException("Invalid selector type: `" + selector + "`", 0);
         }
     }
 
@@ -283,7 +238,10 @@ public class SeleniumScripter {
     private void captureListOperation(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name"}); // Validation
 
-        List<WebElement> webElements = findElements(script.get("selector").toString(), script.get("name").toString());
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+
+        List<WebElement> webElements = driver.findElements(by(selector, name));
         String type = "text";
         if(script.containsKey("collect")){
             type = script.get("collect").toString();
@@ -333,7 +291,7 @@ public class SeleniumScripter {
             name = name.replace("{variable}", this.loopValue.toString());
         }
 
-        WebElement element = driver.findElement(ByElement(selector, name));
+        WebElement element = driver.findElement(by(selector, name));
         if(element == null) { // If the element wasn't found, pass that info back
             throw new NoSuchElementException("Attempted to click element with a " + selector + " of `" + name + "` but no such element was found!");
         }
@@ -349,7 +307,10 @@ public class SeleniumScripter {
     private void clickListItemOperation(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name"}); // Validation
 
-        List<WebElement> element = findElements(script.get("selector").toString(), script.get("name").toString());
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+
+        List<WebElement> element = driver.findElements(by(selector, name));
         int i = ((Double) script.get("item")).intValue();
         LOG.info("Clicking list item");
         element.get(i).click();
@@ -373,7 +334,7 @@ public class SeleniumScripter {
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
         WebElement e = new WebDriverWait(driver, 0)
-                .until(ExpectedConditions.presenceOfElementLocated(ByElement(selector, name)));
+                .until(ExpectedConditions.presenceOfElementLocated(by(selector, name)));
 
         // Fetch the instruction blocks
         List<String> condition = (List<String>) script.get("condition");
@@ -478,7 +439,7 @@ public class SeleniumScripter {
             name = name.replace("{variable}", this.loopValue.toString());
         }
 
-        WebElement element = driver.findElement(ByElement(selector, name));
+        WebElement element = driver.findElement(by(selector, name));
         if(element == null) { // If the element wasn't found, pass that info back
             throw new NoSuchElementException("Attempted to click element with a " + selector + " of `" + name + "` but no such element was found!");
         }
@@ -514,31 +475,41 @@ public class SeleniumScripter {
     private void keysOperation(Map<String, Object> script) throws InterruptedException, ParseException {
         validate(script, new String[] {"selector", "name", "value"}); // Validation
 
-        WebElement element = findElement(script.get("selector").toString(), script.get("name").toString());
+        // Get all of the instruction parameters or field defaults
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
         String input = script.get("value").toString().toLowerCase();
         int charDelay = Integer.parseInt(script.getOrDefault("delay", 300).toString());
         int postInputDelay = Integer.parseInt(script.getOrDefault("postDelay", 5000).toString());
 
-        if ("{enter}".equals(input)) {
-            element.sendKeys(Keys.ENTER);
-        } else if ("{return}".equals(input)) {
-            element.sendKeys(Keys.RETURN);
-        } else if ("{down}".equals(input)) {
-            element.sendKeys(Keys.ARROW_DOWN);
-        } else { // If input is none of the keywords then slow-type the input
-            // Convert the input to loop-value if it's said keyword
-            input = (input.equals("${loopvalue}")) ? this.loopValue.toString() : input;
+        WebElement element = driver.findElement(by(selector, name)); // Fetch the input field
 
-            // Clear the input field
-            element.clear();
+        // Determine the correct
+        switch (input) {
+            case "{enter}":
+                element.sendKeys(Keys.ENTER);
+                break;
+            case "{return}":
+                element.sendKeys(Keys.RETURN);
+                break;
+            case "{down}":
+                element.sendKeys(Keys.ARROW_DOWN);
+                break;
+            default:  // If input is none of the keywords then slow-type the input
+                // Convert the input to loop-value if it's said keyword
+                input = (input.equals("${loopvalue}")) ? this.loopValue.toString() : input;
 
-            // Slow-type each character
-            for (char s : input.toCharArray()) {
-                LOG.info("Inserting: " + s);
-                element.sendKeys(String.valueOf(s));
-                Thread.sleep(charDelay);
-            }
-            Thread.sleep(postInputDelay); // Wait even more for some reason?
+                // Clear the input field
+                element.clear();
+
+                // Slow-type each character
+                for (char s : input.toCharArray()) {
+                    LOG.info("Inserting: " + s);
+                    element.sendKeys(String.valueOf(s));
+                    Thread.sleep(charDelay);
+                }
+                Thread.sleep(postInputDelay); // Wait some more
+                break;
         }
     }
 
@@ -622,7 +593,7 @@ public class SeleniumScripter {
         String selectBy = script.get("selectBy").toString();
         String value = script.get("value").toString();
 
-        Select selectElement = new Select(driver.findElement(ByElement(selector, name)));
+        Select selectElement = new Select(driver.findElement(by(selector, name)));
 
         LOG.info("Selecting option in dropdown by `" + selectBy + "`...");
         switch(selectBy.toLowerCase()) {
@@ -669,35 +640,38 @@ public class SeleniumScripter {
     private void tableOperation(Map<String, Object> script) throws IOException, AttributeNotFoundException, ParseException, InterruptedException {
         // validate(script, new String[] {""}); // Validation
 
+        // Get script parameters or fill the defaults
+        String selector = script.get("name").toString();
+        String name = script.get("name").toString();
         int offset = Integer.parseInt(script.getOrDefault("rowoffset", 0).toString());
 
         while (true) {
-            List<WebElement>  allRows = findElements(script.get("selector").toString(), script.get("name").toString());
-            int tableSize = allRows.size();
+            List<WebElement>  rows = driver.findElements(by(selector, name));
+            int tableSize = rows.size();
 
             LOG.debug("Found " + tableSize + " rows in table!");
 
             if(tableSize <= offset){
                 break;
             }
+
             for (int i = offset; i < tableSize; i++) {
-                String xpath = script.get("name").toString();
-                xpath = xpath + "[" + i + "]";
-                allRows = findElements(script.get("selector").toString(), xpath);
-                allRows.get(0).click();
+                name = name + "[" + i + "]";
+                rows = driver.findElements(by(selector, name));
+                rows.get(0).click();
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
                 runScript(subscript, null);
                 WebDriverWait wait = new WebDriverWait(driver, 180);
                 LOG.debug("Waiting for object: "+script.get("name").toString());
-                wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
+                wait.until(ExpectedConditions.visibilityOfElementLocated(by(script.get("selector").toString(), script.get("name").toString())));
             }
             if (script.containsKey("nextbuttonscript")) {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("nextbuttonscript"));
                 Map<String, Object> nextbuttonAttrs = (Map<String, Object>) script.get("nextbutton");
                 try{
-                    findElement(nextbuttonAttrs.get("selector").toString(), nextbuttonAttrs.get("name").toString());
+                    driver.findElements(by(selector, name));
                     runScript(subscript, null);
                 } catch(org.openqa.selenium.NoSuchElementException e){
                     LOG.info("Can't find next button, exiting loop");
@@ -776,7 +750,7 @@ public class SeleniumScripter {
 
         // Wait for element
         WebElement element = new WebDriverWait(driver, timeout)
-                .until(ExpectedConditions.visibilityOfElementLocated(ByElement(selector, name)));
+                .until(ExpectedConditions.visibilityOfElementLocated(by(selector, name)));
         assert element.isDisplayed();
     }
 }
