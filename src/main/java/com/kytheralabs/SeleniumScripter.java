@@ -13,6 +13,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import javax.management.AttributeNotFoundException;
 import java.io.File;
 import java.io.IOException;
+import java.io.NotActiveException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -22,6 +23,7 @@ import java.util.stream.Collectors;
  */
 public class SeleniumScripter {
     // Constant things
+    private boolean DEV_MODE = true;
     private final String url; // The initial url the agent starts at
     private final WebDriver driver; // The web driver
     private final long defaultWaitTimeout = 30; // The default element wait timeout in seconds
@@ -35,6 +37,12 @@ public class SeleniumScripter {
     public SeleniumScripter(WebDriver driver) {
         this.driver = driver;
         url = driver.getCurrentUrl();
+    }
+
+    public SeleniumScripter(WebDriver driver, boolean DEV_MODE) {
+        this.driver = driver;
+        url = driver.getCurrentUrl();
+        this.DEV_MODE = DEV_MODE;
     }
 
     /**
@@ -164,9 +172,9 @@ public class SeleniumScripter {
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
     public void runScript(Map<String, Object> script) throws IOException,
-                                                                               AttributeNotFoundException,
-                                                                               ParseException,
-                                                                               InterruptedException {
+                                                             AttributeNotFoundException,
+                                                             ParseException,
+                                                             InterruptedException {
         for (Map.Entry instruction : script.entrySet()) {
             String instructionName = instruction.getKey().toString();
             Object instructionBlock = instruction.getValue();
@@ -217,6 +225,9 @@ public class SeleniumScripter {
                         break;
                     case "noop":
                         break;
+                    case "pause":
+                        pauseOperation(subscript);
+                        break;
                     case "restore":
                         restoreOperation(subscript);
                         break;
@@ -228,9 +239,6 @@ public class SeleniumScripter {
                         break;
                     case "snapshot":
                         snapshotOperation();
-                        break;
-                    case "table":
-                        tableOperation(subscript);
                         break;
                     case "try":
                         tryOperation(subscript);
@@ -701,61 +709,6 @@ public class SeleniumScripter {
     }
 
     /**
-     * Iterate through a tables rows and perform a subscript on each row.
-     * @param script the iterate-table subscript operation
-     * @throws IOException when a snapshot image failed to save to disk\
-     * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
-     * @throws ParseException when a parsing error was found in the script
-     * @throws InterruptedException when the process wakes up from a sleep event
-     */
-    private void tableOperation(Map<String, Object> script) throws IOException, AttributeNotFoundException, ParseException, InterruptedException {
-        // validate(script, new String[] {""}); // Validation
-
-        // Get script parameters or fill the defaults
-//        String selector = script.get("name").toString();
-//        String name = script.get("name").toString();
-//        int offset = Integer.parseInt(script.getOrDefault("rowoffset", 0).toString());
-//
-//        while (true) {
-//            List<WebElement>  rows = driver.findElements(by(selector, name));
-//            int tableSize = rows.size();
-//
-//            LOG.debug("Found " + tableSize + " rows in table!");
-//
-//            if(tableSize <= offset){
-//                break;
-//            }
-//
-//            for (int i = offset; i < tableSize; i++) {
-//                name = name + "[" + i + "]";
-//                rows = driver.findElements(by(selector, name));
-//                rows.get(0).click();
-//                Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
-//                Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
-//                runScript(subscript, null);
-//                WebDriverWait wait = new WebDriverWait(driver, 180);
-//                LOG.debug("Waiting for object: "+script.get("name").toString());
-//                wait.until(ExpectedConditions.visibilityOfElementLocated(by(script.get("selector").toString(), script.get("name").toString())));
-//            }
-//            if (script.containsKey("nextbuttonscript")) {
-//                Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
-//                Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("nextbuttonscript"));
-//                Map<String, Object> nextbuttonAttrs = (Map<String, Object>) script.get("nextbutton");
-//                try{
-//                    driver.findElements(by(selector, name));
-//                    runScript(subscript, null);
-//                } catch(org.openqa.selenium.NoSuchElementException e){
-//                    LOG.info("Can't find next button, exiting loop");
-//                    break;
-//                }
-//            } else {
-//                LOG.debug("Now more rows left to parse");
-//                break;
-//            }
-//        }
-    }
-
-    /**
      * Process a logical `try` block.
      * @param script if-block subscript operation
      * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
@@ -795,6 +748,28 @@ public class SeleniumScripter {
                 throw e;
             }
         }
+    }
+
+    /**
+     * DEV TOOL
+     * Unconditionally pauses the script.
+     * @param script the pause subscript operation
+     * @throws ParseException occurs when an invalid timeout is specified
+     * @throws NotActiveException occurs when development mode is not first enabled
+     */
+    private void pauseOperation(Map<String, Object> script) throws ParseException,
+                                                                   NotActiveException,
+                                                                   InterruptedException {
+        if(!DEV_MODE) { // Validate that dev mode is enabled
+            throw new NotActiveException("The `pause` operation is for development purposes only and not available in a production environment!");
+        }
+
+        // Get the specified pause time or fill the default
+        String raw_timeout = script.getOrDefault("timeout", defaultWaitTimeout).toString();
+        int timeout = parseNumber(raw_timeout).intValue() * 1000;
+
+        // Start the pause
+        Thread.sleep(timeout);
     }
 
     /**

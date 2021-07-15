@@ -45,10 +45,10 @@
         slice: '0:-2'
         variable: row_xpath
       do:
-        - operation: loadPage
         - operation: try
           expect:
             - NoSuchElementException
+            - TimeOutException
           try:
             - operation: jsClick
               selector: xpath
@@ -63,4 +63,17 @@
           catch:
             - operation: injectContent
               type: html
-    - operation: jsBack
+    - operation: wait
+      selector: css
+      name: '.iC_DataListPager > td > a:last-child'
+    - operation: if
+      selector: css
+      name: '.iC_DataListPager > td > a:last-child'
+      condition:
+        - text
+        - equals
+        - Next
+      then:
+        - operation: jsclick
+          selector: css
+          name: '.iC_DataListPager > td > a:last-child'

@@ -91,7 +91,7 @@ public class TestSeleniumScripter {
         };
         System.out.println("URL: " + url);
         driver.get(url);
-        SeleniumScripter scriptRunner = new SeleniumScripter(driver);
+        SeleniumScripter scriptRunner = new SeleniumScripter(driver, true);
         scriptRunner.runScript(script);
         System.out.println("Took " + scriptRunner.getSnapshots().size() + " snapshots for this agent!");
     }
