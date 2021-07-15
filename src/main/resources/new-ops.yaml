@@ -1,0 +1,15 @@
+0:
+  operation: set
+  variable: 5th_row
+  type: element
+  value:
+    selector: css
+    name: '#MainContent_GenericPageCtrl1_Datalist > tbody > tr:nth(5)'
+1:
+  operation: set
+  variable: some_literal_xpath_name
+  type: literal
+  value: '//*[@id="ctl00_MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_ctl00_ctl02_SearchButton"]'
+2:
+  operation: pause
+  timeout: 6

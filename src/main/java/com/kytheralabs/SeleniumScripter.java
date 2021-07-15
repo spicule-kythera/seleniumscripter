@@ -1,5 +1,6 @@
 package com.kytheralabs;
 
+import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -12,6 +13,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import javax.management.AttributeNotFoundException;
 import java.io.File;
 import java.io.IOException;
+import java.io.NotActiveException;
 import java.text.ParseException;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -20,23 +22,61 @@ import java.util.stream.Collectors;
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
-    // Variables
-    private Object loopValue;
-    private Map<String, Object> masterScript;
-
-    // Constants
+    // Constant things
+    private boolean DEV_MODE = false;
+    private final String url; // The initial url the agent starts at
     private final WebDriver driver; // The web driver
-    private final String url;
     private final long defaultWaitTimeout = 30; // The default element wait timeout in seconds
     private final List<String> snapshots = new ArrayList<>(); // The stack of HTML content to return to the crawl
-    private final Map<String, List> captureLists = new HashMap<>(); // Something?
+    private final Map<String, List> captureLists = new HashMap<>(); // A list of HTML content for capturing search suggestions
+    private final Map<String, Object> scriptVariables = new HashMap<>(); // Variables instantiated by the script
 
-    // Logger
-    private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class);
+    // Static things
+    private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class); // Application logger
 
-    public SeleniumScripter(WebDriver driver){
+    public SeleniumScripter(WebDriver driver) {
         this.driver = driver;
         url = driver.getCurrentUrl();
+    }
+
+    public SeleniumScripter(WebDriver driver, boolean DEV_MODE) {
+        this.driver = driver;
+        url = driver.getCurrentUrl();
+        this.DEV_MODE = DEV_MODE;
+
+        if(this.DEV_MODE){
+            LOG.warn("Development mode is enabled!");
+        }
+    }
+
+    /**
+     * Slice an array into a sublist
+     * @param slice the slice string which must conform to the pattern `^-{0,1}[0-9]+:-{0,1}[0-9]+$`
+     * @param list the list to slice
+     * @return List<Object> the sliced list
+     * @throws ParseException occurs when an invalid slice string is specified
+     */
+    private List slice(String slice, List list) throws ParseException {
+        // Validate that the slice is formatted correctly
+        if(!slice.matches("-{0,1}[0-9]+:-{0,1}[0-9]+")) {
+            throw new ParseException("Invalid slice specification, must match pattern: `^-{0,1}[0-9]+:-{0,1}[0-9]+$`!", 0);
+        }
+
+        String[] parts = slice.split(":");
+
+        // Fetch the raw values
+        int start = Integer.parseInt(parts[0]);
+        int end = Integer.parseInt(parts[1]);
+
+        // Invert the index position if the number is negative
+        if(start < 0) {
+            start += list.size();
+        }
+        if(end < 0) {
+            end += list.size();
+        }
+
+        return list.subList(start, end);
     }
 
     private Number parseNumber(String number) throws ParseException {
@@ -65,58 +105,13 @@ public class SeleniumScripter {
     }
 
     /**
-     * Find a single web element. THIS IS AN UNSAFE FUNCTION, it does not guarantee existence or visibility.
-     * @param selector the method of HTML element selection
-     * @param name the attribute value of the element to select
-     * @return WebElement
-     */
-    private WebElement findElement(String selector, String name) {
-        switch (selector) {
-            case "id":
-                return driver.findElement(By.id(name));
-            case "class":
-                return driver.findElement(By.className(name));
-            case "cssSelector":
-                return driver.findElement(By.cssSelector(name));
-            case "xpath":
-                return driver.findElement(By.xpath(name));
-            case "name":
-                return driver.findElement(By.name(name));
-            default:
-                throw new NotFoundException("Could not find element with " + selector + " of " + name);
-        }
-    }
-
-    /**
-     * Find multiple web elements. THIS IS AN UNSAFE FUNCTION, it does not guarantee existence or visibility.
-     * @param selector the method of HTML element selection
-     * @param name the attribute value of the element to select
-     * @return List<WebElement>
-     */
-    private List<WebElement> findElements(String selector, String name) {
-        switch (selector) {
-            case "id":
-                return driver.findElements(By.id(name));
-            case "class":
-                return driver.findElements(By.className(name));
-            case "cssSelector":
-                return driver.findElements(By.cssSelector(name));
-            case "xpath":
-                return driver.findElements(By.xpath(name));
-            case "name":
-                return driver.findElements(By.name(name));
-            default:
-                throw new NotFoundException("Could not find element with " + selector + " of " + name);
-        }
-    }
-
-    /**
      * Convert selector and value string to a `selenium.By` object
      * @param selector the HTML selection method
      * @param name the value of the selection attribute
+     * @throws ParseException occurs when an invalid selector value is specified
      * @return By the desired element
      */
-    private By ByElement(String selector, String name) {
+    private By by(String selector, String name) throws ParseException {
         switch (selector) {
             case "id":
                 return By.id(name);
@@ -130,8 +125,37 @@ public class SeleniumScripter {
             case "name":
                 return By.name(name);
             default:
-                return null;
+                throw new ParseException("Invalid selector type: `" + selector + "`", 0);
         }
+    }
+
+    /**
+     * Resolve the value of a variable-expression, if any was specified
+     * @param expression the original expression
+     * @return the fully resolved expression
+     * @throws ValueException occurs when the requested variable name was not instantiated
+     */
+    private String resolveExpressionValue(String expression) throws ValueException {
+        // If the brackets indicators `{}` are not in the expression, then just return the literal value
+        if (!expression.matches(".*\\{[a-zA-Z][a-zA-Z_0-9]*}.*")) {
+            return expression;
+        }
+
+        int start = expression.indexOf("{") + 1;
+        int end = expression.indexOf("}");
+
+        // Trim the brackets `{}` to get just the variable name
+        String name = expression.subSequence(start, end).toString();
+
+        // Throw a value error if the variable wasn't defined
+        if(!scriptVariables.containsKey(name)) {
+            throw new ValueException("The script did not instantiate the variable `" + name + "`!");
+        }
+
+        // Get the value of the variable
+        String value = scriptVariables.get(name).toString();
+
+        return expression.replace("{" + name + "}", value);
     }
 
     /**
@@ -145,7 +169,6 @@ public class SeleniumScripter {
 
     /**
      * Run a selenium script.
-     *      A wrapper for `SeleniumScripter::runScript(script, loopValue) where loopValue is null.
      * @param script the serialized selenium script
      * @throws IOException occurs when a snapshot image failed to save to disk
      * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
@@ -156,39 +179,17 @@ public class SeleniumScripter {
                                                              AttributeNotFoundException,
                                                              ParseException,
                                                              InterruptedException {
-        runScript(script, null);
-    }
-
-    /**
-     * Run a selenium script.
-     * @param script the serialized selenium script
-     * @throws IOException occurs when a snapshot image failed to save to disk
-     * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
-     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
-     * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
-     */
-    public void runScript(Map<String, Object> script, Object loopValue) throws IOException,
-                                                                               AttributeNotFoundException,
-                                                                               ParseException,
-                                                                               InterruptedException {
-        LOG.info("Processing Selenium Script with " + script.size() + " objects!");
-
-        this.loopValue = loopValue;
-        if(masterScript == null){
-            masterScript = script;
-        }
-
         for (Map.Entry instruction : script.entrySet()) {
             String instructionName = instruction.getKey().toString();
             Object instructionBlock = instruction.getValue();
 
-            LOG.info("Key: " + instructionName + " & Value: " + instructionBlock);
             if (instructionBlock instanceof Map) {
                 Map<String, Object> subscript = (Map<String, Object>) instructionBlock;
                 String operation = subscript.getOrDefault("operation", "{UNDEFINED}")
                                             .toString()
                                             .toLowerCase();
 
+                LOG.info("Executing `" + operation + "` operation in block `" + instructionName + "` with " + operation.length() + " fields!");
                 switch (operation.toLowerCase()) {
                     case "{undefined}":
                         LOG.warn("Found the " + instructionName + " block with no defined operation! Skipping...");
@@ -201,6 +202,9 @@ public class SeleniumScripter {
                         break;
                     case "clicklistitem":
                         clickListItemOperation(subscript);
+                        break;
+                    case "for":
+                        forOperation(subscript);
                         break;
                     case "if":
                         ifOperation(subscript);
@@ -223,8 +227,10 @@ public class SeleniumScripter {
                     case "loadpage":
                         loadPageOperation(subscript);
                         break;
-                    case "loop":
-                        loopOperation(subscript);
+                    case "noop":
+                        break;
+                    case "pause":
+                        pauseOperation(subscript);
                         break;
                     case "restore":
                         restoreOperation(subscript);
@@ -235,11 +241,11 @@ public class SeleniumScripter {
                     case "select":
                         selectOperation(subscript);
                         break;
+                    case "set":
+                        setOperation(subscript);
+                        break;
                     case "snapshot":
                         snapshotOperation();
-                        break;
-                    case "table":
-                        tableOperation(subscript);
                         break;
                     case "try":
                         tryOperation(subscript);
@@ -255,22 +261,20 @@ public class SeleniumScripter {
                 throw new ParseException("Subscript did not convert to map!", 0);
             }
         }
-
-        LOG.info(snapshots.size() + " snapshots taken at the end of this block!");
     }
 
     /**
      * Runs a sequence of instructions
-     * @param sequence
+     * @param sequence the list of operations to run
      */
     private void runSubsequence(List<Map<String, String>> sequence) throws IOException,
-                                                                        AttributeNotFoundException,
-                                                                        ParseException,
-                                                                        InterruptedException {
+                                                                           AttributeNotFoundException,
+                                                                           ParseException,
+                                                                           InterruptedException {
         for (Map<String, String> instruction : sequence) {
-            Map<String, Object> catchBlock = new HashMap<>();
-            catchBlock.put("catch", instruction);
-            runScript(catchBlock);
+            Map<String, Object> instructionBlock = new HashMap<>();
+            instructionBlock.put("subsequence", instruction);
+            runScript(instructionBlock);
         }
     }
 
@@ -283,7 +287,10 @@ public class SeleniumScripter {
     private void captureListOperation(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name"}); // Validation
 
-        List<WebElement> webElements = findElements(script.get("selector").toString(), script.get("name").toString());
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+
+        List<WebElement> webElements = driver.findElements(by(selector, name));
         String type = "text";
         if(script.containsKey("collect")){
             type = script.get("collect").toString();
@@ -325,19 +332,20 @@ public class SeleniumScripter {
     private void clickOperation(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name"}); // Validation
 
-        JavascriptExecutor js = (JavascriptExecutor) driver;
+        // Get the instruction parameters
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
 
-        if(name.contains("{variable}")) {
-            name = name.replace("{variable}", this.loopValue.toString());
-        }
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
 
-        WebElement element = driver.findElement(ByElement(selector, name));
-        if(element == null) { // If the element wasn't found, pass that info back
-            throw new NoSuchElementException("Attempted to click element with a " + selector + " of `" + name + "` but no such element was found!");
-        }
+        // Get the element to-be-clicked
+        WebElement element = driver.findElement(by(selector, name));
 
+        // Scroll the element into view
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView();", element);
+
+        // Click-n-go
         LOG.info("Clicking element with " + selector + " of `" + name + "`");
         element.click();
     }
@@ -345,14 +353,65 @@ public class SeleniumScripter {
     /**
      * Click on an item in a list.
      * @param script the click-list-item subscript operation
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      */
     private void clickListItemOperation(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name"}); // Validation
 
-        List<WebElement> element = findElements(script.get("selector").toString(), script.get("name").toString());
+        // Get the instruction parameters
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
+
+        List<WebElement> element = driver.findElements(by(selector, name));
         int i = ((Double) script.get("item")).intValue();
         LOG.info("Clicking list item");
         element.get(i).click();
+    }
+
+    /**
+     * Iterate over a list of items.
+     * @param script the click-list-item subscript operation
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
+     */
+    private void forOperation(Map<String, Object> script) throws ParseException,
+                                                                 AttributeNotFoundException,
+                                                                 IOException,
+                                                                 InterruptedException {
+        // Validation
+        validate(script, new String[] {"forEach", "do"});
+        Map<String, Object> forEachParams = (Map<String, Object>) script.get("forEach");
+        validate(forEachParams, new String[] {"selector", "name"});
+
+        // Script parameters
+        String selector = forEachParams.get("selector").toString();
+        String name = forEachParams.get("name").toString();
+        String iteratorName = forEachParams.get("variable").toString();
+        List<Map<String, String>> doBlock = (List<Map<String, String>>) script.get("do");
+
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
+
+        // Fetch Element XPaths to iterate on
+        List<WebElement> elements = driver.findElements(by(selector, name));
+        List<String> xpaths = new ArrayList<>();
+        for(WebElement e : elements) {
+            xpaths.add(getElementXPath(e));
+        }
+
+        // Slice the list of elements if specified
+        if(forEachParams.containsKey("slice")) {
+            String slice = forEachParams.get("slice").toString();
+            xpaths = slice(slice, xpaths);
+        }
+
+        LOG.info("Iterating over list: " + xpaths);
+        for (String xpath : xpaths) {
+            scriptVariables.put(iteratorName, xpath);
+            runSubsequence(doBlock);
+        }
     }
 
     /**
@@ -373,7 +432,10 @@ public class SeleniumScripter {
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
         WebElement e = new WebDriverWait(driver, 0)
-                .until(ExpectedConditions.presenceOfElementLocated(ByElement(selector, name)));
+                .until(ExpectedConditions.presenceOfElementLocated(by(selector, name)));
+
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
 
         // Fetch the instruction blocks
         List<String> condition = (List<String>) script.get("condition");
@@ -471,18 +533,20 @@ public class SeleniumScripter {
     private void jsClickOperation(Map<String, Object> script) throws ParseException, NoSuchElementException {
         validate(script, new String[] {"selector", "name"}); // Validation
 
+        // Get the instruction parameters
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
 
-        if(name.contains("{variable}")) {
-            name = name.replace("{variable}", this.loopValue.toString());
-        }
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
 
-        WebElement element = driver.findElement(ByElement(selector, name));
-        if(element == null) { // If the element wasn't found, pass that info back
-            throw new NoSuchElementException("Attempted to click element with a " + selector + " of `" + name + "` but no such element was found!");
-        }
+        // Fetch the to-be-clicked element
+        WebElement element = driver.findElement(by(selector, name));
 
+        // Scroll the element into view
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView();", element);
+
+        // Run the JS to click-n-go
         LOG.info("JS-clicking element with " + selector + " of `" + name + "`");
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
     }
@@ -514,31 +578,45 @@ public class SeleniumScripter {
     private void keysOperation(Map<String, Object> script) throws InterruptedException, ParseException {
         validate(script, new String[] {"selector", "name", "value"}); // Validation
 
-        WebElement element = findElement(script.get("selector").toString(), script.get("name").toString());
+        // Get all of the instruction parameters or field defaults
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
         String input = script.get("value").toString().toLowerCase();
         int charDelay = Integer.parseInt(script.getOrDefault("delay", 300).toString());
         int postInputDelay = Integer.parseInt(script.getOrDefault("postDelay", 5000).toString());
 
-        if ("{enter}".equals(input)) {
-            element.sendKeys(Keys.ENTER);
-        } else if ("{return}".equals(input)) {
-            element.sendKeys(Keys.RETURN);
-        } else if ("{down}".equals(input)) {
-            element.sendKeys(Keys.ARROW_DOWN);
-        } else { // If input is none of the keywords then slow-type the input
-            // Convert the input to loop-value if it's said keyword
-            input = (input.equals("${loopvalue}")) ? this.loopValue.toString() : input;
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
 
-            // Clear the input field
-            element.clear();
+        // Fetch the input field
+        WebElement element = driver.findElement(by(selector, name));
 
-            // Slow-type each character
-            for (char s : input.toCharArray()) {
-                LOG.info("Inserting: " + s);
-                element.sendKeys(String.valueOf(s));
-                Thread.sleep(charDelay);
-            }
-            Thread.sleep(postInputDelay); // Wait even more for some reason?
+        // Determine the correct
+        switch (input) {
+            case "{enter}":
+                element.sendKeys(Keys.ENTER);
+                break;
+            case "{return}":
+                element.sendKeys(Keys.RETURN);
+                break;
+            case "{down}":
+                element.sendKeys(Keys.ARROW_DOWN);
+                break;
+            default:  // If input is none of the keywords then slow-type the input
+                // Substitute any specified script-variable-values
+                input = resolveExpressionValue(input);
+
+                // Clear the input field
+                element.clear();
+
+                // Slow-type each character
+                for (char s : input.toCharArray()) {
+                    LOG.info("Inserting: " + s);
+                    element.sendKeys(String.valueOf(s));
+                    Thread.sleep(charDelay);
+                }
+                Thread.sleep(postInputDelay); // Wait some more
+                break;
         }
     }
 
@@ -557,32 +635,6 @@ public class SeleniumScripter {
                 .until((driver) -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                         .toString()
                         .equals("complete"));
-    }
-
-    /**
-     * Loop over a variable and run a subscript on each iteration.
-     * @param script the loop subscript operation
-     */
-    private void loopOperation(Map<String, Object> script) throws ParseException {
-        validate(script, new String[] {"variable", "subscript"}); // Validation
-
-        String variableName = script.get("variable").toString();
-        List<String> vars = captureLists.get(variableName);
-
-        LOG.info("Performing Variable Loop for: " + variableName);
-        for (Object v : vars) {
-            Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
-            Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
-            LOG.info("Looping for variable: " + v+ " . Using subscript: "+ script.get("subscript"));
-            try {
-                runScript(subscript, v);
-            } catch (Exception e){
-                LOG.error(e);
-                if(!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)){
-                    break;
-                }
-            }
-        }
     }
 
     /**
@@ -617,12 +669,17 @@ public class SeleniumScripter {
     private void selectOperation(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name", "selectBy", "value"}); // Validation
 
+        // Get the instruction parameters
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
         String selectBy = script.get("selectBy").toString();
         String value = script.get("value").toString();
 
-        Select selectElement = new Select(driver.findElement(ByElement(selector, name)));
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
+
+        // Fetch the element to-be-selected and convert it t a serialized Selection Web Element
+        Select selectElement = new Select(driver.findElement(by(selector, name)));
 
         LOG.info("Selecting option in dropdown by `" + selectBy + "`...");
         switch(selectBy.toLowerCase()) {
@@ -643,6 +700,41 @@ public class SeleniumScripter {
     }
 
     /**
+     * Stores a value in the global script-variables environment
+     * @param script the set subscript operation
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
+     */
+    private void setOperation(Map<String, Object> script) throws ParseException, NotActiveException {
+        if(!DEV_MODE) {
+            throw new NotActiveException("The `set` operation is for development purposes only and not available in production!");
+        }
+
+        validate(script, new String[] {"variable", "value"}); // Validation
+
+        String variable = script.get("variable").toString();
+        Object value = script.get("value");
+        String type = script.getOrDefault("type", "literal").toString().toLowerCase();
+
+        switch(type) {
+            case "literal":
+                scriptVariables.put(variable, value.toString());
+                break;
+            case "element":
+                Map<String, Object> selectorParams = (Map<String, Object>) value;
+                validate(selectorParams, new String[] {"selector", "name"});
+
+                String selector = selectorParams.get("selector").toString();
+                String name = selectorParams.get("name").toString();
+
+                WebElement element = driver.findElement(by(selector, name));
+                String xpath = getElementXPath(element);
+                scriptVariables.put(variable, xpath);
+            default:
+                throw new ParseException("Invalid value type `" + type + "`", 0);
+        }
+    }
+
+    /**
      * Take a "snapshot" of the current page HTML and store it on the snapshots stack.
      */
     private void snapshotOperation() {
@@ -656,58 +748,6 @@ public class SeleniumScripter {
      */
     public final List<String> getSnapshots(){
         return snapshots;
-    }
-
-    /**
-     * Iterate through a tables rows and perform a subscript on each row.
-     * @param script the iterate-table subscript operation
-     * @throws IOException when a snapshot image failed to save to disk\
-     * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
-     * @throws ParseException when a parsing error was found in the script
-     * @throws InterruptedException when the process wakes up from a sleep event
-     */
-    private void tableOperation(Map<String, Object> script) throws IOException, AttributeNotFoundException, ParseException, InterruptedException {
-        // validate(script, new String[] {""}); // Validation
-
-        int offset = Integer.parseInt(script.getOrDefault("rowoffset", 0).toString());
-
-        while (true) {
-            List<WebElement>  allRows = findElements(script.get("selector").toString(), script.get("name").toString());
-            int tableSize = allRows.size();
-
-            LOG.debug("Found " + tableSize + " rows in table!");
-
-            if(tableSize <= offset){
-                break;
-            }
-            for (int i = offset; i < tableSize; i++) {
-                String xpath = script.get("name").toString();
-                xpath = xpath + "[" + i + "]";
-                allRows = findElements(script.get("selector").toString(), xpath);
-                allRows.get(0).click();
-                Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
-                Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("subscript"));
-                runScript(subscript, null);
-                WebDriverWait wait = new WebDriverWait(driver, 180);
-                LOG.debug("Waiting for object: "+script.get("name").toString());
-                wait.until(ExpectedConditions.visibilityOfElementLocated(ByElement(script.get("selector").toString(), script.get("name").toString())));
-            }
-            if (script.containsKey("nextbuttonscript")) {
-                Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
-                Map<String, Object> subscript = (Map<String, Object>) subscripts.get(script.get("nextbuttonscript"));
-                Map<String, Object> nextbuttonAttrs = (Map<String, Object>) script.get("nextbutton");
-                try{
-                    findElement(nextbuttonAttrs.get("selector").toString(), nextbuttonAttrs.get("name").toString());
-                    runScript(subscript, null);
-                } catch(org.openqa.selenium.NoSuchElementException e){
-                    LOG.info("Can't find next button, exiting loop");
-                    break;
-                }
-            } else {
-                LOG.debug("Now more rows left to parse");
-                break;
-            }
-        }
     }
 
     /**
@@ -753,6 +793,30 @@ public class SeleniumScripter {
     }
 
     /**
+     * DEV TOOL
+     * Unconditionally pauses the script.
+     * @param script the pause subscript operation
+     * @throws ParseException occurs when an invalid timeout is specified
+     * @throws NotActiveException occurs when development mode is not first enabled
+     */
+    private void pauseOperation(Map<String, Object> script) throws ParseException,
+                                                                   NotActiveException,
+                                                                   InterruptedException {
+        if(!DEV_MODE) { // Validate that dev mode is enabled
+            throw new NotActiveException("The `pause` operation is for development purposes only and not available in a production environment!");
+        }
+
+        // Get the specified pause time or fill the default
+        String raw_timeout = script.getOrDefault("timeout", defaultWaitTimeout).toString();
+        int timeout = parseNumber(raw_timeout).intValue() * 1000;
+
+        LOG.info("Pausing for " + timeout + " ms");
+
+        // Start the pause
+        Thread.sleep(timeout);
+    }
+
+    /**
      * Wait for an element to exist and become visible in the browser viewport.
      * @param script the wait subscript operation
      * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
@@ -763,20 +827,17 @@ public class SeleniumScripter {
         // Fetch or fill the default timeout value
         long timeout = parseNumber(script.getOrDefault("timeout", defaultWaitTimeout).toString()).longValue();
 
-        // Subscript parameters
+        // Get the instruction parameters
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
 
-        // Inject variable value if keyword is used
-        if(name.contains("{variable}")) {
-            name = name.replace("{variable}", loopValue.toString());
-        }
-
-        LOG.info("Waiting for element with " + selector +  " of `" + name + "` to appear within " + timeout + " seconds...");
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
 
         // Wait for element
+        LOG.info("Waiting for element with " + selector +  " of `" + name + "` to appear within " + timeout + " seconds...");
         WebElement element = new WebDriverWait(driver, timeout)
-                .until(ExpectedConditions.visibilityOfElementLocated(ByElement(selector, name)));
+                .until(ExpectedConditions.visibilityOfElementLocated(by(selector, name)));
         assert element.isDisplayed();
     }
 }
