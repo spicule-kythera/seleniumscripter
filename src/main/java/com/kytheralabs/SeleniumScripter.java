@@ -329,8 +329,6 @@ public class SeleniumScripter {
         // Get the element to-be-clicked
         WebElement element = driver.findElement(by(selector, name));
 
-        driver.navigate();
-
         // Scroll the element into view
         ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView();", element);
 

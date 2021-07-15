@@ -35,9 +35,10 @@
     slice: '1:-2'
     variable: row_xpath
   do:
-    - operation: click
+    - operation: jsClick
       selector: xpath
       name: '//*{row_xpath}/td/a'
+    - operation: snapshot
     - operation: wait
       selector: id
       name: ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input
