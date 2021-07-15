@@ -23,7 +23,7 @@ import java.util.stream.Collectors;
  */
 public class SeleniumScripter {
     // Constant things
-    private boolean DEV_MODE = true;
+    private boolean DEV_MODE = false;
     private final String url; // The initial url the agent starts at
     private final WebDriver driver; // The web driver
     private final long defaultWaitTimeout = 30; // The default element wait timeout in seconds
@@ -43,6 +43,10 @@ public class SeleniumScripter {
         this.driver = driver;
         url = driver.getCurrentUrl();
         this.DEV_MODE = DEV_MODE;
+
+        if(this.DEV_MODE){
+            LOG.warn("Development mode is enabled!");
+        }
     }
 
     /**
@@ -236,6 +240,9 @@ public class SeleniumScripter {
                         break;
                     case "select":
                         selectOperation(subscript);
+                        break;
+                    case "set":
+                        setOperation(subscript);
                         break;
                     case "snapshot":
                         snapshotOperation();
@@ -693,6 +700,41 @@ public class SeleniumScripter {
     }
 
     /**
+     * Stores a value in the global script-variables environment
+     * @param script the set subscript operation
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
+     */
+    private void setOperation(Map<String, Object> script) throws ParseException, NotActiveException {
+        if(!DEV_MODE) {
+            throw new NotActiveException("The `set` operation is for development purposes only and not available in production!");
+        }
+
+        validate(script, new String[] {"variable", "value"}); // Validation
+
+        String variable = script.get("variable").toString();
+        Object value = script.get("value");
+        String type = script.getOrDefault("type", "literal").toString().toLowerCase();
+
+        switch(type) {
+            case "literal":
+                scriptVariables.put(variable, value.toString());
+                break;
+            case "element":
+                Map<String, Object> selectorParams = (Map<String, Object>) value;
+                validate(selectorParams, new String[] {"selector", "name"});
+
+                String selector = selectorParams.get("selector").toString();
+                String name = selectorParams.get("name").toString();
+
+                WebElement element = driver.findElement(by(selector, name));
+                String xpath = getElementXPath(element);
+                scriptVariables.put(variable, xpath);
+            default:
+                throw new ParseException("Invalid value type `" + type + "`", 0);
+        }
+    }
+
+    /**
      * Take a "snapshot" of the current page HTML and store it on the snapshots stack.
      */
     private void snapshotOperation() {
@@ -767,6 +809,8 @@ public class SeleniumScripter {
         // Get the specified pause time or fill the default
         String raw_timeout = script.getOrDefault("timeout", defaultWaitTimeout).toString();
         int timeout = parseNumber(raw_timeout).intValue() * 1000;
+
+        LOG.info("Pausing for " + timeout + " ms");
 
         // Start the pause
         Thread.sleep(timeout);

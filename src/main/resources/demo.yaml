@@ -72,7 +72,7 @@
       condition:
         - text
         - equals
-        - Next
+        - "Next"
       then:
         - operation: jsclick
           selector: css
