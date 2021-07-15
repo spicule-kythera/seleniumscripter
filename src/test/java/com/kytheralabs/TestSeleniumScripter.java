@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.w3c.dom.Attr;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.management.AttributeNotFoundException;
@@ -18,13 +17,16 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class TestSeleniumScripter {
     private FirefoxOptions driverOptions = null;
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--log-level=3",
-                                                       "--headless",
+//                                                       "--headless",
                                                        "--ignore-certificate-errors",
                                                        "--start-maximized",
                                                        "--disable-gpu",
@@ -95,43 +97,21 @@ public class TestSeleniumScripter {
 
     @Ignore
     @Test
+    public void demo() throws Exception {
+        // Crawl parameters
+        final String scriptName = "demo.yaml";
+        final String url = "https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Ignore
+    @Test
     public void alabama() throws Exception {
         // Crawl parameters
         final String scriptName = "alabama.yaml";
         final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Ignore
-    @Test
-    public void tryBlock() throws Exception {
-        // Crawl parameters
-        final String scriptName = "try-block.yaml";
-        final String url = "https://www.nasa.gov";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Ignore
-    @Test
-    public void newIfCondition() throws Exception {
-        // Crawl parameters
-        final String scriptName = "new-if-condition.yaml";
-        final String url = "https://www.nasa.gov";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Ignore
-    @Test
-    public void example() throws Exception {
-        // Crawl parameters
-        final String scriptName = "example.yaml";
-        final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl
         runScript(url, scriptName);
@@ -152,17 +132,6 @@ public class TestSeleniumScripter {
         // Crawl parameters
         final String scriptName = "humanservepa.yaml";
         final String url = "https://www.humanservices.state.pa.us/COVEREDDRUGS";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Ignore
-    @Test
-    public void jsBack() throws Exception {
-        // Crawl parameters
-        final String scriptName = "js-back.yaml";
-        final String url = "https://www.nasa.gov";
 
         // Start the crawl
         runScript(url, scriptName);

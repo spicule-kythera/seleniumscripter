@@ -1,0 +1,47 @@
+0:
+  operation: loadPage
+1:
+  operation: keys
+  selector: id
+  name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_0
+  value: ibuprofen
+  delay: 0
+  postDelay: 0
+2:
+  operation: select
+  selector: id
+  name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Category_0
+  selectBy: value
+  value: 2
+3:
+  operation: click
+  selector: xpath
+  name: '//*[@id="ctl00_MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_ctl00_ctl02_SearchButton"]'
+4:
+  operation: wait
+  selector: id
+  name: MainContent_GenericPageCtrl1_Datalist
+5:
+  operation: captureList
+  selector: xpath
+  name: '//tr[contains(@onclick, "doRowClick(this, event);")]'
+  type: xpath
+  variable: drugCard
+6:
+  operation: for
+  forEach:
+    selector: css
+    name: '#MainContent_GenericPageCtrl1_Datalist > tbody > tr'
+    slice: '1:-2'
+    variable: row_xpath
+  do:
+    - operation: click
+      selector: xpath
+      name: '//*{row_xpath}/td/a'
+    - operation: wait
+      selector: id
+      name: ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input
+    - operation: snapshot
+    - operation: click
+      selector: id
+      name: ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input
