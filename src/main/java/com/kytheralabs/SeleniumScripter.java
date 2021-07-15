@@ -167,19 +167,17 @@ public class SeleniumScripter {
                                                                                AttributeNotFoundException,
                                                                                ParseException,
                                                                                InterruptedException {
-        LOG.info("Processing Selenium Script with " + script.size() + " objects!");
-
         for (Map.Entry instruction : script.entrySet()) {
             String instructionName = instruction.getKey().toString();
             Object instructionBlock = instruction.getValue();
 
-            LOG.info("Key: " + instructionName + " & Value: " + instructionBlock);
             if (instructionBlock instanceof Map) {
                 Map<String, Object> subscript = (Map<String, Object>) instructionBlock;
                 String operation = subscript.getOrDefault("operation", "{UNDEFINED}")
                                             .toString()
                                             .toLowerCase();
 
+                LOG.info("Executing `" + operation + "` operation in block `" + instructionName + "` with " + operation.length() + " fields!");
                 switch (operation.toLowerCase()) {
                     case "{undefined}":
                         LOG.warn("Found the " + instructionName + " block with no defined operation! Skipping...");
@@ -217,6 +215,8 @@ public class SeleniumScripter {
                     case "loadpage":
                         loadPageOperation(subscript);
                         break;
+                    case "noop":
+                        break;
                     case "restore":
                         restoreOperation(subscript);
                         break;
@@ -246,13 +246,11 @@ public class SeleniumScripter {
                 throw new ParseException("Subscript did not convert to map!", 0);
             }
         }
-
-        LOG.info(snapshots.size() + " snapshots taken at the end of this block!");
     }
 
     /**
      * Runs a sequence of instructions
-     * @param sequence
+     * @param sequence the list of operations to run
      */
     private void runSubsequence(List<Map<String, String>> sequence) throws IOException,
                                                                            AttributeNotFoundException,
@@ -394,7 +392,7 @@ public class SeleniumScripter {
             xpaths = slice(slice, xpaths);
         }
 
-        // Iterate
+        LOG.info("Iterating over list: " + xpaths);
         for (String xpath : xpaths) {
             scriptVariables.put(iteratorName, xpath);
             runSubsequence(doBlock);
@@ -529,6 +527,9 @@ public class SeleniumScripter {
 
         // Fetch the to-be-clicked element
         WebElement element = driver.findElement(by(selector, name));
+
+        // Scroll the element into view
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView();", element);
 
         // Run the JS to click-n-go
         LOG.info("JS-clicking element with " + selector + " of `" + name + "`");

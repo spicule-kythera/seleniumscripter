@@ -93,6 +93,7 @@ public class TestSeleniumScripter {
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver);
         scriptRunner.runScript(script);
+        System.out.println("Took " + scriptRunner.getSnapshots().size() + " snapshots for this agent!");
     }
 
     @Ignore

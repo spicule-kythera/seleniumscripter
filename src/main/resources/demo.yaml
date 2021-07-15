@@ -22,27 +22,45 @@
   selector: id
   name: MainContent_GenericPageCtrl1_Datalist
 5:
-  operation: captureList
-  selector: xpath
-  name: '//tr[contains(@onclick, "doRowClick(this, event);")]'
-  type: xpath
-  variable: drugCard
-6:
   operation: for
   forEach:
     selector: css
-    name: '#MainContent_GenericPageCtrl1_Datalist > tbody > tr'
-    slice: '1:-2'
-    variable: row_xpath
+    name: '.iC_DataListPager > td > *'
+    slice: '0:-1'
+    variable: page_link
   do:
-    - operation: jsClick
-      selector: xpath
-      name: '//*{row_xpath}/td/a'
-    - operation: snapshot
-    - operation: wait
-      selector: id
-      name: ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input
-    - operation: snapshot
-    - operation: click
-      selector: id
-      name: ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input
+    - operation: try
+      expect:
+        - NoSuchElementException
+      try:
+        - operation: jsClick
+          selector: xpath
+          name: '//*{page_link}'
+      catch:
+        - operation: noop
+    - operation: for
+      forEach:
+        selector: css
+        name: '#MainContent_GenericPageCtrl1_Datalist > tbody > tr'
+        slice: '0:-2'
+        variable: row_xpath
+      do:
+        - operation: loadPage
+        - operation: try
+          expect:
+            - NoSuchElementException
+          try:
+            - operation: jsClick
+              selector: xpath
+              name: '//*{row_xpath}/td/a'
+            - operation: snapshot
+            - operation: wait
+              selector: id
+              name: ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input
+            - operation: click
+              selector: id
+              name: ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input
+          catch:
+            - operation: injectContent
+              type: html
+    - operation: jsBack
