@@ -1,13 +1,12 @@
 package com.kytheralabs;
 
+import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.yaml.snakeyaml.Yaml;
 
@@ -22,29 +21,43 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
-import static com.kytheralabs.BrowserConfig.newChromeWebDriver;
-import static com.kytheralabs.BrowserConfig.newFirefoxWebDriver;
-
 public class TestSeleniumScripter {
-
-    private final FirefoxOptions driverOptions = null;
+    private final String browserType = "chrome";
     private final List<String> options = Arrays.asList("--no-sandbox",
-                                                       "--log-level=3",
-//                                                       "--headless",
-                                                       "--ignore-certificate-errors",
-                                                       "--start-maximized",
+                                                       "--headless",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
-                                                       "--disable-infobars");
+                                                       "--ignore-certificate-errors",
+                                                       "--incognito",
+                                                       "--window-size=1920,1080",
+                                                       "--proxy-server='direct://",
+                                                       "--proxy-bypass-list=*",
+                                                       "--disable-background-networking",
+                                                       "--safebrowsing-disable-auto-update",
+                                                       "--disable-sync",
+                                                       "--metrics-recording-only",
+                                                       "--disable-default-apps",
+                                                       "--no-first-run",
+                                                       "--disable-setuid-sandbox",
+                                                       "--hide-scrollbars",
+                                                       "--no-zygote",
+                                                       "--disable-notifications",
+                                                       "--disable-logging",
+                                                       "--disable-permissions-api");
     private RemoteWebDriver driver = null;
 
-    private String browserFlavour = "chrome";
     @Before
     public void setUp() {
-        if(browserFlavour.equals("chrome")){
-            driver = newChromeWebDriver();
-        } else if(browserFlavour.equals("firefox")){
-            driver = newFirefoxWebDriver();
+        // Create driver factory
+        DriverFactory factory = new DriverFactory(options);
+
+        // Create driver
+        if(browserType.equalsIgnoreCase("chrome")) {
+            driver = factory.generateChromeDriver();
+        } else if(browserType.equalsIgnoreCase("firefox")) {
+            driver = factory.generateFirefoxDriver();
+        } else {
+            throw new ValueException("Invalid browser type: " + browserType);
         }
     }
 
@@ -94,13 +107,12 @@ public class TestSeleniumScripter {
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported script type: " + scriptType);
-        };
-        System.out.println("URL: " + url);
+        }
+
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver, true);
         scriptRunner.runScript(script);
         System.out.println("Took " + scriptRunner.getSnapshots().size() + " snapshots for this agent!");
-
     }
 
     @Ignore
