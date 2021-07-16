@@ -1,13 +1,12 @@
 package com.kytheralabs;
 
+import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.openqa.selenium.firefox.FirefoxDriver;
-import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.yaml.snakeyaml.Yaml;
 
@@ -23,29 +22,49 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class TestSeleniumScripter {
-    private FirefoxOptions driverOptions = null;
+    private final String browserType = "chrome";
     private final List<String> options = Arrays.asList("--no-sandbox",
-                                                       "--log-level=3",
-//                                                       "--headless",
-                                                       "--ignore-certificate-errors",
-                                                       "--start-maximized",
+                                                       "--headless",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
-                                                       "--disable-infobars");
+                                                       "--ignore-certificate-errors",
+                                                       "--incognito",
+                                                       "--window-size=1920,1080",
+                                                       "--proxy-server='direct://",
+                                                       "--proxy-bypass-list=*",
+                                                       "--disable-background-networking",
+                                                       "--safebrowsing-disable-auto-update",
+                                                       "--disable-sync",
+                                                       "--metrics-recording-only",
+                                                       "--disable-default-apps",
+                                                       "--no-first-run",
+                                                       "--disable-setuid-sandbox",
+                                                       "--hide-scrollbars",
+                                                       "--no-zygote",
+                                                       "--disable-notifications",
+                                                       "--disable-logging",
+                                                       "--disable-permissions-api");
     private RemoteWebDriver driver = null;
 
     @Before
     public void setUp() {
-        driverOptions = new FirefoxOptions();
-        options.forEach(driverOptions::addArguments);
-        driver = new FirefoxDriver(driverOptions);
+        // Create driver factory
+        DriverFactory factory = new DriverFactory(options);
+
+        // Create driver
+        if(browserType.equalsIgnoreCase("chrome")) {
+            driver = factory.generateChromeDriver();
+        } else if(browserType.equalsIgnoreCase("firefox")) {
+            driver = factory.generateFirefoxDriver();
+        } else {
+            throw new ValueException("Invalid browser type: " + browserType);
+        }
     }
 
     @After
     public void tearDown() {
         driver.close();
         driver = null;
-        driverOptions = null;
     }
 
     private static Map<String, Object> loadJSONScript(String filename) throws IOException, ParseException {
@@ -88,8 +107,8 @@ public class TestSeleniumScripter {
                 break;
             default:
                 throw new IllegalArgumentException("Unsupported script type: " + scriptType);
-        };
-        System.out.println("URL: " + url);
+        }
+
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver, true);
         scriptRunner.runScript(script);
@@ -141,8 +160,8 @@ public class TestSeleniumScripter {
     @Test
     public void optum() throws Exception {
         // Crawl parameters
-        final String scriptName = "optum.json";
-        final String url = "https://www.optumrx.com/ClientFormulary/formulary.asp?var=PHSCA&infoid=PHSCA";
+        final String scriptName = "optumfixed3.yaml";
+        final String url = "https://www.optumrx.com/clientformulary/formulary.asp?var=UCSPAQ6&infoid=UCSPAQ6&page=insert&par=";
 
         // Start the crawl
         runScript(url, scriptName);
@@ -151,10 +170,36 @@ public class TestSeleniumScripter {
     @Test
     public void upmc() throws Exception {
         // Crawl parameters
-        final String scriptName = "upmc.json";
+        final String scriptName = "upmc2.json";
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl
+        try {
+            runScript(url, scriptName);
+        } catch(Exception e){
+            System.out.println("here");
+        }
+    }
+
+    @Test
+    public void cmsgov() throws Exception {
+        // Crawl parameters
+        final String scriptName = "cmsgov.yaml";
+        final String url = "https://www.cms.gov/medicare-coverage-database/new-search/handlers/tour-end.ashx?t=1625154700997&which=report";
+
+        // Start the crawl
+
         runScript(url, scriptName);
+    }
+
+    @Test
+    public void myprime() throws Exception{
+        final String scriptName = "myprime.yaml";
+        final String url = "https://www.myprime.com/es/boeing/plan-preview/medicines.html#find-medicine";
+
+
+            runScript(url, scriptName);
+
+
     }
 }

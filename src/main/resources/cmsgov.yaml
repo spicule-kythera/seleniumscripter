@@ -1,0 +1,10 @@
+a:
+  operation: restore
+  url: https://www.cms.gov/medicare-coverage-database/indexes/article-list.aspx?Cntrctr=140&name=&DocType=SAD&ContrVer=2&CntrctrSelected=140*2&bc=AAABAAIAAAAA&#ResultsAnchor
+b:
+  operation: wait
+  selector: xpath
+  name: //table[@id="searchResults"]/tbody/tr
+  timeout: 30
+c:
+  operation: snapshot

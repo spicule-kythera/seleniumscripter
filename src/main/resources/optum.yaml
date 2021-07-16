@@ -1,0 +1,169 @@
+---
+a:
+  operation: wait
+  selector: xpath
+  name: //*[@id="drugNameInput"]
+  timeout: 90
+b:
+  operation: keys
+  selector: xpath
+  name: //*[@id="drugNameInput"]
+  value: tri-luma
+  wait: 0
+d:
+  operation: click
+  selector: xpath
+  name: //*[@id="tyctnr"]/button
+e:
+  operation: if
+  condition:
+    - operation: wait
+      selector: xpath
+      name: //*[contains(@class, "drugNamep") and (string-length(text()) > 1)]
+      timeout: 10
+      asyncwait: false
+  then:
+    - operation: snapshot
+    - operation: captureList
+      selector: xpath
+      name: "//a[contains(@class, 'btn no-link ng-binding')]"
+      type: xpath
+      variable: bug
+    - operation: captureList
+      selector: xpath
+      name: "//ul/li/a/p"
+      type: xpath
+      variable: drugList
+    - operation: parallel
+      type: variable
+      variable: drugList
+      subscript: searchSubScript
+      parallelizm: 5
+  else:
+    - operation: captureList
+      selector: xpath
+      name: //a[@class="btn no-link ng-binding"]
+      type: xpath
+      variable: dosagelabels
+    - operation: parallel
+      type: variable
+      variable: dosagelabels
+      subscript: otherDoseSubScript
+      exitOnError: false
+      parallelizm: 5
+
+subscripts:
+  searchSubScript:
+    a:
+      operation: wait
+      selector: xpath
+      name: //*[@id="drugNameInput"]
+      timeout: 10
+    b:
+      operation: keys
+      selector: xpath
+      name: //*[@id="drugNameInput"]
+      value: tri-luma
+      wait: 0
+    c:
+      operation: wait
+      selector: xpath
+      name: //*[@id="tyctnr"]/button
+      timeout: 10
+    d:
+      operation: click
+      selector: xpath
+      name: //*[@id="tyctnr"]/button
+    e:
+      operation: wait
+      selector: xpath
+      name: //*[contains(@class, "drugNamep") and (string-length(text()) > 1)]
+      timeout: 10
+      asyncwait: false
+    f:
+      operation: jsclick
+      selector: xpath
+      name: "//*{variable}"
+      variable: true
+    g:
+      operation: if
+      condition:
+        - operation: wait
+          selector: xpath
+          name: "//*[contains(@class, 'btn') and text() = 'Coverage details']"
+          timeout: 10
+      then:
+        - operation: snapshot
+        - operation: captureList
+          selector: xpath
+          name: //a[@class="btn no-link ng-binding"]
+          type: xpath
+          variable: dosagelabels
+        - operation: loop
+          type: variable
+          variable: dosagelabels
+          subscript: doseSubScript
+    subscripts:
+      doseSubScript:
+        '1-wait':
+          operation: wait
+          selector: xpath
+          name: "//*[contains(@class, 'btn') and text() = 'Coverage details']"
+          timeout: 20
+        '2-click':
+          operation: jsclick
+          selector: xpath
+          name: "//{variable}"
+          variable: true
+        '3-wait':
+          operation: wait
+          selector: xpath
+          name: "//*[contains(@class, 'data-table')]/tr[1]/td[2][string-length(text()) > 0]"
+          timeout: 20
+        '4-subscript':
+          operation: snapshot
+        '5-backup':
+          operation: "click"
+          selector: "xpath"
+          name: "//div/p/a[@data-ng-click=\"backToMedicationCabinet()\"]"
+
+  otherDoseSubScript:
+    a:
+      operation: wait
+      selector: xpath
+      name: //*[@id="drugNameInput"]
+      timeout: 10
+    b:
+      operation: keys
+      selector: xpath
+      name: //*[@id="drugNameInput"]
+      value: tri-luma
+      wait: 0
+    c:
+      operation: wait
+      selector: xpath
+      name: //*[@id="tyctnr"]/button/i
+      timeout: 10
+    d:
+      operation: click
+      selector: xpath
+      name: //*[@id="tyctnr"]/button
+    e:
+      operation: wait
+      selector: xpath
+      name: "//*[contains(@class, 'btn') and text() = 'Coverage details']"
+      timeout: 10
+      asyncwait: false
+    f:
+      operation: jsclick
+      selector: xpath
+      name: "//{variable}"
+      variable: true
+    g:
+      operation: wait
+      selector: xpath
+      name: "//*[contains(@class, 'data-table')]/tr[1]/td[2][string-length(text()) > 0]"
+      timeout: 10
+      asyncwait: false
+    h:
+      operation: snapshot

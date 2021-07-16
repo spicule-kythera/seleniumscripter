@@ -1,0 +1,28 @@
+{
+  "a": {
+    "operation": "loadpage"
+  },
+  "b": {
+    "operation": "restore",
+    "url": "https://www.upmchealthplan.com/"
+  },
+  "c": {
+    "operation": "loadpage"
+  },
+  "d":{
+    "operation": "restore",
+    "url": "https://www.upmchealthplan.com/find-a-medication"
+  },
+
+  "f": {
+    "operation": "wait",
+    "selector": "xpath",
+    "name": "//*[@id=\"mcoveragetype1\"]",
+    "timeout": "10",
+    "failnotfound": "false"
+  },
+  "g":{
+    "operation": "screenshot",
+    "targetdir": "/dbfs/FileStore/screenshot2.png"
+  }
+}
