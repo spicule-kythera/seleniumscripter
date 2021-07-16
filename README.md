@@ -4,9 +4,9 @@ An expressive script-style method of interacting with the Selenium Framework.
 
 ## Local Setup
 
-This framework uses the [Gekco Driver](https://github.com/mozilla/geckodriver/releases), an extention of the Firefox web browser.
+The test harness uses the [Gekco Driver](https://github.com/mozilla/geckodriver/releases) by default, (an extension of the Firefox web browser).
 
-Ensure you have _Gecko 0.26 or newer_, before getting started with SeleniumScript.
+Ensure you have _Gecko 0.26 or newer_, before using the SeleniumScript test harness.
 
 #### Install Locally
 `$` `mvn clean install`

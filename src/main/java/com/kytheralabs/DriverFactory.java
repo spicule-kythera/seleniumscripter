@@ -3,6 +3,8 @@ package com.kytheralabs;
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
+import org.openqa.selenium.edge.EdgeDriver;
+import org.openqa.selenium.edge.EdgeOptions;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
@@ -11,7 +13,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class DriverFactory {
-    List<String> options;
+    final List<String> options; // Browser options
 
     DriverFactory(List<String> options) {
         this.options = options;
@@ -40,5 +42,14 @@ public class DriverFactory {
 
         // Create and load the driver with options
         return new FirefoxDriver(driverOptions);
+    }
+
+    public RemoteWebDriver generateEdgeDriver() {
+        // Create and populate driver options
+        EdgeOptions driverOptions = new EdgeOptions();
+        // options.forEach(driverOptions::addArguments); // Apparently Edge doesn't support options?
+
+        // Create and load the driver with options
+        return new EdgeDriver(driverOptions);
     }
 }
