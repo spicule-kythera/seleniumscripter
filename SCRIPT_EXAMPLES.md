@@ -1,3 +1,6 @@
+# Example Script
+
+```yaml
 # Setup the search - Populate the top 2 selects and enter the token value and wait for the auto complete to popup
 0:
   operation: wait
@@ -71,3 +74,4 @@ subscripts:
     5:
       # Because of the loop, here is the snapshot stuff we discussed
       operation: snapshot
+```

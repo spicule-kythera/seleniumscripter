@@ -9,7 +9,6 @@ import org.junit.Test;
 import org.openqa.selenium.firefox.FirefoxDriver;
 import org.openqa.selenium.firefox.FirefoxOptions;
 import org.openqa.selenium.remote.RemoteWebDriver;
-import org.w3c.dom.Attr;
 import org.yaml.snakeyaml.Yaml;
 
 import javax.management.AttributeNotFoundException;
@@ -18,13 +17,25 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.*;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
 
 import static com.kytheralabs.BrowserConfig.newChromeWebDriver;
 import static com.kytheralabs.BrowserConfig.newFirefoxWebDriver;
 
 public class TestSeleniumScripter {
 
+    private final FirefoxOptions driverOptions = null;
+    private final List<String> options = Arrays.asList("--no-sandbox",
+                                                       "--log-level=3",
+//                                                       "--headless",
+                                                       "--ignore-certificate-errors",
+                                                       "--start-maximized",
+                                                       "--disable-gpu",
+                                                       "--disable-extensions",
+                                                       "--disable-infobars");
     private RemoteWebDriver driver = null;
 
     private String browserFlavour = "chrome";
@@ -86,10 +97,21 @@ public class TestSeleniumScripter {
         };
         System.out.println("URL: " + url);
         driver.get(url);
-        SeleniumScripter scriptRunner = new SeleniumScripter(driver);
+        SeleniumScripter scriptRunner = new SeleniumScripter(driver, true);
         scriptRunner.runScript(script);
-        System.out.println("Snapshots taken: "+scriptRunner.getSnapshots());
+        System.out.println("Took " + scriptRunner.getSnapshots().size() + " snapshots for this agent!");
 
+    }
+
+    @Ignore
+    @Test
+    public void demo() throws Exception {
+        // Crawl parameters
+        final String scriptName = "demo.yaml";
+        final String url = "https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx";
+
+        // Start the crawl
+        runScript(url, scriptName);
     }
 
     @Ignore
@@ -98,39 +120,6 @@ public class TestSeleniumScripter {
         // Crawl parameters
         final String scriptName = "alabama.yaml";
         final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Ignore
-    @Test
-    public void tryBlock() throws Exception {
-        // Crawl parameters
-        final String scriptName = "try-block.yaml";
-        final String url = "https://www.nasa.gov";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Ignore
-    @Test
-    public void newIfCondition() throws Exception {
-        // Crawl parameters
-        final String scriptName = "new-if-condition.yaml";
-        final String url = "https://www.nasa.gov";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Ignore
-    @Test
-    public void example() throws Exception {
-        // Crawl parameters
-        final String scriptName = "example.yaml";
-        final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl
         runScript(url, scriptName);
@@ -156,22 +145,11 @@ public class TestSeleniumScripter {
         runScript(url, scriptName);
     }
 
-    @Ignore
-    @Test
-    public void jsBack() throws Exception {
-        // Crawl parameters
-        final String scriptName = "js-back.yaml";
-        final String url = "https://www.nasa.gov";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
     @Test
     public void optum() throws Exception {
         // Crawl parameters
         final String scriptName = "optumfixed3.yaml";
-        final String url = "https://www.optumrx.com/ClientFormulary/formulary.asp?var=PHSCA&infoid=PHSCA";
+        final String url = "https://www.optumrx.com/clientformulary/formulary.asp?var=UCSPAQ6&infoid=UCSPAQ6&page=insert&par=";
 
         // Start the crawl
         runScript(url, scriptName);

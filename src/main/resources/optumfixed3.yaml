@@ -10,10 +10,10 @@ c:
   javascriptOperator: |
     var callback = arguments[arguments.length - 1];
     var strFirstThree = 'ABILIFY'.substring(0,3);
-    var url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=PHSCA&userType=other&viewMode=NAME'
+    var url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=UCSPAQ6&userType=other&viewMode=NAME'
     fetch(url,
     { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
-    'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
+    'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=UCSPAQ6&infoid=UCSPAQ6',
     'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
     .then(response => response.json())
     .then(data => {callback(data.Drugs);});
@@ -64,9 +64,9 @@ subscripts:
       authheader: true
       javascriptOperator: |
         var callback = arguments[arguments.length - 1];
-        fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=PHSCA&userType=other&viewMode=NAME&drugName={variable}&ctime=1625570965087',
+        fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=UCSPAQ6&userType=other&viewMode=NAME&drugName={variable}&ctime=1625570965087',
         { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
-        'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
+        'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=UCSPAQ6&infoid=UCSPAQ6',
         'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
         .then(response => response.json())
         .then(data => {callback(data.Drugs);});
@@ -76,9 +76,9 @@ subscripts:
       operation: extendablefetcher
       authheader: true
       javascriptOperator: |
-        var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=PHSCA&userType=other&viewMode=id&drugId={variable}&ctime=1625499684610',
+        var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=UCSPAQ6&userType=other&viewMode=id&drugId={variable}&ctime=1625499684610',
         { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
-              'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
+              'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=UCSPAQ6&infoid=UCSPAQ6',
               'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
         .then(response => response.json())
         .then(data => {callback(data.Drugs);});

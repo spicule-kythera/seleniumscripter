@@ -1,12 +1,12 @@
 # Selenium Scripter
 
-A generic yaml script-runner for the Selenium framework. 
+An expressive script-style method of interacting with the Selenium Framework.
 
 ## Local Setup
 
-This framework runs on Firefox for local development, so ensure you have a functioning copy of Firefox locally.
+This framework uses the [Gekco Driver](https://github.com/mozilla/geckodriver/releases), an extention of the Firefox web browser.
 
-Then you need a copy of the Gekco webdriver: https://github.com/mozilla/geckodriver/releases
+Ensure you have _Gecko 0.26 or newer_, before getting started with SeleniumScript.
 
 #### Install Locally
 `$` `mvn clean install`
