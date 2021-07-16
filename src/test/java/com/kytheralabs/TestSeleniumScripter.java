@@ -7,6 +7,7 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.yaml.snakeyaml.Yaml;
 
@@ -22,7 +23,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class TestSeleniumScripter {
-    private final String browserType = "chrome";
+    private final String browserType = BrowserType.CHROME; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--headless",
                                                        "--disable-gpu",
@@ -52,12 +53,18 @@ public class TestSeleniumScripter {
         DriverFactory factory = new DriverFactory(options);
 
         // Create driver
-        if(browserType.equalsIgnoreCase("chrome")) {
-            driver = factory.generateChromeDriver();
-        } else if(browserType.equalsIgnoreCase("firefox")) {
-            driver = factory.generateFirefoxDriver();
-        } else {
-            throw new ValueException("Invalid browser type: " + browserType);
+        switch (browserType) {
+            case BrowserType.CHROME:
+                driver = factory.generateChromeDriver();
+                break;
+            case BrowserType.EDGE:
+                driver = factory.generateEdgeDriver();
+                break;
+            case BrowserType.FIREFOX:
+                driver = factory.generateFirefoxDriver();
+                break;
+            default:
+                throw new ValueException("Invalid browser type: " + browserType);
         }
     }
 
