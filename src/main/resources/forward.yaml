@@ -1,13 +1,12 @@
 0:
-  operation: wait
-  selector: id
-  name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_0
-  timeout: 1
+  operation: loadPage
 1:
   operation: keys
   selector: id
   name: MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_Name_0_mb_Name_0
   value: ibuprofen
+  delay: 0
+  postDelay: 0
 2:
   operation: select
   selector: id
@@ -18,40 +17,45 @@
   operation: click
   selector: xpath
   name: '//*[@id="ctl00_MainContent_GenericPageCtrl1_ctl02_CriteriaPanel_ctl00_ctl02_SearchButton"]'
-  timeout: 30
 4:
   operation: wait
   selector: id
   name: MainContent_GenericPageCtrl1_Datalist
 5:
-  operation: captureList
-  selector: xpath
-  name: //tr[contains(@onclick, 'doRowClick(this, event);')]
-  type: xpath
-  variable: drugCard
+  operation: do_while
+  do_while:
+    - operation: wait
+      selector: class
+      name: Next
+      until: clickable
+      timeout: 2
+    - operation: jsclick
+      selector: class
+      name: Next
+      delay: 1
+  do:
+    - operation: loadPage
+    - operation: for
+      forEach:
+        selector: css
+        name: '#MainContent_GenericPageCtrl1_Datalist > tbody > tr'
+        slice: '1:-1'
+        variable: dosageRow
+      do:
+        - operation: jsclick
+          selector: xpath
+          name: '//*{dosageRow}/td/a'
+          delay: 1
+        - operation: loadPage
+        - operation: snapshot
+        - operation: wait
+          selector: id
+          name: ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton
+          until: clickable
+        - operation: click
+          selector: id
+          name: ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton
+          delay: 1
 6:
-  operation: loop
-  type: variable
-  variable: drugCard
-  subscript: tablesnapshot
-subscripts:
-  tablesnapshot:
-    1:
-      operation: wait
-      selector: id
-      name: MainContent_GenericPageCtrl1_Datalist
-    2:
-      operation: click
-      selector: xpath
-      name: '//*{variable}'
-      variable: true
-    3:
-      operation: wait
-      selector: xpath
-      name: //*[@id="ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input"]
-    4:
-      operation: snapshot
-    5:
-      operation: click
-      selector: xpath
-      name: //*[@id="ctl00_MainContent_GenericPageCtrl1_NavFooter_ReturnToSearchResultsButton_input"]
+  operation: dumpStack
+  targetdir: /home/ivo/Documents/work/forward-dump
