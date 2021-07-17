@@ -5,7 +5,6 @@ import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.RemoteWebDriver;
