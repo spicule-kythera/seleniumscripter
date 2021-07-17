@@ -580,6 +580,7 @@ public class SeleniumScripter {
         LOG.info("Clicking element with " + selector + " of `" + name + "`");
         element.click();
 
+        // Post-click delay
         LOG.info("Waiting for " + delay + "s before continuing...");
         Thread.sleep(delay * 1000);
     }
@@ -743,12 +744,15 @@ public class SeleniumScripter {
      * Click on a web element using JS.
      * @param script the js-click subscript operation
      */
-    private void jsClickOperation(Map<String, Object> script) throws ParseException, NoSuchElementException {
+    private void jsClickOperation(Map<String, Object> script) throws ParseException,
+                                                                     NoSuchElementException,
+                                                                     InterruptedException{
         validate(script, new String[] {"selector", "name"}); // Validation
 
         // Get the instruction parameters
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
+        long delay = Long.parseLong(script.getOrDefault("delay", 0).toString());
 
         // Substitute any specified script-variable-values
         name = resolveExpressionValue(name);
@@ -762,6 +766,10 @@ public class SeleniumScripter {
         // Run the JS to click-n-go
         LOG.info("JS-clicking element with " + selector + " of `" + name + "`!");
         ((JavascriptExecutor) driver).executeScript("arguments[0].click();", element);
+
+        // Post-click delay
+        LOG.info("Waiting for " + delay + "s before continuing...");
+        Thread.sleep(delay * 1000);
     }
 
     /**
