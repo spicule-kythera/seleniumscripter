@@ -1,82 +1,65 @@
-0:
-  operation: wait
-  selector: id
-  name: dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_Name_0_mb_Name_0
-  timeout: 90
 1:
-  operation: keys
-  selector: id
-  name: dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_Name_0_mb_Name_0
-  value: __token__
-2:
-  operation: click
-  selector: id
-  name: dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_SearchButton_0
-3:
-  operation: loadpage
-4:
-  operation: snapshot
-5:
-  operation: table
-  selector: xpath
-  name: //*[@id="dnn_ctr347_NDCSearchPage_SearchPage_Datalist"]/tbody/tr
-  rowoffset: '3'
-  subscript: tablesnapshot
-  nextbuttonscript: nextscript
-  nextbutton:
-    selector: class
-    name: Next
-    failNotFound: false
-6:
-  operation: click
-  selector: class
-  name: Next
-  failNotFound: false
-7:
   operation: wait
-  selector: class
-  name: iC_DataPanelContainer
-  timeout: 90
-8:
-  operation: captureList
   selector: xpath
-  name: "//*[contains(@onclick, 'doRowClick(this);')]"
-  type: xpath
-  variable: dosagelabels
-9:
-  operation: loop
-  type: variable
-  variable: dosagelabels
-  subscript: tablesnapshot
-subscripts:
-  tablesnapshot:
-    1:
-      operation: wait
-      selector: class
-      name: iC_DataPanelContainer
-      timeout: 90
-    2:
-      operation: click
-      selector: xpath
-      name: "//{variable}"
-      variable: true
-      failNotFound: false
-    3:
-      operation: wait
-      selector: class
-      name: iC_DataPanelContainer
-      timeout: 90
-      asyncwait: true
-    4:
-      operation: snapshot
-  nextscript:
-    1:
-      operation: click
+  name: //*[@id="dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_Name_0_mb_Name_0"]
+  timeout: 300
+2:
+  operation: keys
+  selector: xpath
+  name: //*[@id="dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_Name_0_mb_Name_0"]
+  value: abilify
+3:
+  operation: click
+  selector: id
+  name: 'dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_SearchButton_0'
+4:
+  operation: wait
+  selector: xpath
+  name: //*[@class="Next"]
+  timeout: 300
+5:
+  operation: while
+  while:
+    - operation: wait
       selector: class
       name: Next
-      failNotFound: false
-    2:
-      operation: wait
+      timeout: 9999
+  do:
+    - operation: loadPage
+    - operation: try
+      expect:
+        - StaleElementReferenceException
+      try:
+        - operation: for
+          forEach:
+            selector: css
+            name: '#dnn_ctr347_NDCSearchPage_SearchPage_Datalist > tbody > tr'
+            slice: '2:-1'
+            variable: dosageRow
+          do:
+            - operation: try
+              expect:
+                - NoSuchElementException
+                - StaleElementReferenceException
+              try:
+                - operation: jsclick
+                  selector: xpath
+                  name: //*{dosageRow}/td/a
+                - operation: loadPage
+                - operation: snapshot
+              catch:
+                - operation: screenshot
+                  targetdir: /home/ivo/Pictures/dump
+      catch:
+        - operation: noop
+    - operation: wait
       selector: class
-      name: iC_EditItem
-      asyncwait: true
+      name: Next
+    - operation: pause
+      timeout: 10
+    - operation: click
+      selector: class
+      name: Next
+      delay: 2
+    - operation: alert
+      action: accept

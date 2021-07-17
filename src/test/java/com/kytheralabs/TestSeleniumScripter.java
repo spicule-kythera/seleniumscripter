@@ -23,9 +23,9 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class TestSeleniumScripter {
-    private final String browserType = BrowserType.CHROME; // Type of driver to use
+    private final String browserType = BrowserType.FIREFOX; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
-                                                       "--headless",
+//                                                       "--headless",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
                                                        "--ignore-certificate-errors",
@@ -122,18 +122,6 @@ public class TestSeleniumScripter {
         System.out.println("Took " + scriptRunner.getSnapshots().size() + " snapshots for this agent!");
     }
 
-    @Ignore
-    @Test
-    public void demo() throws Exception {
-        // Crawl parameters
-        final String scriptName = "demo.yaml";
-        final String url = "https://www.forwardhealth.wi.gov/WIPortal/Subsystem/Provider/DrugSearch.aspx";
-
-        // Start the crawl
-        runScript(url, scriptName);
-    }
-
-    @Ignore
     @Test
     public void alabama() throws Exception {
         // Crawl parameters
@@ -141,6 +129,17 @@ public class TestSeleniumScripter {
         final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
 
         // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
+    public void cmsGov() throws Exception {
+        // Crawl parameters
+        final String scriptName = "cmsgov.yaml";
+        final String url = "https://www.cms.gov/medicare-coverage-database/new-search/handlers/tour-end.ashx?t=1625154700997&which=report";
+
+        // Start the crawl
+
         runScript(url, scriptName);
     }
 
@@ -165,6 +164,16 @@ public class TestSeleniumScripter {
     }
 
     @Test
+    public void myPrime() throws Exception {
+        // Crawl parameters
+        final String scriptName = "myprime.yaml";
+        final String url = "https://www.myprime.com/es/boeing/plan-preview/medicines.html#find-medicine";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
     public void optum() throws Exception {
         // Crawl parameters
         final String scriptName = "optumfixed3.yaml";
@@ -181,32 +190,6 @@ public class TestSeleniumScripter {
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
 
         // Start the crawl
-        try {
-            runScript(url, scriptName);
-        } catch(Exception e){
-            System.out.println("here");
-        }
-    }
-
-    @Test
-    public void cmsgov() throws Exception {
-        // Crawl parameters
-        final String scriptName = "cmsgov.yaml";
-        final String url = "https://www.cms.gov/medicare-coverage-database/new-search/handlers/tour-end.ashx?t=1625154700997&which=report";
-
-        // Start the crawl
-
         runScript(url, scriptName);
-    }
-
-    @Test
-    public void myprime() throws Exception{
-        final String scriptName = "myprime.yaml";
-        final String url = "https://www.myprime.com/es/boeing/plan-preview/medicines.html#find-medicine";
-
-
-            runScript(url, scriptName);
-
-
     }
 }
