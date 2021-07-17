@@ -8,6 +8,8 @@
   selector: xpath
   name: //*[@id="dnn_ctr347_NDCSearchPage_SearchPage_CriteriaPanel_Name_0_mb_Name_0"]
   value: abilify
+  delay: 0
+  postDelay: 0
 3:
   operation: click
   selector: id
@@ -15,7 +17,7 @@
 4:
   operation: alert
   action: accept
-  timeout: 5
+  timeout: 2
 5:
   operation: wait
   selector: xpath
@@ -27,10 +29,13 @@
     - operation: wait
       selector: class
       name: Next
-      timeout: 10
+      timeout: 2
     - operation: click
       selector: class
       name: Next
+    - operation: alert
+      action: accept
+      timeout: 2
   do:
     - operation: loadPage
     - operation: try
@@ -63,9 +68,6 @@
       catch:
         - operation: screenshot
           targetdir: /home/ivo/Pictures/dump
-    - operation: alert
-      action: accept
-      timeout: 4
 7:
   operation: dumpstack
   targetdir: /home/ivo/Documents/work/dump
