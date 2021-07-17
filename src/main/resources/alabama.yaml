@@ -24,8 +24,8 @@
   name: //*[@class="Next"]
   timeout: 300
 6:
-  operation: doWhile
-  dowhile:
+  operation: do_while
+  do_while:
     - operation: wait
       selector: class
       name: Next

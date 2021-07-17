@@ -278,7 +278,7 @@ public class SeleniumScripter {
                     case "clicklistitem":
                         clickListItemOperation(subscript);
                         break;
-                    case "dowhile":
+                    case "do_while":
                         doWhileOperation(subscript);
                         break;
                     case "dumpstack":
@@ -339,9 +339,6 @@ public class SeleniumScripter {
                     case "try":
                         tryOperation(subscript);
                         break;
-                    case "token":
-                        getTokenOperation(subscript);
-                        break;
                     case "wait":
                         waitOperation(subscript);
                         break;
@@ -369,30 +366,31 @@ public class SeleniumScripter {
 
         LOG.info("Attempting to `" + action + "` alert within " + timeout + "s...");
 
-        // Wait for an alert to appear
-        Alert alert = new WebDriverWait(driver, timeout).until(ExpectedConditions.alertIsPresent());
-
-        // Try to run the action
+        Alert alert;
         try {
-            switch(action) {
-                case "accept":
-                    alert.accept();
-                    break;
-                case "dismiss":
-                    alert.dismiss();
-                    break;
-                case "keys":
-                    validate(script, "name");
-                    String name = script.get("name").toString();
-                    alert.sendKeys(name);
-                    break;
-                default:
-                    throw new ParseException("Unsupported action: `" + action + "`!", 0);
-            }
-        } catch (NoAlertPresentException e) {
+            // Wait for an alert to appear
+            alert = new WebDriverWait(driver, timeout).until(ExpectedConditions.alertIsPresent());
+        } catch (NoAlertPresentException | TimeoutException e) {
             // Consume the NoAlertPresentException, print the stack trace and fall through
             LOG.warn("Waited for an alert to appear within " + timeout + "s but none was found!");
-            e.printStackTrace();
+            return;
+        }
+
+        // Run the action
+        switch(action) {
+            case "accept":
+                alert.accept();
+                break;
+            case "dismiss":
+                alert.dismiss();
+                break;
+            case "keys":
+                validate(script, "name");
+                String name = script.get("name").toString();
+                alert.sendKeys(name);
+                break;
+            default:
+                throw new ParseException("Unsupported action: `" + action + "`!", 0);
         }
     }
 
@@ -407,6 +405,7 @@ public class SeleniumScripter {
         validate(script, new String[] {"variable", "subscript"}); // Validation
 
         String variableName = script.get("variable").toString();
+
         if(captureLists.containsKey(variableName)) {
             List<String> vars = captureLists.get(variableName);
 
@@ -467,10 +466,12 @@ public class SeleniumScripter {
     @Deprecated
     private void captureListOperation(Map<String, Object> script) throws ParseException {
         deprecated("capturelist");
+
         validate(script, new String[] {"selector", "name"}); // Validation
 
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
+        String variable = script.get("variable").toString();
 
         List<WebElement> webElements = driver.findElements(by(selector, name));
         String type = "text";
@@ -492,18 +493,22 @@ public class SeleniumScripter {
             }
         }
 
-        LOG.info("Storing capture list as: " + script.get("variable").toString());
+        LOG.info("Storing capture list as `" + variable + "`!");
+
         String append = "false";
+
         if(script.containsKey("append")){
             append = script.get("append").toString();
         }
         if(append.equals("false")) {
-            captureLists.put(script.get("variable").toString(), strlist);
+            captureLists.put(variable, strlist);
+            scriptVariables.put(variable, strlist);
         } else if(append.equals("true")){
             List list = captureLists.get(script.get("variable"));
             List<String> newList = new ArrayList<String>(list);
             newList.addAll(strlist);
-            captureLists.put(script.get("variable").toString(), newList);
+            captureLists.put(variable, newList);
+            scriptVariables.put(variable, newList);
         }
     }
 
@@ -679,7 +684,7 @@ public class SeleniumScripter {
         validate(script, new String[] {"do_while", "do"}); // Validation
 
         // Get the instruction parameters
-        List<Map<String, String>> whileBlock = (List<Map<String, String>>) script.get("dowhile");
+        List<Map<String, String>> whileBlock = (List<Map<String, String>>) script.get("do_while");
         List<Map<String, String>> doBlock = (List<Map<String, String>>) script.get("do");
 
         // Run the while block
@@ -1012,16 +1017,11 @@ public class SeleniumScripter {
     }
 
     /**
-     * DEV TOOL
      * Stores a value in the global script-variables environment
      * @param script the set subscript operation
      * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      */
     private void setOperation(Map<String, Object> script) throws ParseException, NotActiveException {
-        if(!DEV_MODE) {
-            throw new NotActiveException("The `set` operation is for development purposes only and not available in production!");
-        }
-
         validate(script, new String[] {"variable", "value"}); // Validation
 
         String variable = script.get("variable").toString();
@@ -1189,15 +1189,5 @@ public class SeleniumScripter {
         }
 
         new WebDriverWait(driver, timeout).until(condition);
-    }
-
-    private void getTokenOperation(Map<String, Object> script) {
-        String url = script.get("url").toString();
-        driver.get(url);
-        WebElement element = driver.findElement(By.tagName("pre"));
-
-        Object o = JSONValue.parse(element.getText());
-        JSONObject jsonObject = (JSONObject) o;
-        bearertoken = (String) jsonObject.get("access_token");
     }
 }
