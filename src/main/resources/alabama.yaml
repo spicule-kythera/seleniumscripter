@@ -23,7 +23,6 @@
     - operation: wait
       selector: class
       name: Next
-      timeout: 9999
   do:
     - operation: loadPage
     - operation: try
@@ -47,19 +46,21 @@
                   name: //*{dosageRow}/td/a
                 - operation: loadPage
                 - operation: snapshot
+                - operation: screenshot
+                  targetdir: /home/ivo/Pictures/dump
               catch:
                 - operation: screenshot
                   targetdir: /home/ivo/Pictures/dump
       catch:
-        - operation: noop
+        - operation: screenshot
+          targetdir: /home/ivo/Pictures/dump
     - operation: wait
       selector: class
       name: Next
-    - operation: pause
-      timeout: 10
     - operation: click
       selector: class
       name: Next
       delay: 2
     - operation: alert
       action: accept
+      timeout: 10

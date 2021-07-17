@@ -353,18 +353,49 @@ public class SeleniumScripter {
         }
     }
 
-    private void alertOperation(Map<String, Object> script) throws ParseException {
+    private void alertOperation(Map<String, Object> script) throws ParseException, InterruptedException {
         validate(script, "action"); // Validation
+
+        // Get or fill the default timeout
+        long timeout = Long.parseLong(script.getOrDefault("timeout", 10).toString());
 
         // Get operation parameters
         String action = script.get("action").toString().toLowerCase();
 
-        switch(action) {
-            case "dismiss":
-                driver.switchTo().alert().dismiss();
-            case "accept":
-            default:
-                driver.switchTo().alert().accept();
+        boolean cleared = false;
+        long start = new Date().getTime() / 1000;
+
+        // Wait for an alert to appear if at all
+        while(!cleared){
+            try {
+                // Try to run the action
+                switch(action) {
+                    case "dismiss":
+                        driver.switchTo().alert().dismiss();
+                        cleared = true;
+                        break;
+                    case "accept":
+                    default:
+                        driver.switchTo().alert().accept();
+                        cleared = true;
+                }
+            } catch (NoAlertPresentException e) {
+                // If the action failed
+                LOG.warn("The `alert` operation was called, but no alert exists!");
+
+                // Get the elapsed time
+                long now = new Date().getTime() / 1000;
+                long elapsed = now - start;
+
+                // If the timeout has passed, then stop searching
+                if(elapsed >= timeout) {
+                    LOG.warn("Waited for an alert to appear within " + timeout + "s but none was found!");
+                    break;
+                }
+
+                // Wait some time before trying again
+                Thread.sleep(500);
+            }
         }
     }
 
