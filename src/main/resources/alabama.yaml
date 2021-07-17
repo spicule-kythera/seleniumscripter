@@ -18,9 +18,13 @@
   name: //*[@class="Next"]
   timeout: 300
 5:
-  operation: while
-  while:
+  operation: doWhile
+  dowhile:
     - operation: wait
+      selector: class
+      name: Next
+      timeout: 10
+    - operation: click
       selector: class
       name: Next
   do:
@@ -41,26 +45,23 @@
                 - NoSuchElementException
                 - StaleElementReferenceException
               try:
+                - operation: wait
+                  selector: xpath
+                  name: //*{dosageRow}/td/a
                 - operation: jsclick
                   selector: xpath
                   name: //*{dosageRow}/td/a
                 - operation: loadPage
                 - operation: snapshot
-                - operation: screenshot
-                  targetdir: /home/ivo/Pictures/dump
               catch:
                 - operation: screenshot
                   targetdir: /home/ivo/Pictures/dump
       catch:
         - operation: screenshot
           targetdir: /home/ivo/Pictures/dump
-    - operation: wait
-      selector: class
-      name: Next
-    - operation: click
-      selector: class
-      name: Next
-      delay: 2
     - operation: alert
       action: accept
-      timeout: 10
+      timeout: 4
+6:
+  operation: dumpstack
+  targetdir: /home/ivo/Documents/work/dump

@@ -16,6 +16,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import javax.management.AttributeNotFoundException;
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.NotActiveException;
 import java.text.ParseException;
@@ -153,6 +154,10 @@ public class SeleniumScripter {
         }
     }
 
+    private int getUnixTime() {
+        return new Long(new Date().getTime() / 1000).intValue();
+    }
+
     /**
      * Resolve the value of a variable-expression, if any was specified
      * @param expression the original expression
@@ -273,6 +278,12 @@ public class SeleniumScripter {
                     case "clicklistitem":
                         clickListItemOperation(subscript);
                         break;
+                    case "dowhile":
+                        doWhileOperation(subscript);
+                        break;
+                    case "dumpstack":
+                        dumpStackOperation(subscript);
+                        break;
                     case "extendablefetcher":
                         extendableFetcherOperation(subscript);
                         break;
@@ -339,9 +350,6 @@ public class SeleniumScripter {
                         break;
                     case "wait":
                         waitOperation(subscript);
-                        break;
-                    case "while":
-                        whileOperation(subscript);
                         break;
                     default:
                         throw new ParseException("Invalid operation: " + operation, 0);
@@ -911,11 +919,9 @@ public class SeleniumScripter {
     public void screenshotOperation(Map<String, Object> script) throws IOException, ParseException {
         validate(script, "targetdir"); // Validation
 
-        int timestamp = new Long(new Date().getTime() / 1000).intValue();
-
         // Get operation parameters
         String directory = script.get("targetdir").toString();
-        String filePath = directory + (directory.endsWith("/") ? "" : "/") + timestamp + "-screenshot.png";
+        String filePath = directory + (directory.endsWith("/") ? "" : "/") + getUnixTime() + "-screenshot.png";
 
         // Take the screenshot
         TakesScreenshot scrShot = ((TakesScreenshot) driver);
@@ -924,6 +930,49 @@ public class SeleniumScripter {
         // Save it to disk
         File dest = new File(filePath);
         FileUtils.copyFile(f, dest);
+    }
+
+    /**
+     * DEV TOOL
+     * Dumps the stack of snapshots to a directory, creating a `.html` file for each entry in the stack in the
+     *  target directory
+     * @param script the dumpscript subscript operation
+     * @throws ParseException
+     * @throws IOException
+     */
+    public void dumpStackOperation(Map<String, Object> script) throws ParseException, IOException {
+        if(!DEV_MODE) {
+            throw new NotActiveException("The `dumpstack` operation is for development purposes only and not available in production!");
+        }
+
+        validate(script, "targetdir"); // Validation
+
+        // Get operation parameters
+        String directory = script.get("targetdir").toString();
+
+        if(!directory.endsWith("/")) {
+            directory += "/";
+        }
+
+        // Create the directory
+        File dir = new File(directory);
+        if(!dir.exists()) {
+            dir.mkdirs();
+        }
+
+        for (int i = 0; i < snapshots.size(); ++i) {
+            String filepath = directory + i + "-snapshot.html";
+            String content = snapshots.get(i);
+
+            // Create the file
+            File file = new File(filepath);
+            file.createNewFile();
+
+
+            FileWriter writer = new FileWriter(filepath);
+            writer.write(content);
+            writer.close();
+        }
     }
 
     /**
@@ -967,6 +1016,7 @@ public class SeleniumScripter {
     }
 
     /**
+     * DEV TOOL
      * Stores a value in the global script-variables environment
      * @param script the set subscript operation
      * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
@@ -1195,20 +1245,20 @@ public class SeleniumScripter {
      * @throws IOException occurs if a subsequent operation tries to take a screenshot and fails to write to disk
      * @throws InterruptedException occurs if a subsequent operation calls sleep and is being woken up again
      */
-    private void whileOperation(Map<String, Object> script) throws ParseException,
+    private void doWhileOperation(Map<String, Object> script) throws ParseException,
                                                                    AttributeNotFoundException,
                                                                    IOException,
                                                                    InterruptedException {
-        validate(script, new String[] {"while", "do"}); // Validation
+        validate(script, new String[] {"dowhile", "do"}); // Validation
 
         // Get the instruction parameters
-        List<Map<String, String>> whileBlock = (List<Map<String, String>>) script.get("while");
+        List<Map<String, String>> whileBlock = (List<Map<String, String>>) script.get("dowhile");
         List<Map<String, String>> doBlock = (List<Map<String, String>>) script.get("do");
 
         // Run the while block
-        while(guardedSubsequence(whileBlock)) {
+        do {
             runSubsequence(doBlock);
-        }
+        } while(guardedSubsequence(whileBlock));
     }
 
     private void getTokenOperation(Map<String, Object> script) {
