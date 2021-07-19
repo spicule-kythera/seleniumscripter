@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class TestSeleniumScripter {
-    private final String browserType = BrowserType.FIREFOX; // Type of driver to use
+    private final String browserType = BrowserType.CHROME; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
 //                                                       "--headless",
                                                        "--disable-gpu",
@@ -198,6 +198,16 @@ public class TestSeleniumScripter {
         // Crawl parameters
         final String scriptName = "upmc2.json";
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
+    public void screenshot() throws Exception {
+        // Crawl parameters
+        final String scriptName = "screenshot.yaml";
+        final String url = "https://news.bbc.co.uk";
 
         // Start the crawl
         runScript(url, scriptName);

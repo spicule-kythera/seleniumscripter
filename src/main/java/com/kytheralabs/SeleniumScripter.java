@@ -1,9 +1,11 @@
 package com.kytheralabs;
 
+import com.spicule.ashot.AShot;
+import com.spicule.ashot.Screenshot;
+import com.spicule.ashot.shooting.ShootingStrategies;
 import jdk.nashorn.internal.objects.annotations.Getter;
 import jdk.nashorn.internal.objects.annotations.Setter;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.NoSuchElementException;
@@ -12,10 +14,6 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import ru.yandex.qatools.ashot.AShot;
-import ru.yandex.qatools.ashot.Screenshot;
-import ru.yandex.qatools.ashot.shooting.ShootingStrategies;
-
 import javax.imageio.ImageIO;
 import javax.management.AttributeNotFoundException;
 import java.io.File;
@@ -952,7 +950,6 @@ public class SeleniumScripter {
         File f = new File(dirPath);
         f.mkdirs();
         String filePath = dirPath + getDateString() + "-" + token + ".png";
-
         // Take the screenshot
         Screenshot s = new AShot().shootingStrategy(ShootingStrategies.viewportPasting(100)).takeScreenshot(driver);
         ImageIO.write(s.getImage(), "PNG", new File(filePath));

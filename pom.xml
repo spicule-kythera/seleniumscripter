@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.spicule</groupId>
             <artifactId>ashot</artifactId>
-            <version>1.5.4</version>
+            <version>1.5.4-patch</version>
         </dependency>
 
         <dependency>
