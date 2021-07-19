@@ -3,7 +3,6 @@ package com.kytheralabs;
 import jdk.nashorn.internal.objects.annotations.Getter;
 import jdk.nashorn.internal.objects.annotations.Setter;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
-import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.openqa.selenium.NoSuchElementException;
@@ -12,7 +11,11 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import ru.yandex.qatools.ashot.AShot;
+import ru.yandex.qatools.ashot.Screenshot;
+import ru.yandex.qatools.ashot.shooting.ShootingStrategies;
 
+import javax.imageio.ImageIO;
 import javax.management.AttributeNotFoundException;
 import java.io.File;
 import java.io.FileWriter;
@@ -934,7 +937,6 @@ public class SeleniumScripter {
     @Setter
     public void setOutputPath(String path) {
         this.outputPath = path;
-        System.setProperties();
     }
 
     /**
@@ -950,15 +952,14 @@ public class SeleniumScripter {
         String token = script.getOrDefault("tag", "screenshot").toString();
 
         // Create the filepath
-        String filePath = directory + (directory.endsWith("/") ? "" : "/") + getDateString() + "-" + token + ".png";
+        String dirPath = directory + (directory.endsWith("/") ? "" : "/");
+        File f = new File(dirPath);
+        f.mkdirs();
+        String filePath = dirPath + getDateString() + "-" + token + ".png";
 
         // Take the screenshot
-        TakesScreenshot scrShot = ((TakesScreenshot) driver);
-        File f = scrShot.getScreenshotAs(OutputType.FILE);
-
-        // Save it to disk
-        File dest = new File(filePath);
-        FileUtils.copyFile(f, dest);
+        Screenshot s = new AShot().shootingStrategy(ShootingStrategies.viewportPasting(100)).takeScreenshot(driver);
+        ImageIO.write(s.getImage(), "PNG", new File(filePath));
     }
 
     /**
