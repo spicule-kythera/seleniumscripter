@@ -1,6 +1,5 @@
 package com.kytheralabs;
 
-import javafx.scene.paint.Stop;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
