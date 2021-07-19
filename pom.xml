@@ -29,7 +29,7 @@
             </snapshots>
         </repository>
         <repository>
-            <id>gitlab-maven</id>
+            <id>gitlab-maven-ashot</id>
             <url>https://gitlab.com/api/v4/projects/28250236/packages/maven</url>
         </repository>
     </repositories>
