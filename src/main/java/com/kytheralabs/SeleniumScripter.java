@@ -12,7 +12,11 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import ru.yandex.qatools.ashot.AShot;
+import ru.yandex.qatools.ashot.Screenshot;
+import ru.yandex.qatools.ashot.shooting.ShootingStrategies;
 
+import javax.imageio.ImageIO;
 import javax.management.AttributeNotFoundException;
 import java.io.File;
 import java.io.FileWriter;
@@ -964,12 +968,8 @@ public class SeleniumScripter {
         String filePath = directory + (directory.endsWith("/") ? "" : "/") + getDateString() + "-" + token + ".png";
 
         // Take the screenshot
-        TakesScreenshot scrShot = ((TakesScreenshot) driver);
-        File f = scrShot.getScreenshotAs(OutputType.FILE);
-
-        // Save it to disk
-        File dest = new File(filePath);
-        FileUtils.copyFile(f, dest);
+        Screenshot s = new AShot().shootingStrategy(ShootingStrategies.viewportPasting(1000)).takeScreenshot(driver);
+        ImageIO.write(s.getImage(), "PNG", new File(filePath));
     }
 
     /**
