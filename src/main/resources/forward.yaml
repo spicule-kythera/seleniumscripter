@@ -59,4 +59,4 @@
           delay: 1
 6:
   operation: dumpStack
-  targetdir: /home/ivo/Documents/work/forward-dump
+  targetdir: forward-stack

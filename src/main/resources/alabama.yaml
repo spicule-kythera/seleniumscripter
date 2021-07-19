@@ -67,7 +67,7 @@
                   targetdir: /home/ivo/Pictures/dump
       catch:
         - operation: screenshot
-          targetdir: /home/ivo/Pictures/dump
+          targetdir: screenshots
 7:
   operation: dumpstack
-  targetdir: /home/ivo/Documents/work/dump
+  targetdir: alabama-stack
