@@ -43,7 +43,7 @@ public class SeleniumScripter {
     private final WebDriver driver; // The web driver
     private final long defaultWaitTimeout = 30; // The default element wait timeout in seconds
     private final List<String> snapshots = new ArrayList<>(); // The stack of HTML content to return to the crawl
-    private final List<String> capturedLabel = new ArrayList<>(); // ???
+    private final List<String> capturedLabel = new ArrayList<>(); // A list of html things?
     private final Map<String, Object> scriptVariables = new HashMap<>(); // Variables instantiated by the script
     private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class); // Application logger
 
@@ -240,22 +240,6 @@ public class SeleniumScripter {
                                                              ParseException,
                                                              InterruptedException,
                                                              StopIteration {
-        runScript(script, null);
-    }
-
-    /**
-     * Run a selenium script.
-     * @param script the serialized selenium script
-     * @throws IOException occurs when a snapshot image failed to save to disk
-     * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
-     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
-     * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
-     */
-    public void runScript(Map<String, Object> script, Object loopValue) throws IOException,
-                                                                               AttributeNotFoundException,
-                                                                               ParseException,
-                                                                               InterruptedException,
-                                                                               StopIteration {
         // TODO: remove this as soon as the `loop` op is closed out
         if(masterScript == null){
             masterScript = script;
@@ -416,15 +400,15 @@ public class SeleniumScripter {
         String variableName = script.get("variable").toString();
 
         if(captureLists.containsKey(variableName)) {
-            List<String> vars = captureLists.get(variableName);
+            List<String> list = captureLists.get(variableName);
 
-            LOG.info("Performing Variable Loop for: " + variableName);
-            for (Object v : vars) {
+            LOG.info("Iterating over list: " + list);
+            for (Object v : list) {
+                scriptVariables.put(variableName, v);
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) subscripts.get(script.get("subscript")));
-                LOG.info("Looping for variable: " + v + " . Using subscript: " + script.get("subscript"));
                 try {
-                    runScript(subscript, v);
+                    runScript(subscript);
                 } catch (Exception e) {
                     LOG.error(e);
                     if (!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)) {
@@ -514,13 +498,11 @@ public class SeleniumScripter {
         }
         if(append.equals("false")) {
             captureLists.put(variable, strlist);
-            scriptVariables.put(variable, strlist);
         } else if(append.equals("true")){
             List list = captureLists.get(script.get("variable"));
             List<String> newList = new ArrayList<String>(list);
             newList.addAll(strlist);
             captureLists.put(variable, newList);
-            scriptVariables.put(variable, newList);
         }
     }
 
@@ -924,11 +906,6 @@ public class SeleniumScripter {
         return treeMap;
     }
 
-    private boolean generateDirs() {
-        File file = new File(outputPath);
-        return file.mkdirs();
-    }
-
     /**
      * Set the path to the directory where operations like `screenshot` and `dumpstack` will start at when determining
      *  their file output paths
@@ -937,6 +914,7 @@ public class SeleniumScripter {
     @Setter
     public void setOutputPath(String path) {
         this.outputPath = path;
+        new File(outputPath).mkdirs();
     }
 
     /**
@@ -952,10 +930,9 @@ public class SeleniumScripter {
         String token = script.getOrDefault("tag", "screenshot").toString();
 
         // Create the filepath
-        String dirPath = directory + (directory.endsWith("/") ? "" : "/");
-        File f = new File(dirPath);
-        f.mkdirs();
-        String filePath = dirPath + getDateString() + "-" + token + ".png";
+        String path = directory + (directory.endsWith("/") ? "" : "/");
+        new File(path).mkdir();
+        String filePath = path + getDateString() + "-" + token + ".png";
 
         // Take the screenshot
         Screenshot s = new AShot().shootingStrategy(ShootingStrategies.viewportPasting(100)).takeScreenshot(driver);
@@ -981,10 +958,7 @@ public class SeleniumScripter {
         String directory = outputPath + (outputPath.endsWith("/") ? "" : "/") + script.get("targetdir").toString();
 
         // Create the directory
-        File dir = new File(directory);
-        if(!dir.exists()) {
-            dir.mkdirs();
-        }
+        new File(directory).mkdir();
 
         for (int i = 0; i < snapshots.size(); ++i) {
             String filepath = directory + i + "-snapshot.html";
