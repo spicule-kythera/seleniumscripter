@@ -1,7 +1,7 @@
 package com.kytheralabs;
 
-import groovy.lang.Binding;
-import groovy.lang.GroovyShell;
+import jdk.nashorn.internal.objects.annotations.Getter;
+import jdk.nashorn.internal.objects.annotations.Setter;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
@@ -31,9 +31,13 @@ import java.util.stream.Collectors;
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
+<<<<<<< HEAD
     private String outputpath = "";
     // Error Specs
 
+=======
+    // Error Specs
+>>>>>>> c1e211dd96f16c4bb32f473149e1878c4b99959b
     class StopIteration extends Exception {
         StopIteration(String message) {
             super(message);
@@ -51,11 +55,10 @@ public class SeleniumScripter {
     private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class); // Application logger
 
     // Misc variables
-    private String bearertoken;
+    private String outputPath = "./"; // The starting path to use when saving screenshots or stack results
 
     // Deprecated variables
     // TODO: To be removed once the loop operation is fully closed out
-    private Object loopValue;
     private Map<String, Object> masterScript;
     private final Map<String, List> captureLists = new HashMap<>(); // The `loop` op's variable to iterate over
 
@@ -261,7 +264,6 @@ public class SeleniumScripter {
                                                                                InterruptedException,
                                                                                StopIteration {
         // TODO: remove this as soon as the `loop` op is closed out
-        this.loopValue = loopValue;
         if(masterScript == null){
             masterScript = script;
         }
@@ -301,9 +303,6 @@ public class SeleniumScripter {
                         break;
                     case "dumpstack":
                         dumpStackOperation(subscript);
-                        break;
-                    case "filter":
-                        filterOperation(subscript);
                         break;
                     case "for":
                         forOperation(subscript);
@@ -913,26 +912,6 @@ public class SeleniumScripter {
         driver.get(url);
     }
 
-    public void filterOperation(Map<String, Object> script){
-        String tovariable = script.get("tovariable").toString();
-        String filterType = script.get("type").toString();
-        if(filterType.equals("filtermap")) {
-            List<Map> matches = new ArrayList<>();
-            matches = (List<Map>) executeGroovyScript(script.get("evaluation").toString());
-            captureLists.put(tovariable, matches);
-        }
-    }
-
-    public Object executeGroovyScript(String script) {
-        Binding sharedData = new Binding();
-        GroovyShell shell = new GroovyShell(sharedData);
-        sharedData.setProperty("capturelists", captureLists);
-
-        Object result = shell.evaluate(script);
-
-        return result;
-    }
-
     /**
      * Convert an instruction block to a tree map.
      * @param hashMap the original instruction block
@@ -953,6 +932,16 @@ public class SeleniumScripter {
     }
 
     /**
+     * Set the path to the directory where operations like `screenshot` and `dumpstack` will start at when determining
+     *  their file output paths
+     * @param path the base path to start with
+     */
+    @Setter
+    public void setOutputPath(String path) {
+        this.outputPath = path;
+    }
+
+    /**
      * Take a screenshot (rasterize image) of the current page.
      * @param script the screenshot subscript operation
      * @throws IOException when a screenshot image fails to write to disk
@@ -961,7 +950,7 @@ public class SeleniumScripter {
         validate(script, "targetdir"); // Validation
 
         // Get operation parameters
-        String directory = this.outputpath +"/"+script.get("targetdir").toString();
+        String directory = outputPath + (outputPath.endsWith("/") ? "" : "/") + script.get("targetdir").toString();
         String token = script.getOrDefault("tag", "screenshot").toString();
 
         // Create the filepath
@@ -1107,6 +1096,7 @@ public class SeleniumScripter {
      * Return the snapshots stack.
      * @return List<String> the list of paths to snapshot images taken
      */
+    @Getter
     public final List<String> getSnapshots(){
         return snapshots;
     }
@@ -1230,8 +1220,11 @@ public class SeleniumScripter {
 
         new WebDriverWait(driver, timeout).until(condition);
     }
+<<<<<<< HEAD
 
     public void setOutputPath(String path) {
         this.outputpath = path;
     }
+=======
+>>>>>>> c1e211dd96f16c4bb32f473149e1878c4b99959b
 }
