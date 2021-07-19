@@ -27,7 +27,7 @@ import java.util.stream.Collectors;
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
-    private String outputpath;
+    private String outputpath = "";
     // Error Specs
 
     class StopIteration extends Exception {
