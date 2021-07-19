@@ -28,6 +28,10 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>https://gitlab.com/api/v4/projects/28250236/packages/maven</url>
+        </repository>
     </repositories>
 
     <distributionManagement>
@@ -45,7 +49,7 @@
     <dependencies>
         <!-- Install Specific -->
         <dependency>
-            <groupId>ru.yandex.qatools.ashot</groupId>
+            <groupId>com.spicule</groupId>
             <artifactId>ashot</artifactId>
             <version>1.5.4</version>
         </dependency>
