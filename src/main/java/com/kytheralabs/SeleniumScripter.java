@@ -929,17 +929,12 @@ public class SeleniumScripter {
         String token = script.getOrDefault("tag", "screenshot").toString();
 
         // Create the filepath
-<<<<<<< HEAD
         String dirPath = directory + (directory.endsWith("/") ? "" : "/");
         File f = new File(dirPath);
         f.mkdirs();
         String filePath = dirPath + getDateString() + "-" + token + ".png";
-=======
-        String path = directory + (directory.endsWith("/") ? "" : "/");
-        new File(path).mkdir();
-        String filePath = path + getDateString() + "-" + token + ".png";
 
->>>>>>> 422000f1ae55e68aa439fc3808fdc9ae34fc9c7f
+
         // Take the screenshot
         Screenshot s = new AShot().shootingStrategy(ShootingStrategies.viewportPasting(100)).takeScreenshot(driver);
         ImageIO.write(s.getImage(), "PNG", new File(filePath));
