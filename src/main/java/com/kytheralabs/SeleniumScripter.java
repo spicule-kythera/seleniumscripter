@@ -31,13 +31,7 @@ import java.util.stream.Collectors;
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
-<<<<<<< HEAD
-    private String outputpath = "";
     // Error Specs
-
-=======
-    // Error Specs
->>>>>>> c1e211dd96f16c4bb32f473149e1878c4b99959b
     class StopIteration extends Exception {
         StopIteration(String message) {
             super(message);
@@ -1220,11 +1214,5 @@ public class SeleniumScripter {
 
         new WebDriverWait(driver, timeout).until(condition);
     }
-<<<<<<< HEAD
 
-    public void setOutputPath(String path) {
-        this.outputpath = path;
-    }
-=======
->>>>>>> c1e211dd96f16c4bb32f473149e1878c4b99959b
 }
