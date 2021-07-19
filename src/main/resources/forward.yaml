@@ -1,5 +1,11 @@
 0:
   operation: loadPage
+10:
+  operation: dumpStack
+  targetdir: stack
+11:
+  operation: screenshot
+  targetdir: screenshots
 1:
   operation: keys
   selector: id

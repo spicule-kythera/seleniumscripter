@@ -118,6 +118,12 @@ public class TestSeleniumScripter {
 
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver, true);
+
+        // Set the default path
+        String path = System.getProperty("user.home");
+        path += (path.endsWith("/") ? "" : "/") + "Documents/work/dump/";
+        scriptRunner.setOutputPath(path);
+
         scriptRunner.runScript(script);
         System.out.println("Took " + scriptRunner.getSnapshots().size() + " snapshots for this agent!");
     }
