@@ -21,6 +21,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.NotActiveException;
 import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -173,11 +174,12 @@ public class SeleniumScripter {
     }
 
     /**
-     * Return the total time in milliseconds since the unix epoch
-     * @return time in milliseconds
+     * Return the current time in the form of the date string `yyyy_MM_dd_HH-mm-ss.SSS`
+     * @return the datestring
      */
-    private int getUnixTime() {
-        return new Long(new Date().getTime() / 1000).intValue();
+    private String getDateString() {
+       Date date = new Date();
+       return new SimpleDateFormat("yyyy_MM_dd_HH-mm-ss.SSS").format(date);
     }
 
     /**
@@ -250,6 +252,8 @@ public class SeleniumScripter {
         if(masterScript == null){
             masterScript = script;
         }
+
+        String n = getDateString();
 
         for (Map.Entry instruction : script.entrySet()) {
             String instructionName = instruction.getKey().toString();
@@ -922,7 +926,10 @@ public class SeleniumScripter {
 
         // Get operation parameters
         String directory = script.get("targetdir").toString();
-        String filePath = directory + (directory.endsWith("/") ? "" : "/") + getUnixTime() + "-screenshot.png";
+        String token = script.getOrDefault("tag", "screenshot").toString();
+
+        // Create the filepath
+        String filePath = directory + (directory.endsWith("/") ? "" : "/") + getDateString() + "-" + token + ".png";
 
         // Take the screenshot
         TakesScreenshot scrShot = ((TakesScreenshot) driver);
