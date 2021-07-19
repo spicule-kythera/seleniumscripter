@@ -101,7 +101,8 @@ public class TestSeleniumScripter {
                                                                                     AttributeNotFoundException,
                                                                                     ParseException,
                                                                                     java.text.ParseException,
-                                                                                    InterruptedException {
+                                                                                    InterruptedException,
+                                                                                    SeleniumScripter.StopIteration {
         final Map<String, Object> script;
         switch (scriptType.toLowerCase()) {
             case "json":

@@ -6,8 +6,6 @@ import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.apache.commons.io.FileUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.json.simple.JSONObject;
-import org.json.simple.JSONValue;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -29,6 +27,15 @@ import java.util.stream.Collectors;
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
+    private String basepath;
+    // Error Specs
+
+    class StopIteration extends Exception {
+        StopIteration(String message) {
+            super(message);
+        }
+    }
+
     // Constant things
     private boolean DEV_MODE = false; // Unlocks development and experimental features
     private final String url; // The initial url the agent starts at
@@ -231,7 +238,8 @@ public class SeleniumScripter {
     public void runScript(Map<String, Object> script) throws IOException,
                                                              AttributeNotFoundException,
                                                              ParseException,
-                                                             InterruptedException {
+                                                             InterruptedException,
+                                                             StopIteration {
         runScript(script, null);
     }
 
@@ -246,14 +254,13 @@ public class SeleniumScripter {
     public void runScript(Map<String, Object> script, Object loopValue) throws IOException,
                                                                                AttributeNotFoundException,
                                                                                ParseException,
-                                                                               InterruptedException {
+                                                                               InterruptedException,
+                                                                               StopIteration {
         // TODO: remove this as soon as the `loop` op is closed out
         this.loopValue = loopValue;
         if(masterScript == null){
             masterScript = script;
         }
-
-        String n = getDateString();
 
         for (Map.Entry instruction : script.entrySet()) {
             String instructionName = instruction.getKey().toString();
@@ -262,8 +269,8 @@ public class SeleniumScripter {
             if (instructionBlock instanceof Map) {
                 Map<String, Object> subscript = (Map<String, Object>) instructionBlock;
                 String operation = subscript.getOrDefault("operation", "{UNDEFINED}")
-                                            .toString()
-                                            .toLowerCase();
+                        .toString()
+                        .toLowerCase();
 
                 LOG.info("Executing `" + operation + "` operation in block `" + instructionName + "` with " + operation.length() + " fields!");
                 switch (operation.toLowerCase()) {
@@ -272,6 +279,9 @@ public class SeleniumScripter {
                         break;
                     case "alert":
                         alertOperation(subscript);
+                        break;
+                    case "break":
+                        breakOperation(subscript);
                         break;
                     case "capturelist":
                         captureListOperation(subscript);
@@ -349,8 +359,7 @@ public class SeleniumScripter {
                     default:
                         throw new ParseException("Invalid operation: " + operation, 0);
                 }
-            }
-            else {
+            } else {
                 throw new ParseException("Subscript did not convert to map!", 0);
             }
         }
@@ -439,7 +448,8 @@ public class SeleniumScripter {
     private void runSubsequence(List<Map<String, String>> sequence) throws IOException,
                                                                            AttributeNotFoundException,
                                                                            ParseException,
-                                                                           InterruptedException {
+                                                                           InterruptedException,
+                                                                           StopIteration {
         for (Map<String, String> instruction : sequence) {
             Map<String, Object> instructionBlock = new HashMap<>();
             instructionBlock.put("subsequence", instruction);
@@ -460,6 +470,8 @@ public class SeleniumScripter {
             return false;
         }
     }
+
+
 
     /**
      * Create a capture list.
@@ -605,8 +617,13 @@ public class SeleniumScripter {
 
         LOG.info("Iterating over list: " + xpaths);
         for (String xpath : xpaths) {
-            scriptVariables.put(iteratorName, xpath);
-            runSubsequence(doBlock);
+            try {
+                scriptVariables.put(iteratorName, xpath);
+                runSubsequence(doBlock);
+            } catch(StopIteration e) {
+                LOG.warn("Exiting `for` loop on a call to `break`!");
+                break;
+            }
         }
     }
 
@@ -621,7 +638,8 @@ public class SeleniumScripter {
     private void ifOperation(Map<String, Object> script) throws ParseException,
                                                                 AttributeNotFoundException,
                                                                 IOException,
-                                                                InterruptedException {
+                                                                InterruptedException,
+                                                                StopIteration {
         validate(script, new String[] {"selector", "name", "condition", "then"}); // Validation
 
         // Fetch element of focus
@@ -672,6 +690,15 @@ public class SeleniumScripter {
     }
 
     /**
+     * Breaks from the inner-most loop, if any
+     * @param script the break subscript operation
+     * @throws StopIteration always occurs as a signal to stop iterating
+     */
+    private void breakOperation(Map<String, Object> script) throws StopIteration{
+        throw new StopIteration("A call to `break` was caught outside of a loop, but may only be called inside a loop! Caught in block: " + script);
+    }
+
+    /**
      * A logical `do_while` block PROTOTYPE
      *      Currently runs off of the old condition logic, wherein `while` takes a sequence of instructions and
      *      passes or fails its condition iff no errors in the subsequence were raised.
@@ -682,9 +709,9 @@ public class SeleniumScripter {
      * @throws InterruptedException occurs if a subsequent operation calls sleep and is being woken up again
      */
     private void doWhileOperation(Map<String, Object> script) throws ParseException,
-            AttributeNotFoundException,
-            IOException,
-            InterruptedException {
+                                                                     AttributeNotFoundException,
+                                                                     IOException,
+                                                                     InterruptedException {
         validate(script, new String[] {"do_while", "do"}); // Validation
 
         // Get the instruction parameters
@@ -693,7 +720,12 @@ public class SeleniumScripter {
 
         // Run the while block
         do {
-            runSubsequence(doBlock);
+            try{
+                runSubsequence(doBlock);
+            } catch(StopIteration e) {
+                LOG.warn("Exiting `do_while` loop on a call to `break`!");
+                break;
+            }
         } while(guardedSubsequence(whileBlock));
     }
 
@@ -925,7 +957,7 @@ public class SeleniumScripter {
         validate(script, "targetdir"); // Validation
 
         // Get operation parameters
-        String directory = script.get("targetdir").toString();
+        String directory = this.basepath+"/"+script.get("targetdir").toString();
         String token = script.getOrDefault("tag", "screenshot").toString();
 
         // Create the filepath
@@ -1090,7 +1122,8 @@ public class SeleniumScripter {
     private void tryOperation(Map<String, Object> script) throws ParseException,
                                                                  AttributeNotFoundException,
                                                                  IOException,
-                                                                 InterruptedException {
+                                                                 InterruptedException,
+                                                                 StopIteration {
         validate(script, new String[] {"try", "catch", "expect"}); // Validation
 
         // Fetch the instruction blocks
@@ -1196,5 +1229,9 @@ public class SeleniumScripter {
         }
 
         new WebDriverWait(driver, timeout).until(condition);
+    }
+
+    public void setBasePath(String path) {
+        this.basepath = path;
     }
 }

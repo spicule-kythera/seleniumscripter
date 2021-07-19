@@ -24,7 +24,7 @@ f:
   selector: xpath
   name: "//vnext-filter-tab[2]/div"
 g:
-  operation: click
+  operation: jsclick
   selector: xpath
   name: //*[@id="helpful-tools-container"]/div
 h:
