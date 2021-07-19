@@ -42,6 +42,7 @@
         slice: '1:-1'
         variable: dosageRow
       do:
+        - operation: break
         - operation: jsclick
           selector: xpath
           name: '//*{dosageRow}/td/a'

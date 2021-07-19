@@ -1,5 +1,6 @@
 package com.kytheralabs;
 
+import javafx.scene.paint.Stop;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.json.simple.parser.JSONParser;
 import org.json.simple.parser.ParseException;
@@ -101,7 +102,8 @@ public class TestSeleniumScripter {
                                                                                     AttributeNotFoundException,
                                                                                     ParseException,
                                                                                     java.text.ParseException,
-                                                                                    InterruptedException {
+                                                                                    InterruptedException,
+                                                                                    SeleniumScripter.StopIteration {
         final Map<String, Object> script;
         switch (scriptType.toLowerCase()) {
             case "json":
