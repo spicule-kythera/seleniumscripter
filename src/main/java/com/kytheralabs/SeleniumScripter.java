@@ -30,6 +30,7 @@ import java.util.stream.Collectors;
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
+    private String basepath;
     // Error Specs
 
     class StopIteration extends Exception {
@@ -959,7 +960,7 @@ public class SeleniumScripter {
         validate(script, "targetdir"); // Validation
 
         // Get operation parameters
-        String directory = script.get("targetdir").toString();
+        String directory = this.basepath+"/"+script.get("targetdir").toString();
         String token = script.getOrDefault("tag", "screenshot").toString();
 
         // Create the filepath
@@ -1231,5 +1232,9 @@ public class SeleniumScripter {
         }
 
         new WebDriverWait(driver, timeout).until(condition);
+    }
+
+    public void setBasePath(String path) {
+        this.basepath = path;
     }
 }
