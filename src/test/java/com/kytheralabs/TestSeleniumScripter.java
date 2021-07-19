@@ -132,6 +132,16 @@ public class TestSeleniumScripter {
     }
 
     @Test
+    public void aetna() throws Exception {
+        // Crawl parameters
+        final String scriptName = "aetna.yaml";
+        final String url = "https://rxtools.aetnamedicare.com/helpfultools/2021/Resources/HelpfulTools";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
     public void cmsGov() throws Exception {
         // Crawl parameters
         final String scriptName = "cmsgov.yaml";
