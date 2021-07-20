@@ -202,6 +202,11 @@ public class SeleniumScripter {
      * @throws ValueException occurs when the requested variable name was not instantiated
      */
     private String resolveExpressionValue(String expression) throws ValueException {
+        if(expression.equals("${loopvalue}")){
+            return (String) this.loopValue;
+        } else if(expression.contains("{variable}")) {
+            return expression.replace("{variable}", this.loopValue.toString());
+        }
         // If the brackets indicators `{}` are not in the expression, then just return the literal value
         if (!expression.matches(".*\\{[a-zA-Z][a-zA-Z_0-9]*}.*")) {
             return expression;
