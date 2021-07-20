@@ -8,7 +8,7 @@
     <name>Selenium Scripter</name>
     <groupId>com.kytheralabs</groupId>
     <artifactId>seleniumscripter</artifactId>
-    <version>1.7.0</version>
+    <version>1.7.1</version>
 
     <!-- Project Properties -->
     <properties>
@@ -28,6 +28,10 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
+        <repository>
+            <id>gitlab-maven-ashot</id>
+            <url>https://gitlab.com/api/v4/projects/28250236/packages/maven</url>
+        </repository>
     </repositories>
 
     <distributionManagement>
@@ -44,6 +48,12 @@
     <!-- Package Dependencies -->
     <dependencies>
         <!-- Install Specific -->
+        <dependency>
+            <groupId>com.spicule</groupId>
+            <artifactId>ashot</artifactId>
+            <version>1.5.4-patch</version>
+        </dependency>
+
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>

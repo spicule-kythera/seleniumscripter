@@ -42,6 +42,7 @@
         slice: '1:-1'
         variable: dosageRow
       do:
+        - operation: break
         - operation: jsclick
           selector: xpath
           name: '//*{dosageRow}/td/a'
@@ -58,4 +59,4 @@
           delay: 1
 6:
   operation: dumpStack
-  targetdir: /home/ivo/Documents/work/forward-dump
+  targetdir: forward-stack

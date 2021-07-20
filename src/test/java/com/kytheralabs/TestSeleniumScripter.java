@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class TestSeleniumScripter {
-    private final String browserType = BrowserType.FIREFOX; // Type of driver to use
+    private final String browserType = BrowserType.CHROME; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
 //                                                       "--headless",
                                                        "--disable-gpu",
@@ -101,7 +101,8 @@ public class TestSeleniumScripter {
                                                                                     AttributeNotFoundException,
                                                                                     ParseException,
                                                                                     java.text.ParseException,
-                                                                                    InterruptedException {
+                                                                                    InterruptedException,
+                                                                                    SeleniumScripter.StopIteration {
         final Map<String, Object> script;
         switch (scriptType.toLowerCase()) {
             case "json":
@@ -117,6 +118,12 @@ public class TestSeleniumScripter {
 
         driver.get(url);
         SeleniumScripter scriptRunner = new SeleniumScripter(driver, true);
+
+        // Set the default path
+        String path = System.getProperty("user.home");
+        path += (path.endsWith("/") ? "" : "/") + "Documents/work/dump/";
+        scriptRunner.setOutputPath(path);
+
         scriptRunner.runScript(script);
         System.out.println("Took " + scriptRunner.getSnapshots().size() + " snapshots for this agent!");
     }
@@ -126,6 +133,16 @@ public class TestSeleniumScripter {
         // Crawl parameters
         final String scriptName = "alabama.yaml";
         final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
+    public void aetna() throws Exception {
+        // Crawl parameters
+        final String scriptName = "aetna.yaml";
+        final String url = "https://rxtools.aetnamedicare.com/helpfultools/2021/Resources/HelpfulTools";
 
         // Start the crawl
         runScript(url, scriptName);
@@ -187,6 +204,16 @@ public class TestSeleniumScripter {
         // Crawl parameters
         final String scriptName = "upmc2.json";
         final String url = "https://www.upmchealthplan.com/find-a-medication/default.aspx#medication";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
+    public void screenshot() throws Exception {
+        // Crawl parameters
+        final String scriptName = "screenshot.yaml";
+        final String url = "https://news.bbc.co.uk";
 
         // Start the crawl
         runScript(url, scriptName);
