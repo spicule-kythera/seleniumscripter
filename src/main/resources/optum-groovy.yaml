@@ -7,12 +7,16 @@ b:
 c:
   operation: extendablefetcher
   authheader: true
-  javascriptOperator: | 
-    var callback = arguments[arguments.length-1];
+  javascriptOperator: |
+    var callback = arguments[arguments.length - 1];
     var strFirstThree = 'Abilify'.substring(0,3);
-    var url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=PHSCA&userType=other&viewMode=NAME'
+    var url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=UCSPAQ6&userType=other&viewMode=NAME'
     fetch(url,
-    { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true', 'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA', 'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}}).then(response => response.json()).then(data => {callback(data.Drugs);});
+    { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
+    'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
+    'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
+    .then(response => response.json())
+    .then(data => {callback(data.Drugs);});
   variable: autocompletelist
 d:
   operation: filter
@@ -21,16 +25,21 @@ d:
   type: filtermap
   evaluation: |
     def newlist = [];
-    capturelists.get('autocompletelist').each { g->
-    if( g.containsKey('BrandName') && g.get('BrandName').toString().toUpperCase().contains('Abilify'.toUpperCase())){
-           newlist.add(g.BrandName)
+    capturelists.get('autocompletelist').each { g ->
+     if( g.containsKey('BrandName') && g.get('BrandName').toString().toUpperCase().contains('Abilify'.toUpperCase())){
+      newlist.add(g.BrandName)
+    }
+    else if( g.containsKey('GenericName') && g.get('GenericName').toString().toUpperCase().contains('Abilify'.toUpperCase())){
+      newlist.add(g.BrandName)
     }
     else if( g.containsKey('AltBrandName') && g.get('AltBrandName').toString().toUpperCase().contains('Abilify'.toUpperCase())){
-         newlist.add(g.AltBrandName)
-    }
-    else if((g.containsKey('FormularyAlternatives') && 'Abilify' in g.get('FormularyAlternatives').AltBrandName)){
-        g.get('FormularyAlternatives').each{ h-> if(h.AltBrandName == 'Abilify'.toUpperCase()){
-        newlist.add(h.AltBrandName)
+            newlist.add(g.AltBrandName)
+          }
+    else if((g.containsKey('FormularyAlternatives') && "Abilify".toUpperCase() in g.get('FormularyAlternatives').AltBrandName)){
+         g.get('FormularyAlternatives').each{ h ->
+            if(h.AltBrandName.toUpperCase().contains("Abilify".toUpperCase())){
+                newlist.add(h.AltBrandName)
+            }
         }
     }
     }
@@ -54,17 +63,24 @@ subscripts:
       operation: extendablefetcher
       authheader: true
       javascriptOperator: |
-        var callback = arguments[arguments.length-1];\nfetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=$planval&userType=$userval&viewMode=NAME&drugName={variable}&ctime=1625570965087',{
-        headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml':'true', 'impersonating': 'false', 'iris_resilient': 'true', 'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA','scope':'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site':'same-origin', 'Authorization': 'bearer {bearertoken}'}})
-        .then(response => response.json()).then(data => {callback(data.Drugs);});
+        var callback = arguments[arguments.length - 1];
+        fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=UCSPAQ6&userType=other&viewMode=NAME&drugName={variable}&ctime=1625570965087',
+        { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
+        'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
+        'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
+        .then(response => response.json())
+        .then(data => {callback(data.Drugs);});
       variable: druglist
   druglookup:
     a:
       operation: extendablefetcher
       authheader: true
       javascriptOperator: |
-        var callback = arguments[arguments.length-1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=$planval&userType=$userval&viewMode=id&drugId={variable}&ctime=1625499684610',{
-        headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml':'true', 'impersonating': 'false', 'iris_resilient': 'true','Referer':'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA','scope':'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site':'same-origin', 'Authorization': 'bearer {bearertoken}'}})
-        .then(response => response.json()).then(data => {callback(data.Drugs);});
+        var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=UCSPAQ6&userType=other&viewMode=id&drugId={variable}&ctime=1625499684610',
+        { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
+              'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
+              'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearertoken}'}})
+        .then(response => response.json())
+        .then(data => {callback(data.Drugs);});
       variable: drugResults
       variableMapValue: Id

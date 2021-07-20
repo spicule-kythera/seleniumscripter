@@ -3,11 +3,15 @@ package com.kytheralabs;
 import com.spicule.ashot.AShot;
 import com.spicule.ashot.Screenshot;
 import com.spicule.ashot.shooting.ShootingStrategies;
+import groovy.lang.Binding;
+import groovy.lang.GroovyShell;
 import jdk.nashorn.internal.objects.annotations.Getter;
 import jdk.nashorn.internal.objects.annotations.Setter;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -29,6 +33,8 @@ import java.util.stream.Collectors;
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
+
+
     // Error Specs
     class StopIteration extends Exception {
         StopIteration(String message) {
@@ -45,12 +51,13 @@ public class SeleniumScripter {
     private final List<String> capturedLabel = new ArrayList<>(); // A list of html things?
     private final Map<String, Object> scriptVariables = new HashMap<>(); // Variables instantiated by the script
     private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class); // Application logger
-
+    private String bearertoken;
     // Misc variables
     private String outputPath = "./"; // The starting path to use when saving screenshots or stack results
 
     // Deprecated variables
     // TODO: To be removed once the loop operation is fully closed out
+    private Object loopValue;
     private Map<String, Object> masterScript;
     private final Map<String, List> captureLists = new HashMap<>(); // The `loop` op's variable to iterate over
 
@@ -234,11 +241,12 @@ public class SeleniumScripter {
      * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
-    public void runScript(Map<String, Object> script) throws IOException,
+    public void runScript(Map<String, Object> script, Object loopValue) throws IOException,
                                                              AttributeNotFoundException,
                                                              ParseException,
                                                              InterruptedException,
                                                              StopIteration {
+        this.loopValue = loopValue;
         // TODO: remove this as soon as the `loop` op is closed out
         if(masterScript == null){
             masterScript = script;
@@ -268,6 +276,9 @@ public class SeleniumScripter {
                     case "capturelist":
                         captureListOperation(subscript);
                         break;
+                    case "capturelisttosnapshots":
+                        captureListToSnapshotsOperation(subscript);
+                        break;
                     case "click":
                         clickOperation(subscript);
                         break;
@@ -279,6 +290,12 @@ public class SeleniumScripter {
                         break;
                     case "dumpstack":
                         dumpStackOperation(subscript);
+                        break;
+                    case "extendablefetcher":
+                        extendableFetcherOperation(subscript);
+                        break;
+                    case "filter":
+                        filterOperation(subscript);
                         break;
                     case "for":
                         forOperation(subscript);
@@ -328,6 +345,9 @@ public class SeleniumScripter {
                         break;
                     case "snapshot":
                         snapshotOperation(subscript);
+                        break;
+                    case "token":
+                        getTokenOperation(subscript);
                         break;
                     case "try":
                         tryOperation(subscript);
@@ -407,7 +427,7 @@ public class SeleniumScripter {
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) subscripts.get(script.get("subscript")));
                 try {
-                    runScript(subscript);
+                    runScript(subscript,v);
                 } catch (Exception e) {
                     LOG.error(e);
                     if (!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)) {
@@ -432,7 +452,7 @@ public class SeleniumScripter {
         for (Map<String, String> instruction : sequence) {
             Map<String, Object> instructionBlock = new HashMap<>();
             instructionBlock.put("subsequence", instruction);
-            runScript(instructionBlock);
+            runScript(instructionBlock, null);
         }
     }
 
@@ -506,6 +526,26 @@ public class SeleniumScripter {
     }
 
     /**
+     * Convert a capture list output and add to snapshots - Used in Optum
+     * @param subscript
+     */
+    @Deprecated
+    private void captureListToSnapshotsOperation(Map<String, Object> subscript) {
+        deprecated("capturelisttosnapshots");
+
+        if(captureLists.containsKey(subscript.get("variable").toString())) {
+            List l = captureLists.get(subscript.get("variable").toString());
+
+            for (Object m : l) {
+                String sshot = JSONValue.toJSONString(m);
+                this.snapshots.add(sshot);
+            }
+        } else{
+            LOG.error("No capturelists named " + subscript.get("variable").toString() + " to convert to snapshots.");
+        }
+    }
+
+    /**
      * Click on an item in a list.
      * @param script the click-list-item subscript operation
      * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
@@ -554,6 +594,69 @@ public class SeleniumScripter {
         // Post-click delay
         LOG.info("Waiting for " + delay + "s before continuing...");
         Thread.sleep(delay * 1000);
+    }
+
+    /**
+     * Groovy based filtering - Used in Optum
+     * @param script
+     */
+    public void filterOperation(Map<String, Object> script){
+        String tovariable = script.get("tovariable").toString();
+        String filterType = script.get("type").toString();
+        if(filterType.equals("filtermap")) {
+            List<Map> matches = new ArrayList<>();
+            matches = (List<Map>) executeGroovyScript(script.get("evaluation").toString());
+            captureLists.put(tovariable, matches);
+        }
+    }
+
+    /**
+     * Execute groovy script - Used in Optum
+     * @param script
+     * @return
+     */
+    public Object executeGroovyScript(String script) {
+        Binding sharedData = new Binding();
+        GroovyShell shell = new GroovyShell(sharedData);
+        sharedData.setProperty("capturelists", captureLists);
+
+        Object result = shell.evaluate(script);
+
+        return result;
+    }
+
+    /**
+     * Extendable Fetcher - Used in Optum
+     * @param script
+     */
+    public void extendableFetcherOperation(Map<String, Object> script) {
+        Boolean sendauth = Boolean.parseBoolean(script.getOrDefault("authheader", false).toString());
+        if(script.containsKey("javascriptOperator")){
+            String name = script.get("javascriptOperator").toString();
+            if(sendauth) {
+                name = name.replace("{bearertoken}", bearertoken);
+            }
+            if(name.contains("{variable}")) {
+                if(script.containsKey("variableMapValue") && loopValue instanceof Map){
+                    String mapvalue = ((Map) loopValue).get(script.get("variableMapValue").toString()).toString();
+                    name = name.replace("{variable}", mapvalue);
+                } else{
+                    name = name.replace("{variable}", loopValue.toString());
+                }
+
+            }
+            Object resp = ((JavascriptExecutor) driver).executeAsyncScript(name);
+            //captureLists.put(script.get("variable").toString(), (ArrayList)resp);
+            List list = captureLists.get(script.get("variable"));
+            List<String> newList = new ArrayList();
+            if(list != null){
+                newList = new ArrayList<>(list);
+            }
+            if(resp != null) {
+                newList.addAll((ArrayList) resp);
+                captureLists.put(script.get("variable").toString(), newList);
+            }
+        }
     }
 
     /**
@@ -1192,4 +1295,19 @@ public class SeleniumScripter {
 
         new WebDriverWait(driver, timeout).until(condition);
     }
+
+    /**
+     * Get a bearer token from a website
+     * @param script
+     */
+    private void getTokenOperation(Map<String, Object> script) {
+        String url = script.get("url").toString();
+        driver.get(url);
+        WebElement element = driver.findElement(By.tagName("pre"));
+
+        Object o = JSONValue.parse(element.getText());
+        JSONObject jsonObject = (JSONObject) o;
+        bearertoken = (String) jsonObject.get("access_token");
+    }
+
 }

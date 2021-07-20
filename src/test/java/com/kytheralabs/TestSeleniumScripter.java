@@ -124,7 +124,7 @@ public class TestSeleniumScripter {
         path += (path.endsWith("/") ? "" : "/") + "Documents/work/dump/";
         scriptRunner.setOutputPath(path);
 
-        scriptRunner.runScript(script);
+        scriptRunner.runScript(script, null);
         System.out.println("Took " + scriptRunner.getSnapshots().size() + " snapshots for this agent!");
     }
 
@@ -192,7 +192,7 @@ public class TestSeleniumScripter {
     @Test
     public void optum() throws Exception {
         // Crawl parameters
-        final String scriptName = "optumfixed3.yaml";
+        final String scriptName = "optum-groovy.yaml";
         final String url = "https://www.optumrx.com/clientformulary/formulary.asp?var=UCSPAQ6&infoid=UCSPAQ6&page=insert&par=";
 
         // Start the crawl
