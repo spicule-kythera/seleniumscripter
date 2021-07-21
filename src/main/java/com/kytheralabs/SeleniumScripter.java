@@ -292,7 +292,7 @@ public class SeleniumScripter {
                     case "pushsnapshot":
                         pushSnapshot(subscript);
                     case "injectelement":
-                        injectElement(subscript);
+                        injectAdjacentElement(subscript);
                         break;
                     case "jsback":
                         jsBackOperation();
@@ -792,9 +792,12 @@ public class SeleniumScripter {
         Thread.sleep(delay * 1000);
     }
 
-
-    private void injectElement(Map<String, Object> script) throws ParseException, NoSuchElementException {
-
+    /**
+     * Selects a web element and injects a custom element adjacent to the selected one
+     * @param script the injectelement subscript operation
+     * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
+     */
+    private void injectAdjacentElement(Map<String, Object> script) throws ParseException {
         validate(script, new String[] {"selector", "name", "tag", "value"}); // Validation
 
         // Get the instruction parameters
@@ -812,12 +815,13 @@ public class SeleniumScripter {
         // Fetch the element in which new tag/html element will be appended
         WebElement element = driver.findElement(by(selector, name));
 
-        // Run the JS to inject the HTML element
-        LOG.info("Injecting \"<myName>Pankaj</myName>\") in" + selector + "`!");
-        ((JavascriptExecutor) driver).executeScript(
-                "arguments[0].insertAdjacentHTML(\"afterBegin\", \"<"+ htmlTag +">"+ value +"</"+ htmlTag +">\");",
-                element);
+        String newElement = "<" + htmlTag + ">" + value + "</" + htmlTag + ">"; // The new element to inject
 
+        // Run the JS to inject the HTML element
+        LOG.info("Injecting DOM element: `" + newElement + "` as a sibling to element with " + selector + " of `" + name + "`");
+        ((JavascriptExecutor) driver)
+            .executeScript("arguments[0].insertAdjacentHTML(\"afterBegin\", \"" + newElement + "\");",
+                           element);
     }
 
     /**

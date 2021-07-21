@@ -155,7 +155,6 @@ public class TestSeleniumScripter {
         final String url = "https://www.cms.gov/medicare-coverage-database/new-search/handlers/tour-end.ashx?t=1625154700997&which=report";
 
         // Start the crawl
-
         runScript(url, scriptName);
     }
 
