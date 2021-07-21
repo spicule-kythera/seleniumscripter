@@ -603,7 +603,7 @@ public class SeleniumScripter {
      * Groovy based filtering - Used in Optum
      * @param script
      */
-    public void filterOperation(Map<String, Object> script){
+    private void filterOperation(Map<String, Object> script){
         String tovariable = script.get("tovariable").toString();
         String filterType = script.get("type").toString();
         if(filterType.equals("filtermap")) {
@@ -618,7 +618,7 @@ public class SeleniumScripter {
      * @param script
      * @return
      */
-    public Object executeGroovyScript(String script) {
+    private Object executeGroovyScript(String script) {
         Binding sharedData = new Binding();
         GroovyShell shell = new GroovyShell(sharedData);
         sharedData.setProperty("capturelists", captureLists);
@@ -632,7 +632,7 @@ public class SeleniumScripter {
      * Extendable Fetcher - Used in Optum
      * @param script
      */
-    public void extendableFetcherOperation(Map<String, Object> script) {
+    private void extendableFetcherOperation(Map<String, Object> script) {
         Boolean sendauth = Boolean.parseBoolean(script.getOrDefault("authheader", false).toString());
         if(script.containsKey("javascriptOperator")){
             String name = script.get("javascriptOperator").toString();
