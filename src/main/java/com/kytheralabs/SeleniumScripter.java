@@ -8,6 +8,7 @@ import jdk.nashorn.internal.objects.annotations.Setter;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -290,6 +291,8 @@ public class SeleniumScripter {
                         LOG.warn("The `injectcontent` has been renamed to `pushsnapshot`!");
                     case "pushsnapshot":
                         pushSnapshot(subscript);
+                    case "injectelement":
+                        injectElement(subscript);
                         break;
                     case "jsback":
                         jsBackOperation();
@@ -787,6 +790,34 @@ public class SeleniumScripter {
         // Post-click delay
         LOG.info("Waiting for " + delay + "s before continuing...");
         Thread.sleep(delay * 1000);
+    }
+
+
+    private void injectElement(Map<String, Object> script) throws ParseException, NoSuchElementException {
+
+        validate(script, new String[] {"selector", "name", "tag", "value"}); // Validation
+
+        // Get the instruction parameters
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+        String htmlTag = script.get("tag").toString();
+        String value = script.get("value").toString();
+
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
+
+        value = resolveExpressionValue(value);
+        value = StringEscapeUtils.escapeHtml(value);
+
+        // Fetch the element in which new tag/html element will be appended
+        WebElement element = driver.findElement(by(selector, name));
+
+        // Run the JS to inject the HTML element
+        LOG.info("Injecting \"<myName>Pankaj</myName>\") in" + selector + "`!");
+        ((JavascriptExecutor) driver).executeScript(
+                "arguments[0].insertAdjacentHTML(\"afterBegin\", \"<"+ htmlTag +">"+ value +"</"+ htmlTag +">\");",
+                element);
+
     }
 
     /**
