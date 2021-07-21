@@ -33,7 +33,7 @@
   "g": {
     "operation": "click",
     "selector": "xpath",
-    "name": "//*[@id=\"helpful-tools-container\"]/div[2]/div[1]/div/vnext-helpful-tools-plancard/div/div[2]/div/div/div/div/div[3]/vnext-helpful-tools-link/span"
+    "name": "//*[@id=\"helpful-tools-container\"]/div[2]/div[3]/div/vnext-helpful-tools-plancard/div/div[2]/div/div/div/div/div[3]/vnext-helpful-tools-link/span"
   },
   "h": {
     "operation": "wait",
@@ -56,6 +56,11 @@
     ],
     "try": [
       {
+        "operation": "wait",
+        "selector": "xpath",
+        "name": "//*[@id=\"ngb-typeahead-0\"]//*"
+      },
+      {
         "operation": "if",
         "selector": "xpath",
         "name": "//*[@id=\"ngb-typeahead-0\"]",
@@ -74,6 +79,7 @@
             "operation": "captureList",
             "selector": "xpath",
             "name": "//ngb-highlight",
+            "type": "text",
             "variable": "druglist"
           },
           {
@@ -155,7 +161,7 @@
       "2": {
         "operation": "click",
         "selector": "xpath",
-        "name": "//*[@aria-label=\"{variable}\"]",
+        "name": "//*{dosagelabels}",
         "variable": true
       },
       "5": {
