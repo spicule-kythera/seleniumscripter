@@ -61,6 +61,11 @@
                   selector: xpath
                   name: //*{dosageRow}/td/a
                   delay: 1
+                - operation: injectelement
+                  selector: xpath
+                  name: //span[@id="dnn_ctr347_NDCSearchPage_SearchPage_Summarypanel"]
+                  tag: "brandName"
+                  value: "{dosageRow}"
                 - operation: snapshot
               catch:
                 - operation: screenshot
