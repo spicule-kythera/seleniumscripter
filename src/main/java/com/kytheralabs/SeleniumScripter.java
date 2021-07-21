@@ -529,8 +529,9 @@ public class SeleniumScripter {
     }
 
     /**
-     * Convert a capture list output and add to snapshots - Used in Optum
-     * @param subscript
+     * Convert a capture list output and add to snapshots.
+     *  (A legacy operation for the Optum Agent)
+     * @param subscript the captureListToSnapshotsOperation subscript operation
      */
     @Deprecated
     private void captureListToSnapshotsOperation(Map<String, Object> subscript) {
@@ -629,11 +630,13 @@ public class SeleniumScripter {
     }
 
     /**
-     * Extendable Fetcher - Used in Optum
+     * Extendable Fetcher
+     *  (A legacy operation for the Optum Agent)
      * @param script
      */
     private void extendableFetcherOperation(Map<String, Object> script) {
         Boolean sendauth = Boolean.parseBoolean(script.getOrDefault("authheader", false).toString());
+
         if(script.containsKey("javascriptOperator")){
             String name = script.get("javascriptOperator").toString();
             if(sendauth) {
