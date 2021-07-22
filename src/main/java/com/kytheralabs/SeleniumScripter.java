@@ -63,7 +63,6 @@ public class SeleniumScripter {
 
     // Deprecated variables
     // TODO: To be removed once the loop operation is fully closed out
-    private Object loopValue;
     private Map<String, Object> masterScript;
     private final Map<String, List> captureLists = new HashMap<>(); // The `loop` op's variable to iterate over
 
@@ -257,12 +256,11 @@ public class SeleniumScripter {
      * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
-    public void runScript(Map<String, Object> script, Object loopValue) throws IOException,
+    public void runScript(Map<String, Object> script) throws IOException,
                                                              AttributeNotFoundException,
                                                              ParseException,
                                                              InterruptedException,
                                                              StopIteration {
-        this.loopValue = loopValue;
         // TODO: remove this as soon as the `loop` op is closed out
         if(masterScript == null){
             masterScript = script;
@@ -447,7 +445,7 @@ public class SeleniumScripter {
                 Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) subscripts.get(script.get("subscript")));
 
                 try {
-                    runScript(subscript, v);
+                    runScript(subscript);
                 } catch (Exception e) {
                     LOG.error(e);
                     if (!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)) {
@@ -472,7 +470,7 @@ public class SeleniumScripter {
         for (Map<String, String> instruction : sequence) {
             Map<String, Object> instructionBlock = new HashMap<>();
             instructionBlock.put("subsequence", instruction);
-            runScript(instructionBlock, null);
+            runScript(instructionBlock);
         }
     }
 
@@ -660,12 +658,13 @@ public class SeleniumScripter {
             if(sendauth) {
                 name = name.replace("{bearer_token}", scriptVariables.get("bearer_token").toString());
             }
+            Object v= scriptVariables.get(script.get("replace"));
             if(name.contains("{variable}")) {
-                if(script.containsKey("variableMapValue") && loopValue instanceof Map){
-                    String mapvalue = ((Map) loopValue).get(script.get("variableMapValue").toString()).toString();
+                if(script.containsKey("variableMapValue") && v instanceof Map){
+                    String mapvalue = ((Map) v).get(script.get("variableMapValue").toString()).toString();
                     name = name.replace("{variable}", mapvalue);
                 } else{
-                    name = name.replace("{variable}", loopValue.toString());
+                    name = name.replace("{variable}", v.toString());
                 }
 
             }

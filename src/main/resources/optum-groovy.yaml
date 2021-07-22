@@ -1,3 +1,4 @@
+---
 a:
   operation: loadpage
 b:
@@ -5,7 +6,8 @@ b:
   url: https://www.optumrx.com/bin/oauth/token
 c:
   operation: execute_js
-  run: |
+  authheader: true
+  javascriptOperator: |
     var callback = arguments[arguments.length - 1];
     var strFirstThree = 'Abilify'.substring(0,3);
     var url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=UCSPAQ6&userType=other&viewMode=NAME'
@@ -59,7 +61,8 @@ subscripts:
   autocompleteloop:
     e:
       operation: execute_js
-      run: |
+      authheader: true
+      javascriptOperator: |
         var callback = arguments[arguments.length - 1];
         fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=UCSPAQ6&userType=other&viewMode=NAME&drugName={variable}&ctime=1625570965087',
         { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
@@ -68,10 +71,12 @@ subscripts:
         .then(response => response.json())
         .then(data => {callback(data.Drugs);});
       variable: druglist
+      replace: filteredautocompletelist
   druglookup:
     a:
       operation: execute_js
-      run: |
+      authheader: true
+      javascriptOperator: |
         var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=UCSPAQ6&userType=other&viewMode=id&drugId={variable}&ctime=1625499684610',
         { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
               'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
@@ -80,3 +85,4 @@ subscripts:
         .then(data => {callback(data.Drugs);});
       variable: drugResults
       variableMapValue: Id
+      replace: druglist
