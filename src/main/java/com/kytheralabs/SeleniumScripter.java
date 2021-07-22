@@ -658,7 +658,7 @@ public class SeleniumScripter {
             if(sendauth) {
                 name = name.replace("{bearer_token}", scriptVariables.get("bearer_token").toString());
             }
-            Object v= scriptVariables.get(script.get("replace"));
+            Object v = scriptVariables.get(script.get("replace"));
             if(name.contains("{variable}")) {
                 if(script.containsKey("variableMapValue") && v instanceof Map){
                     String mapvalue = ((Map) v).get(script.get("variableMapValue").toString()).toString();
