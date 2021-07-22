@@ -10,12 +10,6 @@
     <groupId>com.kytheralabs</groupId>
     <artifactId>seleniumscripter</artifactId>
     <version>1.7.3-SNAPSHOT</version>
-    <scm>
-        <connection>scm:svn:http://127.0.0.1/svn/my-project</connection>
-        <developerConnection>scm:svn:https://127.0.0.1/svn/my-project</developerConnection>
-        <tag>HEAD</tag>
-        <url>https://github.com/spicule-kythera/seleniumscripter.git</url>
-    </scm>
     <!-- Project Properties -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
