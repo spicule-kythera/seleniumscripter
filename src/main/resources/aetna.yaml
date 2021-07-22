@@ -23,10 +23,12 @@ f:
   operation: jsclick
   selector: xpath
   name: "//vnext-filter-tab[2]/div"
+  delay: 1
 g:
   operation: jsclick
-  selector: xpath
-  name: //*[@id="helpful-tools-container"]/div
+  selector: css
+  name: '#helpful-tools-container > div:nth-child(2) > div > div > vnext-helpful-tools-plancard > div > div:nth-child(2) > div > div > div > div > div:nth-child(3) > vnext-helpful-tools-link > span'
+  delay: 1
 h:
   operation: wait
   selector: xpath
@@ -35,7 +37,7 @@ i:
   operation: keys
   selector: xpath
   name: "//vnext-liveedit-container/input"
-  value: __token__
+  value: Abilify
 j:
   operation: loadpage
 k:
@@ -43,13 +45,16 @@ k:
   expect:
     - TimeoutException
   try:
+    - operation: wait
+      selector: xpath
+      name: //*[@id="ngb-typeahead-0"]//*
     - operation: if
       selector: xpath
       name: //*[@id="ngb-typeahead-0"]
       condition:
         - class
         - contains
-        - "dropdown-menu show"
+        - dropdown-menu show
       then:
         - operation: wait
           selector: xpath
@@ -57,7 +62,7 @@ k:
         - operation: captureList
           selector: xpath
           name: "//ngb-highlight"
-          type: text
+          type: xpath
           variable: druglist
         - operation: loop
           type: variable
@@ -77,7 +82,7 @@ subscripts:
       operation: keys
       selector: xpath
       name: "//vnext-liveedit-container/input"
-      value: "{druglist}"
+      value: Abilify
     c:
       operation: wait
       selector: xpath
@@ -85,7 +90,7 @@ subscripts:
     d:
       operation: click
       selector: xpath
-      name: //ngb-typeahead-window/button/ngb-highlight/span[@class="ngb-highlight"]/../..
+      name: "//*{druglist}"
     e:
       operation: wait
       selector: xpath
@@ -98,6 +103,7 @@ subscripts:
       operation: captureList
       selector: xpath
       name: //*[@aria-labelledby="dosageHeaderId"]/*
+      type: xpath
       variable: dosagelabels
     i:
       operation: loop
@@ -146,7 +152,7 @@ subscripts:
     2:
       operation: click
       selector: xpath
-      name: //*[@aria-label="{variable}"]
+      name: "//*{dosagelabels}"
       variable: true
     3:
       operation: wait
@@ -163,7 +169,7 @@ subscripts:
       name: //*[@class="btn Spa_Style_PrimaryButton"]
     6:
       operation: wait
-      selector: xpathC
+      selector: xpath
       name: //*[@class="drug-details-container row mb-2"]
     7:
       operation: wait
