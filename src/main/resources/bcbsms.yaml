@@ -9,135 +9,18 @@
     "operation": "keys",
     "selector": "xpath",
     "name": "//*[@id=\"rxFullFormularyDrugNameInput\"]",
-    "value": "__token__"
+    "value": "Otezla"
   },
   "3": {
     "operation": "loadpage"
   },
   "4": {
-    "operation": "try",
-    "expect": [
-        "TimeoutException"
-    ],
-    "try": [
-      {
-        "operation": "if",
-        "selector": "xpath",
-        "name": "//*[@id=\"rxFullFormularyDrugNameInput_popup\"]",
-        "condition": [
-            "class",
-            "contains",
-            "dijitReset dijitMenu dijitComboBoxMenu"
-        ],
-        "then": [
-          {
-            "operation": "wait",
-            "selector": "xpath",
-            "name": "//*[@class=\"dijitReset dijitMenuItem\"]",
-            "timeout": "90"
-          },
-          {
-            "operation": "captureList",
-            "selector": "xpath",
-            "name": "//*[@class=\"dijitReset dijitMenuItem\"]",
-            "variable": "druglist"
-          },
-          {
-            "operation": "loop",
-            "type": "variable",
-            "variable": "druglist",
-            "subscript": "listSearch"
-          },
-          {
-            "operation": "snapshot"
-          }
-        ]
-      }
-    ],
-    "catch": [
-      {
-        "operation": "injectContent",
-        "type": "html",
-        "name": "Not Found"
-      }
-    ]
-  },
-  "subscripts": {
-    "listSearch": {
-      "a": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[@id=\"rxFullFormularyDrugNameInput\"]",
-        "timeout": 300
-      },
-      "b": {
-        "operation": "keys",
-        "selector": "xpath",
-        "name": "//*[@id=\"rxFullFormularyDrugNameInput\"]",
-        "value": "${loopvalue}"
-      },
-      "c": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[@class='button']",
-        "timeout": "90"
-      },
-      "d": {
-        "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*[@class='button']"
-      },
-      "e": {
-        "operation": "loadpage"
-      },
-      "f": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//a[contains(@onclick,'javascript:showDialogFormularyMonograph')]",
-        "timeout": "90"
-      },
-      "g": {
-        "operation": "snapshot"
-      },
-      "h": {
-        "operation": "captureList",
-        "selector": "xpath",
-        "name": "//a[contains(@onclick,'javascript:showDialogFormularyMonograph')]",
-        "type": "xpath",
-        "variable": "tablesnapshot"
-      },
-      "i": {
-        "operation": "loop",
-        "type": "variable",
-        "variable": "tablesnapshot",
-        "subscript": "tablesnapshotScript"
-      }
-    },
-    "tablesnapshotScript": {
-      "a": {
-        "operation": "loadpage"
-      },
-      "b": {
-        "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*{variable}",
-        "variable": true,
-        "failNotFound": false
-      },
-      "c": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[@class='gridTable']"
-      },
-      "d": {
-        "operation": "snapshot"
-      },
-      "e": {
-        "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*[@class='dijitDialogCloseIcon']",
-        "failNotFound": false
-      }
-    }
+    "operation": "injectelement",
+    "selector": "xpath",
+    "name": "//body",
+    "tag": "brandElement",
+    "value": "helloworld",
+    "variable": true
   }
+
 }

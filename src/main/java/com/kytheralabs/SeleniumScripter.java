@@ -261,6 +261,7 @@ public class SeleniumScripter {
                                                              ParseException,
                                                              InterruptedException,
                                                              StopIteration {
+        LOG.info("RUNNING SCRIPT ON VERSION:"+getClass().getPackage().getImplementationVersion());
         // TODO: remove this as soon as the `loop` op is closed out
         if(masterScript == null){
             masterScript = script;

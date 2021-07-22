@@ -10,7 +10,12 @@
     <groupId>com.kytheralabs</groupId>
     <artifactId>seleniumscripter</artifactId>
     <version>1.7.2</version>
-
+    <scm>
+        <connection>scm:svn:http://127.0.0.1/svn/my-project</connection>
+        <developerConnection>scm:svn:https://127.0.0.1/svn/my-project</developerConnection>
+        <tag>HEAD</tag>
+        <url>https://github.com/spicule-kythera/seleniumscripter.git</url>
+    </scm>
     <!-- Project Properties -->
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -18,7 +23,41 @@
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
     </properties>
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>pl.project13.maven</groupId>
+                <artifactId>git-commit-id-plugin</artifactId>
+                <version>4.9.9</version>
+                <executions>
+                    <execution>
+                        <id>get-the-git-infos</id>
+                        <goals>
+                            <goal>revision</goal>
+                        </goals>
+                        <phase>validate</phase>
+                    </execution>
+                </executions>
+                <configuration>
+                    <dotGitDirectory>${project.basedir}/.git</dotGitDirectory>
+                </configuration>
+            </plugin>
 
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                            <Implementation-Version>${project.version} - ${git.commit.id.describe-short}</Implementation-Version>
+                            <SCM-Revision>${git.commit.id.describe-short}</SCM-Revision>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+
+        </plugins>
+    </build>
     <!-- Deployment Details -->
     <repositories>
         <repository>

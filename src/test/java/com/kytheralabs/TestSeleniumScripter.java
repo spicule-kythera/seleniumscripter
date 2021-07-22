@@ -209,6 +209,17 @@ public class TestSeleniumScripter {
     }
 
     @Test
+    public void bcbsms() throws Exception {
+        // Crawl parameters
+        final String scriptName = "bcbsms.yaml";
+        final String url = "https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do?year=2021&dotcom=true&drugName=";
+
+        // Start the crawl
+        runScript(url, scriptName);
+    }
+
+
+    @Test
     public void screenshot() throws Exception {
         // Crawl parameters
         final String scriptName = "screenshot.yaml";
