@@ -8,9 +8,9 @@ import groovy.lang.GroovyShell;
 import jdk.nashorn.internal.objects.annotations.Getter;
 import jdk.nashorn.internal.objects.annotations.Setter;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.apache.commons.lang.StringEscapeUtils;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.openqa.selenium.NoSuchElementException;
@@ -19,6 +19,7 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
+
 import javax.imageio.ImageIO;
 import javax.management.AttributeNotFoundException;
 import java.io.File;
@@ -28,6 +29,8 @@ import java.io.NotActiveException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 /**
@@ -51,8 +54,10 @@ public class SeleniumScripter {
     private final List<String> snapshots = new ArrayList<>(); // The stack of HTML content to return to the crawl
     private final List<String> capturedLabel = new ArrayList<>(); // A list of html things?
     private final Map<String, Object> scriptVariables = new HashMap<>(); // Variables instantiated by the script
-    private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class); // Application logger
-    private String bearertoken;
+
+    // Application logger
+    private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class);
+
     // Misc variables
     private String outputPath = "./"; // The starting path to use when saving screenshots or stack results
 
@@ -197,32 +202,42 @@ public class SeleniumScripter {
     }
 
     /**
-     * Resolve the value of a variable-expression, if any was specified
+     * Resolve the value(s) of all variable-expression(s), in a given expression
      * @param expression the original expression
      * @return the fully resolved expression
      * @throws ValueException occurs when the requested variable name was not instantiated
      */
     private String resolveExpressionValue(String expression) throws ValueException {
+        String resolved = String.valueOf(expression); // Create a deep copy of the expression
+
         // If the brackets indicators `{}` are not in the expression, then just return the literal value
-        if (!expression.matches(".*\\{[a-zA-Z][a-zA-Z_0-9]*}.*")) {
+        if (expression.matches("\\{[a-zA-Z_][a-zA-Z_0-9]*}")) {
+            System.err.println("Contains no expressions!");
             return expression;
         }
 
-        int start = expression.indexOf("{") + 1;
-        int end = expression.indexOf("}");
+        // Create the regex pattern and matcher itterable
+        Pattern identifierPattern = Pattern.compile("\\{[a-zA-Z_][a-zA-Z_0-9]*}");
+        Matcher matches = identifierPattern.matcher(resolved);
 
-        // Trim the brackets `{}` to get just the variable name
-        String name = expression.subSequence(start, end).toString();
+        // For ever regex match, get the name of the identifier, perform a lookup in the script-variables map, and
+        //      inject the value if found, else, throw an error indicating an un-instantiated variable.
+        while(matches.find()) {
+            String identifier = matches.group(); // The current match substring
+            String name = identifier.subSequence(1, identifier.length() - 1).toString(); // The identifier
 
-        // Throw a value error if the variable wasn't defined
-        if(!scriptVariables.containsKey(name)) {
-            throw new ValueException("The script did not instantiate the variable `" + name + "`!");
+            // Get the value of the identifier, throw a value exception if it came back null
+            Object value = scriptVariables.get(name);
+            if(value == null) {
+                throw new ValueException("Variable `" + name + "` not instantiated!");
+            }
+
+            // Inject the variable-value into the expression
+            resolved = resolved.replace(identifier, value.toString());
+            matches = identifierPattern.matcher(resolved);
         }
 
-        // Get the value of the variable
-        String value = scriptVariables.get(name).toString();
-
-        return expression.replace("{" + name + "}", value);
+        return resolved;
     }
 
     /**
@@ -292,8 +307,8 @@ public class SeleniumScripter {
                     case "dumpstack":
                         dumpStackOperation(subscript);
                         break;
-                    case "extendablefetcher":
-                        extendableFetcherOperation(subscript);
+                    case "execute_js":
+                        executeJavascriptOperation(subscript);
                         break;
                     case "filter":
                         filterOperation(subscript);
@@ -427,10 +442,12 @@ public class SeleniumScripter {
             LOG.info("Iterating over list: " + list);
             for (Object v : list) {
                 scriptVariables.put(variableName, v);
+
                 Map<String, Object> subscripts = (Map<String, Object>) masterScript.get("subscripts");
                 Map<String, Object> subscript = convertToTreeMap((Map<String, Object>) subscripts.get(script.get("subscript")));
+
                 try {
-                    runScript(subscript,v);
+                    runScript(subscript, v);
                 } catch (Exception e) {
                     LOG.error(e);
                     if (!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)) {
@@ -521,7 +538,7 @@ public class SeleniumScripter {
         if(append.equals("false")) {
             captureLists.put(variable, strlist);
         } else if(append.equals("true")){
-            List list = captureLists.get(script.get("variable"));
+            List list = captureLists.get(variable);
             List<String> newList = new ArrayList<String>(list);
             newList.addAll(strlist);
             captureLists.put(variable, newList);
@@ -634,13 +651,14 @@ public class SeleniumScripter {
      *  (A legacy operation for the Optum Agent)
      * @param script
      */
-    private void extendableFetcherOperation(Map<String, Object> script) {
-        Boolean sendauth = Boolean.parseBoolean(script.getOrDefault("authheader", false).toString());
+    private void executeJavascriptOperation(Map<String, Object> script) throws ParseException {
+        validate(script, "javascriptOperator"); // Validation
 
+        Boolean sendauth = Boolean.parseBoolean(script.getOrDefault("authheader", false).toString());
         if(script.containsKey("javascriptOperator")){
             String name = script.get("javascriptOperator").toString();
             if(sendauth) {
-                name = name.replace("{bearertoken}", bearertoken);
+                name = name.replace("{bearer_token}", scriptVariables.get("bearer_token").toString());
             }
             if(name.contains("{variable}")) {
                 if(script.containsKey("variableMapValue") && loopValue instanceof Map){
@@ -1335,17 +1353,23 @@ public class SeleniumScripter {
     }
 
     /**
-     * Get a bearer token from a website
-     * @param script
+     * Get an OAuth bearer token from a website, and store it in the specified or default script variable
+     * @param script the get
      */
-    private void getTokenOperation(Map<String, Object> script) {
+    private void getTokenOperation(Map<String, Object> script) throws ParseException {
+        validate(script, "url"); // Validation
+
+        // Fetch or fill the default operation parameters
         String url = script.get("url").toString();
+        String variable = script.getOrDefault("variable", "bearer_token").toString();
+
+        // Goto the website needing the OAuth token
         driver.get(url);
         WebElement element = driver.findElement(By.tagName("pre"));
 
+        // Request the OAuth token and store it in script variables
         Object o = JSONValue.parse(element.getText());
         JSONObject jsonObject = (JSONObject) o;
-        bearertoken = (String) jsonObject.get("access_token");
+        scriptVariables.put(variable, jsonObject.get("access_token").toString());
     }
-
 }

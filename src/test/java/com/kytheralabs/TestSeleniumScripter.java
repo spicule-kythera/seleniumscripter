@@ -22,7 +22,7 @@ import java.util.Map;
 import java.util.TreeMap;
 
 public class TestSeleniumScripter {
-    private final String browserType = BrowserType.CHROME; // Type of driver to use
+    private final String browserType = BrowserType.FIREFOX; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
 //                                                       "--headless",
                                                        "--disable-gpu",
