@@ -1,27 +1,26 @@
 package com.kytheralabs;
 
-import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
-import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
+import java.net.URL;
+import java.util.Map;
+import java.util.List;
+import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
-import org.junit.Test;
-import org.openqa.selenium.remote.BrowserType;
-import org.openqa.selenium.remote.RemoteWebDriver;
-import org.yaml.snakeyaml.Yaml;
-
-import javax.management.AttributeNotFoundException;
-import java.io.FileNotFoundException;
+import java.util.Arrays;
+import java.util.TreeMap;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URL;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import org.yaml.snakeyaml.Yaml;
+import java.io.FileNotFoundException;
+import org.json.simple.parser.JSONParser;
+import org.json.simple.parser.ParseException;
+import org.openqa.selenium.remote.BrowserType;
+import org.openqa.selenium.remote.RemoteWebDriver;
+import javax.management.AttributeNotFoundException;
+import org.openjdk.nashorn.internal.runtime.regexp.joni.exception.*;
 
-public class TestSeleniumScripter {
+public class Sandbox {
     private final String browserType = BrowserType.CHROME; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
 //                                                       "--headless",
@@ -74,7 +73,7 @@ public class TestSeleniumScripter {
     }
 
     private static Map<String, Object> loadJSONScript(String filename) throws IOException, ParseException {
-        URL filepath = TestSeleniumScripter.class.getClassLoader().getResource(filename);
+        URL filepath = Sandbox.class.getClassLoader().getResource(filename);
         if(filepath == null) {
             throw new FileNotFoundException("Embedded resource not found: " + filename);
         }
@@ -84,9 +83,9 @@ public class TestSeleniumScripter {
     }
 
     private static Map<String, Object> loadYAMLScript(String filename) {
-        InputStream inputStream = TestSeleniumScripter.class
-                                                      .getClassLoader()
-                                                      .getResourceAsStream(filename);
+        InputStream inputStream = Sandbox.class
+                .getClassLoader()
+                .getResourceAsStream(filename);
         return new Yaml().load(inputStream);
     }
 
@@ -98,11 +97,11 @@ public class TestSeleniumScripter {
     }
 
     private void runScript(String url, String scriptName, String scriptType) throws IOException,
-                                                                                    AttributeNotFoundException,
-                                                                                    ParseException,
-                                                                                    java.text.ParseException,
-                                                                                    InterruptedException,
-                                                                                    SeleniumScripter.StopIteration {
+            AttributeNotFoundException,
+            ParseException,
+            java.text.ParseException,
+            InterruptedException,
+            SeleniumScripter.StopIteration {
         final Map<String, Object> script;
         switch (scriptType.toLowerCase()) {
             case "json":

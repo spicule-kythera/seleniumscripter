@@ -5,14 +5,13 @@ import com.spicule.ashot.Screenshot;
 import com.spicule.ashot.shooting.ShootingStrategies;
 import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
-import jdk.nashorn.internal.objects.annotations.Getter;
-import jdk.nashorn.internal.objects.annotations.Setter;
-import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
+import org.openjdk.nashorn.internal.objects.annotations.*;
+import org.openjdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.*;
 import org.openqa.selenium.support.ui.ExpectedCondition;
@@ -37,8 +36,6 @@ import java.util.stream.Collectors;
  * Selenium Scripter, generate selenium scripts from YAML.
  */
 public class SeleniumScripter {
-
-
     // Error Specs
     class StopIteration extends Exception {
         StopIteration(String message) {
@@ -88,7 +85,7 @@ public class SeleniumScripter {
      * @return List<Object> the sliced list
      * @throws ParseException occurs when an invalid slice string is specified
      */
-    private List slice(String slice, List list) throws ParseException {
+    public static List slice(String slice, List list) throws ParseException {
         // Validate that the slice is formatted correctly
         if(!slice.matches("-{0,1}[0-9]+:-{0,1}[0-9]+")) {
             throw new ParseException("Invalid slice specification, must match pattern: `^-{0,1}[0-9]+:-{0,1}[0-9]+$`!", 0);
@@ -244,6 +241,7 @@ public class SeleniumScripter {
      * @param element the web element to fetch the path of
      * @return String the full web element xpath
      */
+    @Getter
     public String getElementXPath(WebElement element) {
         return (String) ((JavascriptExecutor) driver).executeScript("gPt=function(c){if(c.id!==''){return'[@id=\"'+c.id+'\"]'}if(c===document.body){return c.tagName}var a=0;var e=c.parentNode.childNodes;for(var b=0;b<e.length;b++){var d=e[b];if(d===c){return gPt(c.parentNode)+'/'+c.tagName+'['+(a+1)+']'}if(d.nodeType===1&&d.tagName===c.tagName){a++}}};return gPt(arguments[0]);", element);
     }
@@ -707,7 +705,7 @@ public class SeleniumScripter {
 
         // Fetch Element XPaths to iterate on
         List<WebElement> elements = driver.findElements(by(selector, name));
-        List<String> xpaths = new ArrayList<>();
+        List xpaths = new ArrayList<>();
         for(WebElement e : elements) {
             xpaths.add(getElementXPath(e));
         }
@@ -715,11 +713,11 @@ public class SeleniumScripter {
         // Slice the list of elements if specified
         if(forEachParams.containsKey("slice")) {
             String slice = forEachParams.get("slice").toString();
-            xpaths = slice(slice, xpaths);
+            xpaths = SeleniumScripter.slice(slice, xpaths);
         }
 
         LOG.info("Iterating over list: " + xpaths);
-        for (String xpath : xpaths) {
+        for (String xpath : (List<String>) xpaths) {
             try {
                 scriptVariables.put(iteratorName, xpath);
                 runSubsequence(doBlock);
