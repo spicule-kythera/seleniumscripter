@@ -24,7 +24,7 @@ import java.util.TreeMap;
 public class TestSeleniumScripter {
     private final String browserType = BrowserType.CHROME; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
-//                                                       "--headless",
+                                                       "--headless",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
                                                        "--ignore-certificate-errors",
