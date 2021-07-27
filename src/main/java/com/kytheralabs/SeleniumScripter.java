@@ -1092,6 +1092,7 @@ public class SeleniumScripter {
         File f = new File(dirPath);
         f.mkdirs();
         String filePath = dirPath + getDateString() + "-" + token + ".png";
+        LOG.info("Taking screenshot and saving to: " + filePath);
 
 
         // Take the screenshot
