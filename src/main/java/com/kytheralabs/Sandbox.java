@@ -1,6 +1,7 @@
 package com.kytheralabs;
 
 import java.net.URL;
+import java.text.ParseException;
 import java.util.Map;
 import java.util.List;
 import org.junit.Test;
@@ -14,11 +15,9 @@ import java.io.InputStream;
 import org.yaml.snakeyaml.Yaml;
 import java.io.FileNotFoundException;
 import org.json.simple.parser.JSONParser;
-import org.json.simple.parser.ParseException;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import javax.management.AttributeNotFoundException;
-import org.openjdk.nashorn.internal.runtime.regexp.joni.exception.*;
 
 public class Sandbox {
     private boolean headless = true;
@@ -46,7 +45,7 @@ public class Sandbox {
     private RemoteWebDriver driver = null;
 
     @Before
-    public void setUp() {
+    public void setUp() throws ParseException {
         // Create driver factory
         DriverFactory factory = new DriverFactory(options);
         factory.setHeadless(headless);
@@ -63,7 +62,7 @@ public class Sandbox {
                 driver = factory.generateFirefoxDriver();
                 break;
             default:
-                throw new ValueException("Invalid browser type: " + browserType);
+                throw new ParseException("Invalid browser type: " + browserType, 0);
         }
     }
 
@@ -73,7 +72,8 @@ public class Sandbox {
         driver = null;
     }
 
-    private static Map<String, Object> loadJSONScript(String filename) throws IOException, ParseException {
+    private static Map<String, Object> loadJSONScript(String filename) throws IOException,
+                                                                              org.json.simple.parser.ParseException {
         URL filepath = Sandbox.class.getClassLoader().getResource(filename);
         if(filepath == null) {
             throw new FileNotFoundException("Embedded resource not found: " + filename);
@@ -99,10 +99,10 @@ public class Sandbox {
 
     private void runScript(String url, String scriptName, String scriptType) throws IOException,
                                                                                     AttributeNotFoundException,
-                                                                                    ParseException,
                                                                                     java.text.ParseException,
                                                                                     InterruptedException,
-                                                                                    SeleniumScripter.StopIteration {
+                                                                                    SeleniumScripter.StopIteration,
+                                                                                    org.json.simple.parser.ParseException {
         final Map<String, Object> script;
         switch (scriptType.toLowerCase()) {
             case "json":

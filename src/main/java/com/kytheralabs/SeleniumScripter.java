@@ -7,7 +7,6 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import jdk.nashorn.internal.objects.annotations.Getter;
 import jdk.nashorn.internal.objects.annotations.Setter;
-import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
@@ -203,9 +202,9 @@ public class SeleniumScripter {
      * Resolve the value(s) of all variable-expression(s), in a given expression
      * @param expression the original expression
      * @return the fully resolved expression
-     * @throws ValueException occurs when the requested variable name was not instantiated
+     * @throws ParseException occurs when the requested variable name was not instantiated
      */
-    private String resolveExpressionValue(String expression) throws ValueException {
+    private String resolveExpressionValue(String expression) throws ParseException {
         String resolved = String.valueOf(expression); // Create a deep copy of the expression
 
         // If the brackets indicators `{}` are not in the expression, then just return the literal value
@@ -227,7 +226,7 @@ public class SeleniumScripter {
             // Get the value of the identifier, throw a value exception if it came back null
             Object value = scriptVariables.get(name);
             if(value == null) {
-                throw new ValueException("Variable `" + name + "` not instantiated!");
+                throw new ParseException("Variable `" + name + "` not instantiated!", 0);
             }
 
             // Inject the variable-value into the expression
