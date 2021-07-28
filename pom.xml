@@ -8,7 +8,7 @@
     <name>Selenium Scripter</name>
     <groupId>com.kytheralabs</groupId>
     <artifactId>seleniumscripter</artifactId>
-    <version>1.7.3</version>
+    <version>1.7.3-SNAPSHOT</version>
 
     <!-- Project Properties -->
     <properties>
@@ -36,6 +36,16 @@
         <repository>
             <id>org.maven</id>
             <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+
+        <!-- Kythera GitLab Repo -->
+        <repository>
+            <name>Spicule-Kythera GitLab</name>
+            <id>gitlab-maven</id>
+            <url>${env.CI_SERVER_URL}/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+            <snapshots>
+                <enabled>true</enabled>
+            </snapshots>
         </repository>
     </repositories>
 
@@ -97,6 +107,18 @@
         </plugins>
     </build>
 
+    <!-- GitLab Maven Repository -->
+    <distributionManagement>
+        <repository>
+            <id>gitlab-maven</id>
+            <url>${env.CI_SERVER_URL}/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+        </repository>
+        <snapshotRepository>
+            <id>gitlab-maven</id>
+            <url>${env.CI_SERVER_URL}/api/v4/projects/${env.CI_PROJECT_ID}/packages/maven</url>
+        </snapshotRepository>
+    </distributionManagement>
+
     <!-- Package Dependencies -->
     <dependencies>
         <!-- Install Specific -->
@@ -115,8 +137,6 @@
             <artifactId>dbutils-api_2.12</artifactId>
             <version>[0.0.5,)</version>
         </dependency>
-
-
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
@@ -142,8 +162,6 @@
             <artifactId>selenium-remote-driver</artifactId>
             <version>3.141.59</version>
         </dependency>
-
-
         <dependency>
             <groupId>org.openjdk.nashorn</groupId>
             <artifactId>nashorn-core</artifactId>
@@ -185,15 +203,5 @@
             <artifactId>commons-lang</artifactId>
             <version>2.5</version>
         </dependency>
-
-        <!-- Test Specific -->
     </dependencies>
-
-    <distributionManagement>
-        <repository>
-            <id>github</id>
-            <name>GitHub Packages</name>
-            <url>https://maven.pkg.github.com/spicule-kythera/seleniumscripter</url>
-        </repository>
-    </distributionManagement>
 </project>
