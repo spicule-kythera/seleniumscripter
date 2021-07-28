@@ -20,7 +20,6 @@ import org.openqa.selenium.support.ui.ExpectedCondition;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.Select;
 import org.openqa.selenium.support.ui.WebDriverWait;
-
 import javax.imageio.ImageIO;
 import javax.management.AttributeNotFoundException;
 import java.io.File;
