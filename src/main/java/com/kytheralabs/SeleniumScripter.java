@@ -8,6 +8,7 @@ import groovy.lang.GroovyShell;
 import jdk.nashorn.internal.objects.annotations.Getter;
 import jdk.nashorn.internal.objects.annotations.Setter;
 import jdk.nashorn.internal.runtime.regexp.joni.exception.ValueException;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -26,6 +27,7 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.NotActiveException;
+import java.nio.file.Files;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
@@ -1091,11 +1093,18 @@ public class SeleniumScripter {
         File f = new File(dirPath);
         f.mkdirs();
         String filePath = dirPath + getDateString() + "-" + token + ".png";
+        LOG.info("Taking screenshot and saving to: " + filePath);
 
 
         // Take the screenshot
         Screenshot s = new AShot().shootingStrategy(ShootingStrategies.viewportPasting(100)).takeScreenshot(driver);
-        ImageIO.write(s.getImage(), "PNG", new File(filePath));
+
+        //This write operation is convoluted due to Java being crap and not writing files properly in DBFS the ImageIO way:
+        File tempFile = Files.createTempFile(null, null).toFile();
+
+        ImageIO.write(s.getImage(), "PNG", tempFile);
+        File dest = new File(filePath);
+        FileUtils.copyFile(tempFile, dest);
     }
 
     /**
