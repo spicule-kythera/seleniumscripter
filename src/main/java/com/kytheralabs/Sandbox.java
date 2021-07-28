@@ -21,9 +21,9 @@ import javax.management.AttributeNotFoundException;
 import org.openjdk.nashorn.internal.runtime.regexp.joni.exception.*;
 
 public class Sandbox {
+    private boolean headless = true;
     private final String browserType = BrowserType.CHROME; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
-//                                                       "--headless",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
                                                        "--ignore-certificate-errors",
@@ -49,6 +49,7 @@ public class Sandbox {
     public void setUp() {
         // Create driver factory
         DriverFactory factory = new DriverFactory(options);
+        factory.setHeadless(headless);
 
         // Create driver
         switch (browserType) {
@@ -97,11 +98,11 @@ public class Sandbox {
     }
 
     private void runScript(String url, String scriptName, String scriptType) throws IOException,
-            AttributeNotFoundException,
-            ParseException,
-            java.text.ParseException,
-            InterruptedException,
-            SeleniumScripter.StopIteration {
+                                                                                    AttributeNotFoundException,
+                                                                                    ParseException,
+                                                                                    java.text.ParseException,
+                                                                                    InterruptedException,
+                                                                                    SeleniumScripter.StopIteration {
         final Map<String, Object> script;
         switch (scriptType.toLowerCase()) {
             case "json":

@@ -10,7 +10,7 @@ c:
   javascriptOperator: |
     var callback = arguments[arguments.length - 1];
     var strFirstThree = 'Abilify'.substring(0,3);
-    var url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=UCSPAQ6&userType=other&viewMode=NAME'
+    var url = 'https://www.optumrx.com/public-services/formularydrugs?ctime=1625587594061&drugName='+strFirstThree+'&formularyId=TENNCARE&userType=other&viewMode=NAME'
     fetch(url,
     { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
     'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
@@ -64,7 +64,7 @@ subscripts:
       authheader: true
       javascriptOperator: |
         var callback = arguments[arguments.length - 1];
-        fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=UCSPAQ6&userType=other&viewMode=NAME&drugName={variable}&ctime=1625570965087',
+        fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=TENNCARE&userType=other&viewMode=NAME&drugName={variable}&ctime=1625570965087',
         { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
         'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
         'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearer_token}'}})
@@ -77,7 +77,7 @@ subscripts:
       operation: execute_js
       authheader: true
       javascriptOperator: |
-        var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=UCSPAQ6&userType=other&viewMode=id&drugId={variable}&ctime=1625499684610',
+        var callback = arguments[arguments.length - 1]; fetch('https://www.optumrx.com/public-services/formularydrugs?formularyId=TENNCARE&userType=other&viewMode=id&drugId={variable}&ctime=1625499684610',
         { headers: { 'Accept': 'application/json', 'actor': 'RXP', 'bypass_saml': 'true', 'impersonating': 'false', 'iris_resilient': 'true',
               'Referer': 'https://www.optumrx.com/oe_rxexternal/prescription-drug-list?type=ClientFormulary&var=PHSCA&infoid=PHSCA',
               'scope': 'Read', 'Sec-Fetch-Dest': 'empty', 'Sec-Fetch-Mode': 'cors', 'Sec-Fetch-Site': 'same-origin', 'Authorization': 'bearer {bearer_token}'}})
