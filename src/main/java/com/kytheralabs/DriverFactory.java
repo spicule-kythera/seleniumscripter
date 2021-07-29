@@ -13,23 +13,29 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 public class DriverFactory {
+    boolean headless; // Toggles headless mode
     final List<String> options; // Browser options
 
     DriverFactory(List<String> options) {
         this.options = options;
     }
 
+    public boolean setHeadless(boolean headless) {
+        this.headless = headless;
+        return this.headless;
+    }
+
     public RemoteWebDriver generateChromeDriver() {
         // Create and populate driver options
-        ChromeOptions chromeOptions = new ChromeOptions();
-        options.forEach(chromeOptions::addArguments);
+        ChromeOptions driverOptions = new ChromeOptions();
+        options.forEach(driverOptions::addArguments);
+        driverOptions.setHeadless(headless);
 
         // Set a load strategy
-        chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
-        //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
+        driverOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
         // Create and load the driver with options
-        ChromeDriver driver = new ChromeDriver(chromeOptions);
+        ChromeDriver driver = new ChromeDriver(driverOptions);
         driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
 
         return driver;
@@ -39,6 +45,7 @@ public class DriverFactory {
         // Create and populate driver options
         FirefoxOptions driverOptions = new FirefoxOptions();
         options.forEach(driverOptions::addArguments);
+        driverOptions.setHeadless(headless);
 
         // Create and load the driver with options
         return new FirefoxDriver(driverOptions);
@@ -48,6 +55,7 @@ public class DriverFactory {
         // Create and populate driver options
         EdgeOptions driverOptions = new EdgeOptions();
         // options.forEach(driverOptions::addArguments); // Apparently Edge doesn't support options?
+        // driverOptions.setHeadless(headless); // Doesn't support headless either apparently
 
         // Create and load the driver with options
         return new EdgeDriver(driverOptions);

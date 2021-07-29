@@ -1,0 +1,27 @@
+name: unit-tests
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  unit-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Set up JDK 8
+        uses: actions/setup-java@v2
+        with:
+          java-version: '8'
+          distribution: adopt
+
+      - name: Verify Maven project
+        run: mvn --batch-mode --update-snapshots verify
+
+      - name: Build Maven project
+        run: mvn install --update-snapshots --quiet -DskipTests
+
+      - name: Run unit-tests
+        run: mvn clean test --fail-fast --strict-checksums --threads 8 --errors --quiet

@@ -8,7 +8,7 @@
     <name>Selenium Scripter</name>
     <groupId>com.kytheralabs</groupId>
     <artifactId>seleniumscripter</artifactId>
-    <version>1.7.3</version>
+    <version>1.7.3-SNAPSHOT</version>
 
     <!-- Project Properties -->
     <properties>
@@ -20,6 +20,25 @@
 
     <!-- Deployment Details -->
     <repositories>
+        <!-- AShot Repo -->
+        <repository>
+            <id>gitlab-maven-ashot</id>
+            <url>https://gitlab.com/api/v4/projects/28250236/packages/maven</url>
+        </repository>
+
+        <!-- Clojars Repo -->
+        <repository>
+            <id>org.clojars</id>
+            <url>https://clojars.org/repo/</url>
+        </repository>
+
+        <!-- Maven Central Repo -->
+        <repository>
+            <id>org.maven</id>
+            <url>https://repo1.maven.org/maven2/</url>
+        </repository>
+
+        <!-- Kythera GitLab Repo -->
         <repository>
             <name>Spicule-Kythera GitLab</name>
             <id>gitlab-maven</id>
@@ -28,12 +47,67 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>gitlab-maven-ashot</id>
-            <url>https://gitlab.com/api/v4/projects/28250236/packages/maven</url>
-        </repository>
     </repositories>
 
+    <!-- Build Details -->
+    <build>
+        <finalName>selenium-scripter</finalName>
+        <plugins>
+            <!-- Set a compiler level -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>2.3.2</version>
+                <configuration>
+                    <source>8</source>
+                    <target>8</target>
+                </configuration>
+            </plugin>
+
+            <!-- Make this jar executable -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>3.2.0</version>
+
+                <configuration>
+                    <excludes>
+                        <exclude>**/log4j.properties</exclude>
+                    </excludes>
+                    <archive>
+                        <manifest>
+                            <addClasspath>true</addClasspath>
+                            <mainClass>com.mkyong.core.utils.App</mainClass>
+                            <classpathPrefix>dependency-jars/</classpathPrefix>
+                        </manifest>
+                    </archive>
+                </configuration>
+            </plugin>
+
+            <!-- Copy project dependency -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-dependency-plugin</artifactId>
+                <version>2.5.1</version>
+                <executions>
+                    <execution>
+                        <id>copy-dependencies</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>copy-dependencies</goal>
+                        </goals>
+                        <configuration>
+                            <!-- exclude junit, we need runtime dependency only -->
+                            <includeScope>runtime</includeScope>
+                            <outputDirectory>${project.build.directory}/dependency-jars/</outputDirectory>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+    <!-- GitLab Maven Repository -->
     <distributionManagement>
         <repository>
             <id>gitlab-maven</id>
@@ -53,7 +127,6 @@
             <artifactId>ashot</artifactId>
             <version>1.5.4-patch</version>
         </dependency>
-
         <dependency>
             <groupId>commons-io</groupId>
             <artifactId>commons-io</artifactId>
@@ -66,17 +139,7 @@
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-chrome-driver</artifactId>
-            <version>3.141.59</version>
-        </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
-            <version>3.141.59</version>
-        </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-api</artifactId>
             <version>3.141.59</version>
         </dependency>
         <dependency>
@@ -86,22 +149,33 @@
         </dependency>
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-chrome-driver</artifactId>
+            <version>3.141.59</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
+            <artifactId>selenium-api</artifactId>
+            <version>3.141.59</version>
+        </dependency>
+        <dependency>
+            <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-remote-driver</artifactId>
             <version>3.141.59</version>
         </dependency>
-
-        <!-- Test Specific -->
+        <dependency>
+            <groupId>org.openjdk.nashorn</groupId>
+            <artifactId>nashorn-core</artifactId>
+            <version>15.3</version>
+        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <version>4.13.1</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.yaml</groupId>
             <artifactId>snakeyaml</artifactId>
             <version>1.27</version>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>com.googlecode.json-simple</groupId>
