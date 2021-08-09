@@ -21,7 +21,7 @@ import javax.management.AttributeNotFoundException;
 
 public class Sandbox {
     private boolean headless = true;
-    private final String browserType = BrowserType.CHROME; // Type of driver to use
+    private final String browserType = BrowserType.FIREFOX; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
@@ -129,20 +129,20 @@ public class Sandbox {
     }
 
     @Test
-    public void alabama() throws Exception {
+    public void aetna() throws Exception {
         // Crawl parameters
-        final String scriptName = "alabama.yaml";
-        final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
+        final String scriptName = "aetna.yaml";
+        final String url = "https://rxtools.aetnamedicare.com/helpfultools/2021/Resources/HelpfulTools";
 
         // Start the crawl
         runScript(url, scriptName);
     }
 
     @Test
-    public void aetna() throws Exception {
+    public void alabama() throws Exception {
         // Crawl parameters
-        final String scriptName = "aetna.yaml";
-        final String url = "https://rxtools.aetnamedicare.com/helpfultools/2021/Resources/HelpfulTools";
+        final String scriptName = "alabama.yaml";
+        final String url = "https://www.medicaid.alabamaservices.org/ALPortal/NDC%20Look%20Up/tabId/39/Default.aspx";
 
         // Start the crawl
         runScript(url, scriptName);

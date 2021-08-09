@@ -1,3 +1,5 @@
+version: seleniumscripter
+
 a:
   operation: wait
   selector: id
