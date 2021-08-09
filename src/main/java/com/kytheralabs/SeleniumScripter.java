@@ -373,6 +373,8 @@ public class SeleniumScripter {
                     default:
                         throw new ParseException("Invalid operation: " + operation, 0);
                 }
+            } else if(instructionBlock instanceof String && instructionName.toLowerCase().equals("version")) {
+                System.out.println("Version: " + instructionBlock);
             } else {
                 throw new ParseException("Subscript did not convert to map!", 0);
             }
