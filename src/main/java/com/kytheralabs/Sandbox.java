@@ -217,4 +217,13 @@ public class Sandbox {
         // Start the crawl
         runScript(url, scriptName);
     }
+
+    @Test
+    public void bcbsms() throws Exception {
+        // Crawl parameters
+        final String scriptName = "bcbsms.yaml";
+        final String url = "https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do";
+        // Start the crawl
+        runScript(url, scriptName);
+    }
 }
