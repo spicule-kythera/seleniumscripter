@@ -23,24 +23,11 @@ c:
     variable: medList
     subscript: medListLoop
 d:
-    operation: filter
-    fromvariable: drugList
-    tovariable: drugDetailUrls
-    type: filtermap
-    evaluation: |
-        def urls = [];
-        capturelists.get('drugList').each { g ->
-            String[] drug = g.split("~~~~");
-            String url = 'https://www.bcbsms.com/BlueLand/rx/rxDirectFormularySimilarDrugSearch.do?method=searchSimilarDrugs&memberId=&drugName='+drug[0]+'&gpi='+drug[1];
-            urls.add(url);
-        }
-        return urls;
-e:
     operation: loop
     type: variable
-    variable: drugDetailUrls
+    variable: drugListUrls
     subscript: drugDetailLoop
-f:
+e:
     operation: dumpstack
     targetdir: test-dir
 subscripts:
