@@ -60,25 +60,25 @@ subscripts:
                     const [key, value] = item;
                     for(i=1; i<=4; i++){
                         if(value['drugDescCat'+i] !== ""){
-                            var entry = value['drugDescCat'+i] + '~~~~' + value['drugGpiCat'+i]
-                            data.push(entry);
+                            var url = 'https://www.bcbsms.com/BlueLand/rx/rxDirectFormularySimilarDrugSearch.do?method=searchSimilarDrugs&memberId=&drugName='+value['drugDescCat'+i]+'&gpi='+value['drugGpiCat'+i];
+                            data.push(url);
                         }
                     }
                 });
                 callback(data);
-            variable: drugList
+            variable: drugListUrls
             replace: medList
     drugDetailLoop:
-        b:
+        a:
             operation: restore
-            url: '{drugDetailUrls}'
-        c:
+            url: '{drugListUrls}'
+        b:
             operation: loadpage
-        d:
+        c:
             operation: injectelement
             selector: xpath
             name: //div[@class="rxFullFormularySimilarDrugsDialog"]
             tag: brandElement
-            value: '{drugDetailUrls}'
-        e:
+            value: '{drugListUrls}'
+        d:
             operation: snapshot
