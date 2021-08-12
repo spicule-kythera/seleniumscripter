@@ -1,143 +1,71 @@
-{
-  "1": {
-    "operation": "wait",
-    "selector": "xpath",
-    "name": "//*[@id=\"rxFullFormularyDrugNameInput\"]",
-    "timeout": 300
-  },
-  "2": {
-    "operation": "keys",
-    "selector": "xpath",
-    "name": "//*[@id=\"rxFullFormularyDrugNameInput\"]",
-    "value": "__token__"
-  },
-  "3": {
-    "operation": "loadpage"
-  },
-  "4": {
-    "operation": "try",
-    "expect": [
-        "TimeoutException"
-    ],
-    "try": [
-      {
-        "operation": "if",
-        "selector": "xpath",
-        "name": "//*[@id=\"rxFullFormularyDrugNameInput_popup\"]",
-        "condition": [
-            "class",
-            "contains",
-            "dijitReset dijitMenu dijitComboBoxMenu"
-        ],
-        "then": [
-          {
-            "operation": "wait",
-            "selector": "xpath",
-            "name": "//*[@class=\"dijitReset dijitMenuItem\"]",
-            "timeout": "90"
-          },
-          {
-            "operation": "captureList",
-            "selector": "xpath",
-            "name": "//*[@class=\"dijitReset dijitMenuItem\"]",
-            "variable": "druglist"
-          },
-          {
-            "operation": "loop",
-            "type": "variable",
-            "variable": "druglist",
-            "subscript": "listSearch"
-          },
-          {
-            "operation": "snapshot"
-          }
-        ]
-      }
-    ],
-    "catch": [
-      {
-        "operation": "injectContent",
-        "type": "html",
-        "name": "Not Found"
-      }
-    ]
-  },
-  "subscripts": {
-    "listSearch": {
-      "a": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[@id=\"rxFullFormularyDrugNameInput\"]",
-        "timeout": 300
-      },
-      "b": {
-        "operation": "keys",
-        "selector": "xpath",
-        "name": "//*[@id=\"rxFullFormularyDrugNameInput\"]",
-        "value": "${loopvalue}"
-      },
-      "c": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[@class='button']",
-        "timeout": "90"
-      },
-      "d": {
-        "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*[@class='button']"
-      },
-      "e": {
-        "operation": "loadpage"
-      },
-      "f": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//a[contains(@onclick,'javascript:showDialogFormularyMonograph')]",
-        "timeout": "90"
-      },
-      "g": {
-        "operation": "snapshot"
-      },
-      "h": {
-        "operation": "captureList",
-        "selector": "xpath",
-        "name": "//a[contains(@onclick,'javascript:showDialogFormularyMonograph')]",
-        "type": "xpath",
-        "variable": "tablesnapshot"
-      },
-      "i": {
-        "operation": "loop",
-        "type": "variable",
-        "variable": "tablesnapshot",
-        "subscript": "tablesnapshotScript"
-      }
-    },
-    "tablesnapshotScript": {
-      "a": {
-        "operation": "loadpage"
-      },
-      "b": {
-        "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*{variable}",
-        "variable": true,
-        "failNotFound": false
-      },
-      "c": {
-        "operation": "wait",
-        "selector": "xpath",
-        "name": "//*[@class='gridTable']"
-      },
-      "d": {
-        "operation": "snapshot"
-      },
-      "e": {
-        "operation": "jsclick",
-        "selector": "xpath",
-        "name": "//*[@class='dijitDialogCloseIcon']",
-        "failNotFound": false
-      }
-    }
-  }
-}
+a:
+    operation: loadpage
+b:
+    operation: execute_js
+    javascriptOperator: |
+        var callback = arguments[arguments.length - 1];
+        var url = 'https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do?method=autocomplete&memberId=&drugName=Otezla';
+        xhttp = new XMLHttpRequest();
+        xhttp.open('GET', url, false);
+        xhttp.send();
+        var response = JSON.parse(xhttp.responseText);
+        var data = new Array();
+        console.log(response.items);
+        Object.entries(response.items).forEach((item)=>{
+          const [key, value] = item;
+          data.push(value.drugName);
+        });
+        callback(data);
+    variable: medList
+c:
+    operation: loop
+    type: variable
+    variable: medList
+    subscript: medListLoop
+d:
+    operation: loop
+    type: variable
+    variable: drugListUrls
+    subscript: drugDetailLoop
+e:
+    operation: dumpstack
+    targetdir: test-dir
+subscripts:
+    medListLoop:
+        a:
+            operation: execute_js
+            javascriptOperator: |
+                var callback = arguments[arguments.length - 1];
+                var url = 'https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do?method=search&memberId=&drugName={variable}';
+                xhttp = new XMLHttpRequest();
+                xhttp.open('GET', url, false);
+                xhttp.send();
+                var response = JSON.parse(xhttp.responseText);
+                var data = new Array();
+                console.log(response.items);
+                Object.entries(response.items).forEach((item)=>{
+                    const [key, value] = item;
+                    for(i=1; i<=4; i++){
+                        if(value['drugDescCat'+i] !== ""){
+                            var url = 'https://www.bcbsms.com/BlueLand/rx/rxDirectFormularySimilarDrugSearch.do?method=searchSimilarDrugs&memberId=&drugName='+value['drugDescCat'+i]+'&gpi='+value['drugGpiCat'+i];
+                            data.push(url);
+                        }
+                    }
+                });
+                callback(data);
+            variable: drugListUrls
+            replace: medList
+    drugDetailLoop:
+        a:
+            operation: restore
+            url: '{drugListUrls}'
+        b:
+            operation: loadpage
+        c:
+            operation: injectelement
+            selector: xpath
+            name: //div[@class="rxFullFormularySimilarDrugsDialog"]
+            tag: brandElement
+            value: '{drugListUrls}'
+        d:
+            operation: snapshot

@@ -208,7 +208,7 @@ public class SeleniumScripter {
         String resolved = String.valueOf(expression); // Create a deep copy of the expression
 
         // If the brackets indicators `{}` are not in the expression, then just return the literal value
-        if (expression.matches("\\{[a-zA-Z_][a-zA-Z_0-9]*}")) {
+        if (expression.matches("\\{[a-zA-Z_][a-zA-Z_0-9]*}") == false) {
             System.err.println("Contains no expressions!");
             return expression;
         }
@@ -1039,8 +1039,10 @@ public class SeleniumScripter {
      * Restores the browser to the original URL.
      * @param script the restore subscript operation
      */
-    private void restoreOperation(Map<String, Object> script) {
+    private void restoreOperation(Map<String, Object> script) throws ParseException {
         String url = script.getOrDefault("url", this.url).toString();
+        url = resolveExpressionValue(url);
+
         LOG.info("Restoring driver to url -> " + url);
         driver.get(url);
     }
