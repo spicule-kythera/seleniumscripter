@@ -4,30 +4,76 @@ b:
     operation: execute_js
     javascriptOperator: |
         var callback = arguments[arguments.length - 1];
-        var url = 'https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do?method=autocomplete&memberId=&drugName=Otezla';
+        var url = 'https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do?method=autocomplete&memberId=&drugName=__token__';
         xhttp = new XMLHttpRequest();
         xhttp.open('GET', url, false);
         xhttp.send();
         var response = JSON.parse(xhttp.responseText);
         var data = new Array();
-        console.log(response.items);
         Object.entries(response.items).forEach((item)=>{
           const [key, value] = item;
           data.push(value.drugName);
         });
+
+        var temp = document.createElement('typeahead');
+        if(data.length == 0 ) {
+            temp.textContent = "data does not exists";
+        }
+        document.querySelector('html>body').appendChild(temp);
+
         callback(data);
     variable: medList
 c:
+    operation: if
+    selector: xpath
+    name: //html/body/typeahead
+    condition:
+        - textContent
+        - equals
+        - 'data does not exists'
+    then:
+        - operation: pushsnapshot
+          type: html
+          name: 'typeahead values does not exists'
+        - operation: execute_js
+          javascriptOperator: |
+            var callback = arguments[arguments.length - 1];
+            document.querySelectorAll('typeahead').forEach(e => e.remove());
+            var data = new Array('__token__');
+            callback(data);
+          variable: medList
+d:
     operation: loop
     type: variable
     variable: medList
     subscript: medListLoop
-d:
-    operation: loop
-    type: variable
-    variable: drugListUrls
-    subscript: drugDetailLoop
 e:
+    operation: if
+    selector: xpath
+    name: //html/body/medUrls
+    condition:
+        - textContent
+        - equals
+        - 'data does not exists'
+    then:
+        - operation: pushsnapshot
+          type: html
+          name: 'med listing not found'
+        - operation: execute_js
+          javascriptOperator: |
+            var callback = arguments[arguments.length - 1];
+            document.querySelectorAll('medUrls').forEach(e => e.remove());
+            var data = new Array('tempValue');
+            callback(data);
+          variable: medList
+    else:
+        - operation: loop
+          type: variable
+          variable: drugListUrls
+          subscript: drugDetailLoop
+        - operation: dumpstack
+          targetdir: test-dir
+f:
     operation: dumpstack
     targetdir: test-dir
 subscripts:
@@ -42,7 +88,6 @@ subscripts:
                 xhttp.send();
                 var response = JSON.parse(xhttp.responseText);
                 var data = new Array();
-                console.log(response.items);
                 Object.entries(response.items).forEach((item)=>{
                     const [key, value] = item;
                     for(i=1; i<=4; i++){
@@ -52,6 +97,13 @@ subscripts:
                         }
                     }
                 });
+
+                var temp = document.createElement('medUrls');
+                if(data.length == 0 ) {
+                    temp.textContent = "data does not exists";
+                }
+                document.querySelector('html>body').appendChild(temp);
+
                 callback(data);
             variable: drugListUrls
             replace: medList
