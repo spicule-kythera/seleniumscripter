@@ -320,6 +320,7 @@ public class SeleniumScripter {
                         LOG.warn("The `injectcontent` has been renamed to `pushsnapshot`!");
                     case "pushsnapshot":
                         pushSnapshot(subscript);
+                        break;
                     case "injectelement":
                         injectAdjacentElement(subscript);
                         break;
