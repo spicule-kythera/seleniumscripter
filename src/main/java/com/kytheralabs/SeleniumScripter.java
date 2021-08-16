@@ -207,13 +207,7 @@ public class SeleniumScripter {
     private String resolveExpressionValue(String expression) throws ParseException {
         String resolved = String.valueOf(expression); // Create a deep copy of the expression
 
-        // If the brackets indicators `{}` are not in the expression, then just return the literal value
-        if (expression.matches("\\{[a-zA-Z_][a-zA-Z_0-9]*}") == false) {
-            System.err.println("Contains no expressions!");
-            return expression;
-        }
-
-        // Create the regex pattern and matcher itterable
+        // Create the regex pattern and matcher iterable
         Pattern identifierPattern = Pattern.compile("\\{[a-zA-Z_][a-zA-Z_0-9]*}");
         Matcher matches = identifierPattern.matcher(resolved);
 
