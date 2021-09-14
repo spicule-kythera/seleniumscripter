@@ -993,6 +993,9 @@ public class SeleniumScripter {
             case "{return}":
                 element.sendKeys(Keys.RETURN);
                 break;
+            case "{backspace}":
+                element.sendKeys(Keys.BACK_SPACE);
+                break;
             case "{down}":
                 element.sendKeys(Keys.ARROW_DOWN);
                 break;
