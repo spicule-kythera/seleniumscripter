@@ -1,6 +1,8 @@
 package uk.co.spicule.seleniumscripter;
 
 import org.junit.Test;
+import org.junit.jupiter.api.Assertions;
+
 import java.text.ParseException;
 import java.util.Arrays;
 import java.util.List;
@@ -13,6 +15,6 @@ public class TestSeleniumScripter {
         List<Integer> expected = Arrays.asList(1, 2, 3, 4);
 
         List<Integer> slicedList = SeleniumScripter.slice(slice, list);
-//        assertSame(slicedList, expected);
+        Assertions.assertEquals(slicedList, expected);
     }
 }
