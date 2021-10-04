@@ -1,9 +1,12 @@
-package com.kytheralabs;
+package sandbox;
 
 import java.net.URL;
 import java.text.ParseException;
 import java.util.Map;
 import java.util.List;
+
+import uk.co.spicule.seleniumscripter.DriverFactory;
+import uk.co.spicule.seleniumscripter.SeleniumScripter;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
