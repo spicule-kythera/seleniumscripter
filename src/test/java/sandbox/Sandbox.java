@@ -23,7 +23,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import javax.management.AttributeNotFoundException;
 
 public class Sandbox {
-    private boolean headless = true;
+    private boolean headless = false;
     private final String browserType = BrowserType.FIREFOX; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--disable-gpu",
@@ -49,6 +49,9 @@ public class Sandbox {
 
     @Before
     public void setUp() throws ParseException {
+        // Set logging level to debug
+        System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "Debug");
+
         // Create driver factory
         DriverFactory factory = new DriverFactory(options);
         factory.setHeadless(headless);
