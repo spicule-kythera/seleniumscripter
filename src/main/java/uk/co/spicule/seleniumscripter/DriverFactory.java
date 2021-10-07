@@ -1,4 +1,4 @@
-package com.kytheralabs;
+package uk.co.spicule.seleniumscripter;
 
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeDriver;
@@ -16,7 +16,7 @@ public class DriverFactory {
     boolean headless; // Toggles headless mode
     final List<String> options; // Browser options
 
-    DriverFactory(List<String> options) {
+    public DriverFactory(List<String> options) {
         this.options = options;
     }
 
