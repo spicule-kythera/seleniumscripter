@@ -12,6 +12,9 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+import org.openqa.selenium.Proxy;
+import org.openqa.selenium.remote.DesiredCapabilities;
+
 public class DriverFactory {
     boolean headless; // Toggles headless mode
     final List<String> options; // Browser options
@@ -26,6 +29,14 @@ public class DriverFactory {
     }
 
     public RemoteWebDriver generateChromeDriver() {
+
+        Proxy proxyObj = new Proxy();
+        proxyObj.setHttpProxy("us-wa.proxymesh.com:31280");
+        proxyObj.setSslProxy("us-wa.proxymesh.com:31280");
+
+        DesiredCapabilities capabilities = DesiredCapabilities.chrome();
+        capabilities.setCapability("proxy", proxyObj);
+
         // Create and populate driver options
         ChromeOptions driverOptions = new ChromeOptions();
         options.forEach(driverOptions::addArguments);
@@ -34,8 +45,17 @@ public class DriverFactory {
         // Set a load strategy
         driverOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
+        capabilities.setCapability(ChromeOptions.CAPABILITY, driverOptions);
+
+
+
+//        driverOptions.setProxy(proxyObj);
+
+
+
+
         // Create and load the driver with options
-        ChromeDriver driver = new ChromeDriver(driverOptions);
+        ChromeDriver driver = new ChromeDriver(capabilities);
         driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
 
         return driver;
