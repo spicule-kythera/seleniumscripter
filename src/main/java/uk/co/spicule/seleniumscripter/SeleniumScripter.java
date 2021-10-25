@@ -991,7 +991,7 @@ public class SeleniumScripter {
         // Get all of the instruction parameters or field defaults
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
-        String input = script.get("value").toString().toLowerCase();
+        String input = script.get("value").toString();
         int charDelay = Integer.parseInt(script.getOrDefault("delay", 300).toString());
         int postInputDelay = Integer.parseInt(script.getOrDefault("postDelay", 5000).toString());
 
