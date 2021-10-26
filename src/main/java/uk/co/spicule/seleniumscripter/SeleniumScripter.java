@@ -1,4 +1,4 @@
-package com.kytheralabs;
+package uk.co.spicule.seleniumscripter;
 
 import com.spicule.ashot.AShot;
 import com.spicule.ashot.Screenshot;
@@ -9,8 +9,8 @@ import jdk.nashorn.internal.objects.annotations.Getter;
 import jdk.nashorn.internal.objects.annotations.Setter;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.json.simple.JSONObject;
 import org.json.simple.JSONValue;
 import org.openqa.selenium.NoSuchElementException;
@@ -38,11 +38,16 @@ import java.util.stream.Collectors;
  */
 public class SeleniumScripter {
     // Error Specs
-    class StopIteration extends Exception {
-        StopIteration(String message) {
+    public class StopIteration extends Exception {
+        public StopIteration(String message) {
             super(message);
         }
     }
+
+    // VERSION
+    private static final int MAJOR = 1;
+    private static final int MINOR = 7;
+    private static final int PATCH = 8;
 
     // Constant things
     private boolean DEV_MODE = false; // Unlocks development and experimental features
@@ -54,7 +59,7 @@ public class SeleniumScripter {
     private final Map<String, Object> scriptVariables = new HashMap<>(); // Variables instantiated by the script
 
     // Application logger
-    private static final Logger LOG = LogManager.getLogger(SeleniumScripter.class);
+    public final static Logger LOG = LoggerFactory.getLogger(SeleniumScripter.class);
 
     // Misc variables
     private String outputPath = "./"; // The starting path to use when saving screenshots or stack results
@@ -65,11 +70,15 @@ public class SeleniumScripter {
     private final Map<String, List> captureLists = new HashMap<>(); // The `loop` op's variable to iterate over
 
     public SeleniumScripter(WebDriver driver) {
+        LOG.info(version());
+
         this.driver = driver;
         url = driver.getCurrentUrl();
     }
 
     public SeleniumScripter(WebDriver driver, boolean DEV_MODE) {
+        LOG.info(version());
+
         this.driver = driver;
         url = driver.getCurrentUrl();
         this.DEV_MODE = DEV_MODE;
@@ -79,11 +88,15 @@ public class SeleniumScripter {
         }
     }
 
+    public static final String version() {
+        return "SeleniumScripter v" + MAJOR + "." + MINOR + "." + PATCH;
+    }
+
     /**
      * Slice an array into a sublist
      * @param slice the slice string which must conform to the pattern `^-{0,1}[0-9]+:-{0,1}[0-9]+$`
      * @param list the list to slice
-     * @return List<Object> the sliced list
+     * @return List the sliced list
      * @throws ParseException occurs when an invalid slice string is specified
      */
     public static List slice(String slice, List list) throws ParseException {
@@ -247,7 +260,11 @@ public class SeleniumScripter {
      * @throws IOException occurs when a snapshot image failed to save to disk
      * @throws AttributeNotFoundException occurs when an attribute on a selected element does not exist
      * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
+     * @throws IOException occurs when screenshots failed to write to persistence
+     * @throws AttributeNotFoundException occurs when an invalid element attribute is specified
+     * @throws ParseException occurs when the token parsing fails to complete
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
+     * @throws StopIteration occurs when a break statement is called outside of a loop
      */
     public void runScript(Map<String, Object> script) throws IOException,
                                                              AttributeNotFoundException,
@@ -443,7 +460,8 @@ public class SeleniumScripter {
                 try {
                     runScript(subscript);
                 } catch (Exception e) {
-                    LOG.error(e);
+                    LOG.error("Caught the following exception inside loop:");
+                    e.printStackTrace();
                     if (!script.containsKey("exitOnError") || script.containsKey("exitOnError") && script.get("exitOnError").equals(true)) {
                         break;
                     }
@@ -973,7 +991,7 @@ public class SeleniumScripter {
         // Get all of the instruction parameters or field defaults
         String selector = script.get("selector").toString();
         String name = script.get("name").toString();
-        String input = script.get("value").toString().toLowerCase();
+        String input = script.get("value").toString();
         int charDelay = Integer.parseInt(script.getOrDefault("delay", 300).toString());
         int postInputDelay = Integer.parseInt(script.getOrDefault("postDelay", 5000).toString());
 
@@ -992,6 +1010,9 @@ public class SeleniumScripter {
                 break;
             case "{return}":
                 element.sendKeys(Keys.RETURN);
+                break;
+            case "{backspace}":
+                element.sendKeys(Keys.BACK_SPACE);
                 break;
             case "{down}":
                 element.sendKeys(Keys.ARROW_DOWN);
@@ -1075,7 +1096,8 @@ public class SeleniumScripter {
     /**
      * Take a screenshot (rasterize image) of the current page.
      * @param script the screenshot subscript operation
-     * @throws IOException when a screenshot image fails to write to disk
+     * @throws IOException occurs when a screenshot image fails to write to persistence
+     * @throws ParseException occurs when the tokens failed to parse
      */
     public void screenshotOperation(Map<String, Object> script) throws IOException, ParseException {
         validate(script, "targetdir"); // Validation
@@ -1108,8 +1130,8 @@ public class SeleniumScripter {
      * Dumps the stack of snapshots to a directory, creating a `.html` file for each entry in the stack in the
      *  target directory
      * @param script the dumpscript subscript operation
-     * @throws ParseException
-     * @throws IOException
+     * @throws ParseException occurs when the tokens failed to parse
+     * @throws IOException occurs when the snapshots failed to write to persistence
      */
     public void dumpStackOperation(Map<String, Object> script) throws ParseException, IOException {
         if(!DEV_MODE) {
@@ -1229,7 +1251,7 @@ public class SeleniumScripter {
 
     /**
      * Return the snapshots stack.
-     * @return List<String> the list of paths to snapshot images taken
+     * @return List the list of paths to snapshot images taken
      */
     @Getter
     public final List<String> getSnapshots(){
