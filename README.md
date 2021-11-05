@@ -23,3 +23,4 @@ Ensure you have _Gecko 0.26 or newer_, before using the SeleniumScript test harn
 
 `$` `mvn clean test -Dtest=TestSeleniumScripter#testAlabama -Dwebdriver.gecko.driver=./geckodriver`
 
+[![Open in Gitpod](https://gitpod.io/button/open-in-gitpod.svg)](https://gitpod.io/#https://github.com/juanresendiz813/seleniumscripter.git)
