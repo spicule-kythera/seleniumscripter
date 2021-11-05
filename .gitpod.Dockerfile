@@ -1,6 +1,6 @@
 FROM jetbrains/projector-idea-c
 
-RUN sudo docker pull jetbrains/projector-idea-c+
+RUN docker pull jetbrains/projector-idea-c+
 
 FROM gitpod/workspace-full
 
