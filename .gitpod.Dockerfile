@@ -1,7 +1,10 @@
-FROM gitpod/workspace-full
+FROM registry.jetbrains.team/p/prj/containers/projector-idea-u
 
-FROM jetbrains/projector-idea-c
+USER root
 
-RUN docker run --rm -p 8887:8887 -it registry.jetbrains.team/p/prj/containers/projector-idea-c      
+RUN apt update && apt install -y wget curl openjdk-1.8-jdk && \
+wget https://downloads.lightbend.com/scala/2.12.15/scala-2.12.15.deb && \
+dpkg -i scala-2.12.15.deb && curl -O https://dl.google.com/go/go1.12.7.linux-amd64.tar.gz && \
+tar xvf go1.12.7.linux-amd64.tar.gz && chown -R root:root ./go && mv go /usr/local
 
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.24.0/geckodriver-v0.24.0-linux64.tar.gz tar -xvzf geckodriver* chmod +x geckodriver
+USER projector-user
