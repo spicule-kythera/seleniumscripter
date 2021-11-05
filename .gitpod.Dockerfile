@@ -1,5 +1,4 @@
 FROM jetbrains/projector-idea-c
-RUN docker pull jetbrains/projector-idea-c
 RUN sudo mkdir -p .jetbrains; sudo touch .jetbrains/.gitkeep; sudo chown -R 1000:1000 .jetbrains
 RUN sudo chown -R 1000:gitpod .
 RUN sudo chmod g+w -R .
