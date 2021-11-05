@@ -1,6 +1,9 @@
-FROM gitpod/workspace-full
+FROM jetbrains/projector-idea-c
+RUN docker pull jetbrains/projector-idea-c
+RUN sudo mkdir -p .jetbrains; sudo touch .jetbrains/.gitkeep; sudo chown -R 1000:1000 .jetbrains
+RUN sudo chown -R 1000:gitpod .
+RUN sudo chmod g+w -R .
+RUN sudo docker run --rm -p 8887:8887 -v /workspace/seleniumscripter/.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-c
 
 
-# Then install GeckoDriver
-RUN wget https://github.com/mozilla/geckodriver/releases/download/v0.26.0/geckodriver-v0.26.0-linux64.tar.gz
-RUN tar -zxf geckodriver-v0.26.0-linux64.tar.gz -C /usr/bin
+
