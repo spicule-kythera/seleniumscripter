@@ -1,4 +1,4 @@
-FROM JetBrains/projector-docker
+FROM jetbrains/projector-docker
 
 RUN docker pull registry.jetbrains.team/p/prj/containers/projector-idea-c
 
