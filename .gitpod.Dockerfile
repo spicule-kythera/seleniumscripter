@@ -1,5 +1,3 @@
-FROM gitpod/workspace-full
-
 RUN docker pull registry.jetbrains.team/p/prj/containers/projector-idea-c
 
 RUN docker run --rm -p 8887:8887 -it registry.jetbrains.team/p/prj/containers/projector-idea-c      
