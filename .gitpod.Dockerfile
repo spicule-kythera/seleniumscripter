@@ -1,6 +1,6 @@
-FROM jetbrains/projector-docker
+FROM jetbrains/projector-idea-c
 
-RUN sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-c
+RUN sudo docker pull jetbrains/projector-idea-c
 
 RUN sudo docker run --rm -p 8887:8887 -it registry.jetbrains.team/p/prj/containers/projector-idea-c      
 
