@@ -15,10 +15,13 @@ RUN apt-get update \
     && chown root:root /usr/bin/chromedriver \
     && chmod +x /usr/bin/chromedriver \
     && apt-get clean && rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
-    
-RUN sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-c \
-    && sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-u \
-    && docker run --rm -p 8887:8887 -v /workspace/seleniumscripter/.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-c
+
+FROM jetbrains/projector-idea-c
+
+USER root
+docker pull 
+RUN docker pull jetbrains/projector-idea-c \
+    && docker run --rm -p 8887:8887 -v /workspace/seleniumscripter/.jetbrains:/home/projector-user -it registry.jetbrains.team/projector-idea-c
 
  
 
