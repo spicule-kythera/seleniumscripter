@@ -24,7 +24,7 @@ import javax.management.AttributeNotFoundException;
 
 public class Sandbox {
     private boolean headless = false;
-    private final String browserType = BrowserType.FIREFOX; // Type of driver to use
+    private final String browserType = BrowserType.CHROME; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
