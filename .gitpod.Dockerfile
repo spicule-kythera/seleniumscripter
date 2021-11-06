@@ -1,4 +1,4 @@
-FROM gitpod/wprkspace-full:latest
+FROM gitpod/workspace-full:latest
 
 USER root
 
