@@ -1,5 +1,13 @@
 image:
   file: .gitpod.Dockerfile
+tasks:
+  - init: sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-u
+    command: |
+      sudo docker run --rm -p 8887:8887 -v /workspace/template-jetbrains-intellij-idea/.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-u
+  - init: mvn clean install
+    command: |
+      export HMR_HOST=`gp url 8080`
+      mvn clean test -Dwebdriver.chrome.driver=./chromedriver
 ports:
   - port: 8080
     onOpen: open-preview
