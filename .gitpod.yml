@@ -13,6 +13,7 @@ tasks:
       sudo mv /usr/bin/chromedriver /workspace/seleniumscripter \
       sudo chown root:root /workspace/seleniumscripter/chromedriver \
       sudo chmod +x /workspace/seleniumscripter/chromedriver \
+tasks:
   - init: mvn clean install
     command: |
       export HMR_HOST=`gp url 8080`
