@@ -1,5 +1,7 @@
 image:
   file: .gitpod.Dockerfile
+  
+task:
   - init: mvn clean install
     command: |
       export HMR_HOST=`gp url 8080`
