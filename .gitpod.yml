@@ -8,8 +8,9 @@ tasks:
       sudo docker run --rm -p 8887:8887 -v /workspace/seleniumscripter/.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-c
       # Ultimate Edition
       #sudo docker run --rm -p 8887:8887 -v /workspace/seleniumscripter/.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-u
-  - image:
-    file: .gitpod.Dockerfile
+image:
+file: .gitpod.Dockerfile
+tasks:
   - init: mvn clean install
     command: |
       export HMR_HOST=`gp url 8080`
