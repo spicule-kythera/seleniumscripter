@@ -11,8 +11,8 @@ RUN apt-get update \
     && apt -y install google-chrome-stable \
     && wget https://chromedriver.storage.googleapis.com/94.0.4606.61/chromedriver_linux64.zip \
     && unzip chromedriver_linux64.zip \
-    && mv chromedriver /usr/bin/chromedriver \
-    && chown root:root /usr/bin/chromedriver \
+    && mv chromedriver /workspace/seleniumscripter/chromedriver \
+    && chown root:root /workspace/seleniumscripter/chromedriver \
     && chmod +x /usr/bin/chromedriver \
     && apt-get clean && rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
 
