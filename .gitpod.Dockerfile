@@ -16,7 +16,7 @@ RUN apt-get update \
     && chown root:root /usr/bin/chromedriver \
     && chmod +x /usr/bin/chromedriver \
     && mv /usr/bin/chromedriver /workspace/seleniumscripter \
-    && chown root:root /workspace/seleniumscripter/chromedriver \
+    && chown root:root /workspace/seleniumscripter \
     && chmod +x /workspace/seleniumscripter/chromedriver \
     && apt-get clean && rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
 
