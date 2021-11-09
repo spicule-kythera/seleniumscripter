@@ -14,8 +14,6 @@ tasks:
       sudo chown root:root /workspace/seleniumscripter \
       sudo chmod +x /workspace/seleniumscripter/chromedriver \
 ports:
-  - port: 8080
-    onOpen: open-preview
   - port: 8887
     visibility: private
     onOpen: open-browser
