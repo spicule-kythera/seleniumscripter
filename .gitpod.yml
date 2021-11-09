@@ -5,7 +5,7 @@ tasks:
     command: |
       sudo mkdir -p .jetbrains; sudo touch .jetbrains/.gitkeep; sudo chown -R 1000:1000 .jetbrains
       # Community Edition
-      sudo docker run --rm -p 8887:8887 -v .jetbrains:/home/projector-user/workspace/seleniumscripter -it registry.jetbrains.team/p/prj/containers/projector-idea-c
+      sudo docker run --rm -p 8887:8887 -v /workspace/seleniumscripter.jetbrains:/home/projector-user/workspace/seleniumscripter -it registry.jetbrains.team/p/prj/containers/projector-idea-c
       # Ultimate Edition
       #sudo docker run --rm -p 8887:8887 -v /workspace/seleniumscripter/.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-u
 image:
