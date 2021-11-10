@@ -2,7 +2,7 @@ FROM gitpod/workspace-full:latest
 
 USER root
 
-RUN sudo dockerd \
+RUN sudo docker-compose up \
     && sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-c \
     && run --rm -p 8887:8887 -v /workspace/seleniumscripter.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-c 
 
