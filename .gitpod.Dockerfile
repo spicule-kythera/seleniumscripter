@@ -2,6 +2,10 @@ FROM gitpod/workspace-full:latest
 
 USER root
 
+RUN sudo dockerd \
+    && sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-c \
+    && run --rm -p 8887:8887 -v /workspace/seleniumscripter.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-c 
+
 RUN apt-get update \
     && apt-get install  \
     && bash -c ". /home/gitpod/.sdkman/bin/sdkman-init.sh && sdk install java 8.312.07.1-amzn && sdk install java 11.0.13.8.1-amzn" \
@@ -18,9 +22,6 @@ RUN apt-get update \
     && mv /usr/bin/chromedriver /workspace/seleniumscripter \
     && chown root:root /workspace/seleniumscripter \
     && chmod +x /workspace/seleniumscripter \
-    && sudo dockerd \
-    && sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-c \
-    && run --rm -p 8887:8887 -v /workspace/seleniumscripter.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-c \
     && apt-get clean && rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
 
  
