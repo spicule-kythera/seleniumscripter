@@ -8,7 +8,7 @@ RUN apt-get update && \
     openjdk-8-jdk
 
 RUN sudo service docker start \
-    && run -d -p 5000:5000 --name build registry.jetbrains.team/p/prj/containers/projector-idea-c \
+    && run -d -p 8887:8887 registry.jetbrains.team/p/prj/containers/projector-idea-c \
     && run --rm -p 8887:8887 -v /workspace/seleniumscripter.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-c 
 
 RUN apt-get update \
