@@ -20,7 +20,7 @@ RUN apt-get update \
     && chmod +x /workspace/seleniumscripter \
     && apt-get clean && rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
     
-FROM gitpod /workspace/seleniumscripter $ java -version
+FROM gitpod /workspace/seleniumscripter
 
 RUN Picked up JAVA_TOOL_OPTIONS: -Xmx1879m
 RUN openjdk version "1.8.0_292"
