@@ -1,6 +1,5 @@
 
 image: registry.gitlab.com/spiculedata/custom-gitpod-full:latest
-file: .gitpod.Dockerfile
 tasks:
   - init: |
       git lfs pull
