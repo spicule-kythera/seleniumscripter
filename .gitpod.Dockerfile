@@ -20,12 +20,12 @@ RUN apt-get update \
     && chmod +x /workspace/seleniumscripter \
     && apt-get clean && rm -rf /var/cache/apt/* && rm -rf /var/lib/apt/lists/* && rm -rf /tmp/*
     
-FROM gitpod /workspace/seleniumscripter
-
 RUN Picked up JAVA_TOOL_OPTIONS: -Xmx1879m
 RUN openjdk version "1.8.0_292"
 RUN OpenJDK Runtime Environment (build 1.8.0_292-b10)
 RUN OpenJDK 64-Bit Server VM (build 25.292-b10, mixed mode)
+
+
  
 
 
