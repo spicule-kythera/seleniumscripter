@@ -2,13 +2,6 @@ FROM gitpod/workspace-full:latest
 
 USER root
 
-RUN apt install python3 python3-pip -y \
-    && apt install python3-cryptography -y \
-    && python3 -m pip install -U pip \
-    && apt install less libxext6 libxrender1 libxtst6 libfreetype6 libxi6 -y \
-    && pip3 install projector-installer --user \
-    && source ~/.profile
-
 RUN apt-get update \
     && apt-get install  \
     && bash -c ". /home/gitpod/.sdkman/bin/sdkman-init.sh && sdk install java 8.312.07.1-amzn && sdk install java 11.0.13.8.1-amzn" \
