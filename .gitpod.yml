@@ -1,8 +1,13 @@
-image:
-  file: .gitpod.Dockerfile
 tasks:
-  - init: projector install
+  - init: sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-c
+    command: |
+      sudo docker run --rm -p 8887:8887 -v /workspace/.jetbrains:/home/projector-user/seleniumscripter -it registry.jetbrains.team/p/prj/containers/projector-idea-c
+  - init: mvn clean install
+    command: |
+      export HMR_HOST=`gp url 8080`
 ports:
+  - port: 8080
+    onOpen: open-preview
   - port: 8887
     visibility: private
-    onOpen: open-browser
+    onOpen: open-preview
