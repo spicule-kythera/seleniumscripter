@@ -5,9 +5,6 @@ tasks:
   - init: sudo docker pull registry.jetbrains.team/p/prj/containers/projector-idea-c
     command: |
       sudo docker run --rm -p 8887:8887 -p 8080:8080 -v /workspace/juanresendiz813/seleniumscripter:/workspace/seleniumscripter -v /workspace/juanresendiz813/.jetbrains:/home/projector-user -it registry.jetbrains.team/p/prj/containers/projector-idea-c
-  - init: mvn clean install
-    command: |
-      export HMR_HOST=`gp url 8080`
 ports:
   - port: 8080
     onOpen: open-preview
