@@ -1,6 +1,6 @@
 FROM gitpod/workspace-full:latest
 
-USER user
+USER USER
 
 RUN apt install python3 python3-pip -y \
     && apt install python3-cryptography -y \
