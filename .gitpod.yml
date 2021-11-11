@@ -1,5 +1,7 @@
 image:
-  file: .gitpod.Dockerfile  
+  file: .gitpod.Dockerfile
+tasks:
+  - init: projector install
 ports:
   - port: 8887
     visibility: private
