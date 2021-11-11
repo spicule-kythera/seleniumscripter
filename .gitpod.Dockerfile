@@ -4,7 +4,7 @@ USER root
 
 RUN apt-get update \
     && apt-get install  \
-    && bash -c ". /home/gitpod/.sdkman/bin/sdkman-init.sh && sdk install java 17.0.1.12.1-amzn && sdk default java 17.0.1.12.1-amzn && sdk install java 8.312.07.1-amzn" \
+    && bash -c ". /home/gitpod/.sdkman/bin/sdkman-init.sh && sdk install java 17.0.1.12.1-amzn && && sdk install java 8.312.07.1-amzn && sdk default java 17.0.1.12.1-amzn" \
     && apt install -y unzip xvfb libxi6 libgconf-2-4 \
     && curl -sS -o - https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add \
     && bash -c "echo 'deb [arch=amd64] http://dl.google.com/linux/chrome/deb/ stable main' >> /etc/apt/sources.list.d/google-chrome.list" \
