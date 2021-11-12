@@ -32,7 +32,7 @@ public class Sandbox {
                                                        "--incognito",
                                                        "--window-size=1920,1080",
                                                        "--proxy-server='direct://",
-                                                       "--proxy-bypass-list=*",
+//                                                       "--proxy-bypass-list=*",
                                                        "--disable-background-networking",
                                                        "--safebrowsing-disable-auto-update",
                                                        "--disable-sync",
