@@ -18,6 +18,7 @@ import org.openqa.selenium.remote.DesiredCapabilities;
 public class DriverFactory {
     boolean headless; // Toggles headless mode
     final List<String> options; // Browser options
+    final ProxySelector proxySelector = new ProxySelector();
 
     public DriverFactory(List<String> options) {
         this.options = options;
@@ -30,12 +31,8 @@ public class DriverFactory {
 
     public RemoteWebDriver generateChromeDriver() {
 
-        Proxy proxyObj = new Proxy();
-        proxyObj.setHttpProxy("gate.dc.smartproxy.com:20001:user-sp8373bb12:Tp3Fi4S9MV");
-        proxyObj.setSslProxy("gate.dc.smartproxy.com:20001:user-sp8373bb12:Tp3Fi4S9MV");
-
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
-        capabilities.setCapability("proxy", proxyObj);
+        capabilities.setCapability("proxy", proxySelector.getProxy());
 
         // Create and populate driver options
         ChromeOptions driverOptions = new ChromeOptions();
@@ -46,13 +43,6 @@ public class DriverFactory {
         driverOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
         capabilities.setCapability(ChromeOptions.CAPABILITY, driverOptions);
-
-
-
-//        driverOptions.setProxy(proxyObj);
-
-
-
 
         // Create and load the driver with options
         ChromeDriver driver = new ChromeDriver(capabilities);
