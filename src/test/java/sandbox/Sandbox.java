@@ -2,16 +2,14 @@ package sandbox;
 
 import java.net.URL;
 import java.text.ParseException;
-import java.util.Map;
-import java.util.List;
+import java.util.*;
 
 import uk.co.spicule.seleniumscripter.DriverFactory;
 import uk.co.spicule.seleniumscripter.SeleniumScripter;
 import org.junit.Test;
 import org.junit.After;
 import org.junit.Before;
-import java.util.Arrays;
-import java.util.TreeMap;
+
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -21,10 +19,23 @@ import org.json.simple.parser.JSONParser;
 import org.openqa.selenium.remote.BrowserType;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import javax.management.AttributeNotFoundException;
+import java.net.SocketTimeoutException;
 
 public class Sandbox {
     private boolean headless = false;
     private final String browserType = BrowserType.FIREFOX; // Type of driver to use
+
+    private List<String> proxyEndpoints = new ArrayList<String>(Arrays.asList("us-wa.proxymesh.com:31280",
+            "us-il.proxymesh.com:31280",
+            "us.proxymesh.com:31280",
+            "us-dc.proxymesh.com:31280",
+            "us-ca.proxymesh.com:31280",
+            "us-ny.proxymesh.com:31280",
+            "us-fl.proxymesh.com:31280"
+    ));
+    private String selectedProxyEndpoint;
+    private DriverFactory factory;
+
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
@@ -47,19 +58,42 @@ public class Sandbox {
                                                        "--disable-permissions-api");
     private RemoteWebDriver driver = null;
 
+    private String getProxyEndpoint() {
+
+        int totalEndpoints = this.proxyEndpoints.size();
+
+        if(totalEndpoints > 0) {
+
+            Random randomObj = new Random();
+            int endpointNumber = randomObj.nextInt(totalEndpoints);
+            this.selectedProxyEndpoint = this.proxyEndpoints.get(endpointNumber);
+
+            this.proxyEndpoints.remove(endpointNumber);
+        }
+
+        return this.selectedProxyEndpoint;
+    }
+
     @Before
     public void setUp() throws ParseException {
         // Set logging level to debug
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "Debug");
 
         // Create driver factory
-        DriverFactory factory = new DriverFactory(options);
-        factory.setHeadless(headless);
+        this.factory = new DriverFactory(options);
+        this.factory.setHeadless(headless);
+
+        this.getWebDriver();
+    }
+
+    private void getWebDriver() throws ParseException {
 
         // Create driver
         switch (browserType) {
             case BrowserType.CHROME:
-                driver = factory.generateChromeDriver();
+                /* Get Proxy endpoint and send it while generating the driver */
+                String proxyEndpoint = getProxyEndpoint();
+                driver = factory.generateChromeDriver(proxyEndpoint);
                 break;
             case BrowserType.EDGE:
                 driver = factory.generateEdgeDriver();
@@ -122,7 +156,16 @@ public class Sandbox {
                 throw new IllegalArgumentException("Unsupported script type: " + scriptType);
         }
 
-        driver.get(url);
+        do {
+            try {
+                driver.get(url);
+                break;
+            }
+            catch (Exception e){
+                this.getWebDriver();
+            }
+        }while(this.proxyEndpoints.size() > 0);
+
         SeleniumScripter scriptRunner = new SeleniumScripter(driver, true);
 
         // Set the default path

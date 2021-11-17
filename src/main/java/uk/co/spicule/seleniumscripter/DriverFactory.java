@@ -12,13 +12,11 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
-import org.openqa.selenium.Proxy;
 import org.openqa.selenium.remote.DesiredCapabilities;
 
 public class DriverFactory {
     boolean headless; // Toggles headless mode
     final List<String> options; // Browser options
-    final ProxySelector proxySelector = new ProxySelector();
 
     public DriverFactory(List<String> options) {
         this.options = options;
@@ -29,7 +27,9 @@ public class DriverFactory {
         return this.headless;
     }
 
-    public RemoteWebDriver generateChromeDriver() {
+    public RemoteWebDriver generateChromeDriver(String proxyEndPoint) {
+
+        ProxySelector proxySelector = new ProxySelector(proxyEndPoint);
 
         DesiredCapabilities capabilities = DesiredCapabilities.chrome();
         capabilities.setCapability("proxy", proxySelector.getProxy());
