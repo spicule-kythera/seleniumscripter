@@ -10,7 +10,7 @@
     <url>https://github.com/spicule-kythera/seleniumscripter</url>
     <groupId>uk.co.spicule</groupId>
     <artifactId>seleniumscripter</artifactId>
-    <version>1.7.9</version>
+    <version>1.7.10</version>
 
     <!-- License -->
     <licenses>
