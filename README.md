@@ -1,5 +1,7 @@
 # Selenium Scripter
 
+[![Code Quality](https://github.com/spicule-kythera/seleniumscripter/actions/workflows/codeql-analysis.yml/badge.svg)](https://github.com/spicule-kythera/seleniumscripter/actions/workflows/codeql-analysis.yml)
+
 An expressive script-style method of interacting with the Selenium Framework.
 
 ## Local Setup
