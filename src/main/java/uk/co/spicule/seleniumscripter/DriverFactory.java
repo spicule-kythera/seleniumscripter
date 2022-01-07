@@ -1,5 +1,6 @@
 package uk.co.spicule.seleniumscripter;
 
+
 import org.openqa.selenium.PageLoadStrategy;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
