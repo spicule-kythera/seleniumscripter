@@ -37,7 +37,7 @@ public class DriverFactory {
 
         // Create and load the driver with options
         ChromeDriver driver = new ChromeDriver(driverOptions);
-        driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
+//        driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
 
         return driver;
     }
