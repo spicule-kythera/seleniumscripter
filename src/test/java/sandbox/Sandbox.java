@@ -1,11 +1,15 @@
 package sandbox;
 
 import java.net.URL;
-import java.text.ParseException;
 import java.util.Map;
 import java.util.List;
 
-import uk.co.spicule.seleniumscripter.DriverFactory;
+import org.openqa.selenium.Capabilities;
+import org.openqa.selenium.MutableCapabilities;
+import org.openqa.selenium.PersistentCapabilities;
+import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.firefox.FirefoxDriver;
+import org.openqa.selenium.firefox.FirefoxOptions;
 import uk.co.spicule.seleniumscripter.SeleniumScripter;
 import org.junit.Test;
 import org.junit.After;
@@ -23,8 +27,7 @@ import org.openqa.selenium.remote.RemoteWebDriver;
 import javax.management.AttributeNotFoundException;
 
 public class Sandbox {
-    private boolean headless = false;
-    private final String browserType = BrowserType.FIREFOX; // Type of driver to use
+    private final String browserType = BrowserType.CHROME; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
@@ -45,36 +48,25 @@ public class Sandbox {
                                                        "--disable-notifications",
                                                        "--disable-logging",
                                                        "--disable-permissions-api");
-    private RemoteWebDriver driver = null;
+    private WebDriver driver = null;
 
     @Before
-    public void setUp() throws ParseException {
+    public void setUp()  {
         // Set logging level to debug
         System.setProperty(org.slf4j.impl.SimpleLogger.DEFAULT_LOG_LEVEL_KEY, "Debug");
 
         // Create driver factory
-        DriverFactory factory = new DriverFactory(options);
-        factory.setHeadless(headless);
+        FirefoxOptions options = new FirefoxOptions();
+        this.options.forEach(options::addArguments);
+        Capabilities capabilities = new PersistentCapabilities(options);
 
-        // Create driver
-        switch (browserType) {
-            case BrowserType.CHROME:
-                driver = factory.generateChromeDriver();
-                break;
-            case BrowserType.EDGE:
-                driver = factory.generateEdgeDriver();
-                break;
-            case BrowserType.FIREFOX:
-                driver = factory.generateFirefoxDriver();
-                break;
-            default:
-                throw new ParseException("Invalid browser type: " + browserType, 0);
-        }
+        driver = new FirefoxDriver();
+        driver.manage().window().maximize();
     }
 
     @After
     public void tearDown() {
-        driver.close();
+        //driver.close(); // Deprecated?
         driver = null;
     }
 

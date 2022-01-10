@@ -47,7 +47,7 @@ public class SeleniumScripter {
     // VERSION
     private static final int MAJOR = 1;
     private static final int MINOR = 7;
-    private static final int PATCH = 10;
+    private static final int PATCH = 11;
 
     // Constant things
     private boolean DEV_MODE = false; // Unlocks development and experimental features
