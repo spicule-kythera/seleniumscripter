@@ -358,6 +358,9 @@ public class SeleniumScripter {
                     case "pause":
                         pauseOperation(subscript);
                         break;
+                    case "recaptcha":
+                        reCaptchaClick(subscript);
+                        break;
                     case "restore":
                         restoreOperation(subscript);
                         break;
@@ -1049,6 +1052,37 @@ public class SeleniumScripter {
                 .until((driver) -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
                         .toString()
                         .equals("complete"));
+    }
+
+
+    /**
+     * Clicking the google reCaptcha button
+     */
+    private void reCaptchaClick(Map<String, Object> script) throws ParseException,
+            NoSuchElementException{
+
+        validate(script, new String[] {"selector", "name"}); // Validation
+
+        // Get the instruction parameters
+        String selector = script.get("selector").toString();
+        String name = script.get("name").toString();
+        long delay = Long.parseLong(script.getOrDefault("delay", 0).toString());
+
+        // Substitute any specified script-variable-values
+        name = resolveExpressionValue(name);
+
+        // Fetch the iframe to switch into
+        WebElement element = driver.findElement(by(selector, name));
+
+        // Scroll the element into view
+        ((JavascriptExecutor) driver).executeScript("arguments[0].scrollIntoView();", element);
+
+        // Switch into the iframe and click on the captcha
+        LOG.info("clicking reCaptchaClick element with iframe " + selector + " of `" + name + "`!");
+        new WebDriverWait(driver, 50).until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(element));
+        new WebDriverWait(driver, 30).until(ExpectedConditions.frameToBeAvailableAndSwitchToIt(By.xpath("//iframe[starts-with(@name, 'a-') and starts-with(@src, 'https://www.google.com/recaptcha')]")));
+        new WebDriverWait(driver, 50).until(ExpectedConditions.elementToBeClickable(By.cssSelector("div.recaptcha-checkbox-border"))).click();
+
     }
 
     /**
