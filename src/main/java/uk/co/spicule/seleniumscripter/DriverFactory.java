@@ -33,7 +33,7 @@ public class DriverFactory {
         driverOptions.setHeadless(headless);
 
         // Set a load strategy
-        driverOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+        //driverOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
 
         // Create and load the driver with options
         ChromeDriver driver = new ChromeDriver(driverOptions);
