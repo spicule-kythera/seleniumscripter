@@ -28,16 +28,16 @@ public class DriverFactory {
 
     public RemoteWebDriver generateChromeDriver() {
         // Create and populate driver options
-        ChromeOptions driverOptions = new ChromeOptions();
-        options.forEach(driverOptions::addArguments);
-        driverOptions.setHeadless(headless);
+        ChromeOptions chromeOptions = new ChromeOptions();
+        options.forEach(chromeOptions::addArguments);
 
         // Set a load strategy
-        driverOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+        chromeOptions.setPageLoadStrategy(PageLoadStrategy.NORMAL);
+        //capabilities.setCapability(CapabilityType.PROXY, seleniumProxy);
 
         // Create and load the driver with options
-        ChromeDriver driver = new ChromeDriver(driverOptions);
-//        driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
+        ChromeDriver driver = new ChromeDriver(chromeOptions);
+        driver.manage().timeouts().pageLoadTimeout(3600, TimeUnit.SECONDS);
 
         return driver;
     }
