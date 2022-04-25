@@ -1,0 +1,89 @@
+a:
+  operation: loadpage
+b:
+  operation: keys
+  selector: id
+  name: applicationReceivedStart
+  value: "01///01//2022"
+c:
+  operation: keys
+  selector: id
+  name: applicationReceivedEnd
+  value: "01///02//2022"
+e:
+  operation: click
+  selector: xpath
+  name: //div[@class="buttons"]/input[2]
+f:
+  operation: loadpage
+g:
+  operation: do_while
+  do_while:
+    - operation: click
+      selector: class
+      name: next
+    - operation: loadpage
+  do:
+    - operation: for
+      forEach:
+        selector: xpath
+        name: '//ul[@id="searchresults"]/li/a'
+        variable: applicationtitle
+      do:
+
+        - operation: click
+          selector: xpath
+          name: //*{applicationtitle}
+        - operation: loadpage
+        - operation: snapshot
+        - operation: click
+          selector: id
+          name: subtab_details
+        - operation: loadpage
+        - operation: snapshot
+        - operation: click
+          selector: id
+          name: subtab_contacts
+        - operation: loadpage
+        - operation: snapshot
+        - operation: click
+          selector: id
+          name: subtab_dates
+        - operation: loadpage
+        - operation: snapshot
+        - operation: try
+          try:
+            - operation: click
+              selector: id
+              name: tab_documents
+            - operation: loadpage
+            - operation: snapshot
+          catch:
+            - operation: noop
+          expect:
+            - NoSuchElementException
+        - operation: try
+          try:
+            - operation: click
+              selector: id
+              name: tab_relatedCases
+            - operation: loadpage
+            - operation: snapshot
+          catch:
+            - operation: noop
+          expect:
+            - NoSuchElementException
+        - operation: try
+          try:
+            - operation: click
+              selector: id
+              name: tab_constraints
+            - operation: loadpage
+            - operation: snapshot
+          catch:
+            - operation: noop
+          expect:
+            - NoSuchElementException
+        - operation: click
+          selector: id
+          name: searchresultsback

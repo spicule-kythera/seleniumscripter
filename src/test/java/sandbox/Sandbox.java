@@ -24,7 +24,7 @@ import javax.management.AttributeNotFoundException;
 
 public class Sandbox {
     private boolean headless = false;
-    private final String browserType = BrowserType.FIREFOX; // Type of driver to use
+    private final String browserType = BrowserType.CHROME; // Type of driver to use
     private final List<String> options = Arrays.asList("--no-sandbox",
                                                        "--disable-gpu",
                                                        "--disable-extensions",
@@ -230,6 +230,13 @@ public class Sandbox {
         final String scriptName = "bcbsms.yaml";
         final String url = "https://www.bcbsms.com/BlueLand/rx/rxDirectFormularyDrugSearch.do";
         // Start the crawl
+        runScript(url, scriptName);
+    }
+
+    @Test
+    public void planning() throws Exception {
+        final String scriptName = "planning.yaml";
+        final String url = "https://www2.guildford.gov.uk/publicaccess/search.do?action=advanced&searchType=Application";
         runScript(url, scriptName);
     }
 }
