@@ -52,7 +52,7 @@ public class SeleniumScripter {
     private final String url; // The initial url the agent starts at
     private final WebDriver driver; // The web driver
     private final long defaultWaitTimeout = 30; // The default element wait timeout in seconds
-    private final List<String> snapshots = new ArrayList<>(); // The stack of HTML content to return to the crawl
+    private final Map<String,String> snapshots = new HashMap<>(); // The stack of HTML content to return to the crawl
     private final List<String> capturedLabel = new ArrayList<>(); // A list of html things?
     private final Map<String, Object> scriptVariables = new HashMap<>(); // Variables instantiated by the script
 
@@ -571,7 +571,7 @@ public class SeleniumScripter {
 
             for (Object m : l) {
                 String sshot = JSONValue.toJSONString(m);
-                this.snapshots.add(sshot);
+                this.snapshots.put(UUID.randomUUID().toString(), sshot);
             }
         } else{
             LOG.error("No capturelists named " + subscript.get("variable").toString() + " to convert to snapshots.");
@@ -854,7 +854,7 @@ public class SeleniumScripter {
      */
     private void pushSnapshot(Map<String, Object> script) throws ParseException {
         validate(script, "type"); // Validation
-
+        String k = script.getOrDefault("prefix", "")+UUID.randomUUID().toString();
         String content;
         final String type = script.get("type").toString().toLowerCase();
         final String tokenName = script.getOrDefault("name", "null").toString();
@@ -875,7 +875,7 @@ public class SeleniumScripter {
         }
 
         LOG.warn("Pushing " + type + " content to snapshot stack: `" + content + "`");
-        snapshots.add(content);
+        snapshots.put(k, content);
     }
 
     /**
@@ -1269,7 +1269,9 @@ public class SeleniumScripter {
      */
     private void snapshotOperation(Map<String, Object> script) throws ParseException {
         LOG.info("Taking snapshot of " + driver.getCurrentUrl());
-        snapshots.add(driver.getPageSource());
+        String u = UUID.randomUUID().toString();
+        String prefix = (String) script.getOrDefault("prefix", "");
+        snapshots.put(prefix+u, driver.getPageSource());
 
         // TODO: Break up raw calls to script.get()
         if (script.containsKey("capturedlabel")) {
@@ -1283,7 +1285,7 @@ public class SeleniumScripter {
      * Return the snapshots stack.
      * @return List the list of paths to snapshot images taken
      */
-    public final List<String> getSnapshots(){
+    public final Map<String,String> getSnapshots(){
         return snapshots;
     }
 
