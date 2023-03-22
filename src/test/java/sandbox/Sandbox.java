@@ -236,7 +236,15 @@ public class Sandbox {
     @Test
     public void planning() throws Exception {
         final String scriptName = "planning.yaml";
-        final String url = "https://www2.guildford.gov.uk/publicaccess/search.do?action=advanced&searchType=Application";
+        final String url = "https://planning.agileapplications.co.uk/mole/search-applications/";
+        runScript(url, scriptName);
+    }
+
+
+    @Test
+    public void planningContent() throws Exception {
+        final String scriptName = "planningcontent.yaml";
+        final String url = "https://www2.guildford.gov.uk/publicaccess/applicationDetails.do?keyVal=_GUILD_DCAPR_199189&activeTab=summary";
         runScript(url, scriptName);
     }
 }

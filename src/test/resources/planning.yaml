@@ -1,89 +1,41 @@
 a:
   operation: loadpage
 b:
-  operation: keys
+  operation: wait
   selector: id
-  name: applicationReceivedStart
-  value: "01///01//2022"
+  name: switchDeterminedRegistered
 c:
-  operation: keys
+  operation: click
+  selector: xpath
+  name: //*[@id="header"]/sas-cookie-consent/section/section/div[1]/button[1]
+d:
+  operation: click
   selector: id
-  name: applicationReceivedEnd
-  value: "05///01//2022"
+  name: switchDeterminedRegistered
 e:
   operation: click
   selector: xpath
-  name: //div[@class="buttons"]/input[2]
+  name: //label[@for='stage1']
 f:
-  operation: loadpage
+  operation: keys
+  selector: xpath
+  name: //*[@id="ui-view"]/search-applications/section/div[5]/div/search-applications-detreg/form/sas-date-range-picker/div/div/div/input
+  value: "28//11/2021 - 04/12/2022"
 g:
+  operation: keys
+  selector: xpath
+  name: //*[@id="ui-view"]/search-applications/section/div[5]/div/search-applications-detreg/form/sas-date-range-picker/div/div/div/input
+  value: "{enter}"
+
+i:
+  operation: loadpage
+k:
   operation: do_while
-  do_while:
+  do_while: doesn't do operation on first page  it seems doesn't see unclickabble button
     - operation: click
-      selector: class
-      name: next
+      selector: xpath
+      name: /html/body/app/div/div/div/section/div/search-applications-results/section/sas-table/div[1]/div/div/div/ul/li[11]/a
     - operation: loadpage
   do:
-    - operation: for
-      forEach:
-        selector: xpath
-        name: '//ul[@id="searchresults"]/li/a'
-        variable: applicationtitle
-      do:
-
-        - operation: click
-          selector: xpath
-          name: //*{applicationtitle}
-        - operation: loadpage
-        - operation: snapshot
-        - operation: click
-          selector: id
-          name: subtab_details
-        - operation: loadpage
-        - operation: snapshot
-        - operation: click
-          selector: id
-          name: subtab_contacts
-        - operation: loadpage
-        - operation: snapshot
-        - operation: click
-          selector: id
-          name: subtab_dates
-        - operation: loadpage
-        - operation: snapshot
-        - operation: try
-          try:
-            - operation: click
-              selector: id
-              name: tab_documents
-            - operation: loadpage
-            - operation: snapshot
-          catch:
-            - operation: noop
-          expect:
-            - NoSuchElementException
-        - operation: try
-          try:
-            - operation: click
-              selector: id
-              name: tab_relatedCases
-            - operation: loadpage
-            - operation: snapshot
-          catch:
-            - operation: noop
-          expect:
-            - NoSuchElementException
-        - operation: try
-          try:
-            - operation: click
-              selector: id
-              name: tab_constraints
-            - operation: loadpage
-            - operation: snapshot
-          catch:
-            - operation: noop
-          expect:
-            - NoSuchElementException
-        - operation: click
-          selector: id
-          name: searchresultsback
+    - operation: snapshot
+      prefix: searchresults
