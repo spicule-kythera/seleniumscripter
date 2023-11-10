@@ -7,6 +7,7 @@ import groovy.lang.Binding;
 import groovy.lang.GroovyShell;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringEscapeUtils;
+import org.openqa.selenium.remote.RemoteWebElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.json.simple.JSONObject;
@@ -30,6 +31,8 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
+
+import static org.openqa.selenium.support.ui.ExpectedConditions.numberOfWindowsToBe;
 
 /**
  * Selenium Scripter, generate selenium scripts from YAML.
@@ -205,8 +208,8 @@ public class SeleniumScripter {
      * @return the datestring
      */
     private String getDateString() {
-       Date date = new Date();
-       return new SimpleDateFormat("yyyy_MM_dd_HH-mm-ss.SSS").format(date);
+        Date date = new Date();
+        return new SimpleDateFormat("yyyy_MM_dd_HH-mm-ss.SSS").format(date);
     }
 
     /**
@@ -264,10 +267,10 @@ public class SeleniumScripter {
      * @throws StopIteration occurs when a break statement is called outside of a loop
      */
     public void runScript(Map<String, Object> script) throws IOException,
-                                                             AttributeNotFoundException,
-                                                             ParseException,
-                                                             InterruptedException,
-                                                             StopIteration {
+            AttributeNotFoundException,
+            ParseException,
+            InterruptedException,
+            StopIteration {
         // TODO: remove this as soon as the `loop` op is closed out
         if(masterScript == null){
             masterScript = script;
@@ -349,6 +352,9 @@ public class SeleniumScripter {
                         break;
                     case "loadpage":
                         loadPageOperation(subscript);
+                        break;
+                    case "window":
+                        loadWindowOperation(subscript);
                         break;
                     case "noop":
                         break;
@@ -477,10 +483,10 @@ public class SeleniumScripter {
      * @param sequence the list of operations to run
      */
     private void runSubsequence(List<Map<String, String>> sequence) throws IOException,
-                                                                           AttributeNotFoundException,
-                                                                           ParseException,
-                                                                           InterruptedException,
-                                                                           StopIteration {
+            AttributeNotFoundException,
+            ParseException,
+            InterruptedException,
+            StopIteration {
         for (Map<String, String> instruction : sequence) {
             Map<String, Object> instructionBlock = new HashMap<>();
             instructionBlock.put("subsequence", instruction);
@@ -705,9 +711,9 @@ public class SeleniumScripter {
      * @throws ParseException occurs when one or more required fields are missing or an invalid value is specified
      */
     private void forOperation(Map<String, Object> script) throws ParseException,
-                                                                 AttributeNotFoundException,
-                                                                 IOException,
-                                                                 InterruptedException {
+            AttributeNotFoundException,
+            IOException,
+            InterruptedException {
         // Validation
         validate(script, new String[] {"forEach", "do"});
         Map<String, Object> forEachParams = (Map<String, Object>) script.get("forEach");
@@ -756,10 +762,10 @@ public class SeleniumScripter {
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
     private void ifOperation(Map<String, Object> script) throws ParseException,
-                                                                AttributeNotFoundException,
-                                                                IOException,
-                                                                InterruptedException,
-                                                                StopIteration {
+            AttributeNotFoundException,
+            IOException,
+            InterruptedException,
+            StopIteration {
         validate(script, new String[] {"selector", "name", "condition", "then"}); // Validation
 
         // Fetch element of focus
@@ -829,9 +835,9 @@ public class SeleniumScripter {
      * @throws InterruptedException occurs if a subsequent operation calls sleep and is being woken up again
      */
     private void doWhileOperation(Map<String, Object> script) throws ParseException,
-                                                                     AttributeNotFoundException,
-                                                                     IOException,
-                                                                     InterruptedException {
+            AttributeNotFoundException,
+            IOException,
+            InterruptedException {
         validate(script, new String[] {"do_while", "do"}); // Validation
 
         // Get the instruction parameters
@@ -888,6 +894,7 @@ public class SeleniumScripter {
      * Go back to the previous page using JS.
      */
     private void jsBackOperation() {
+        LOG.error("The `jsBack` operation is deprecated and will eventually be removed in favor of the `window back` operation!");
         JavascriptExecutor js = (JavascriptExecutor) driver;
         try {
             LOG.info("Going to last page...");
@@ -908,8 +915,8 @@ public class SeleniumScripter {
      * @param script the js-click subscript operation
      */
     private void jsClickOperation(Map<String, Object> script) throws ParseException,
-                                                                     NoSuchElementException,
-                                                                     InterruptedException{
+            NoSuchElementException,
+            InterruptedException{
         validate(script, new String[] {"selector", "name"}); // Validation
 
         // Get the instruction parameters
@@ -963,14 +970,15 @@ public class SeleniumScripter {
         // Run the JS to inject the HTML element
         LOG.info("Injecting DOM element: `" + newElement + "` as a sibling to element with " + selector + " of `" + name + "`");
         ((JavascriptExecutor) driver)
-            .executeScript("arguments[0].insertAdjacentHTML(\"afterBegin\", \"" + newElement + "\");",
-                           element);
+                .executeScript("arguments[0].insertAdjacentHTML(\"afterBegin\", \"" + newElement + "\");",
+                        element);
     }
 
     /**
      * Refresh the current page using JS.
      */
     private void jsRefreshOperation() {
+        LOG.error("The `jsBack` operation is deprecated and will eventually be removed in favor of the `window reload` operation!");
         JavascriptExecutor js = (JavascriptExecutor) driver;
         try {
             LOG.info("Refreshing the page!");
@@ -1057,7 +1065,135 @@ public class SeleniumScripter {
                         .equals("complete"));
     }
 
+    /**
+     * @param script the load-page subscript operation
+     * @throws ParseException occurs if an invalid timeout value was specified
+     */
+    private void loadWindowOperation(Map<String, Object> script) throws ParseException {
+        String selector = "";
+        String name = "";
+        String condition = script.get("condition").toString().toLowerCase();
+        WebElement element;
 
+        if (condition.equals("load")){
+            validate(script, new String[] {"selector", "name", "condition"});
+            selector = script.get("selector").toString();
+            name = script.get("name").toString();
+        } else {
+            validate(script, new String[] {"condition"});
+        }
+        String originalWindow = driver.getWindowHandle();
+//        assert driver.getWindowHandles().size() == 1;
+
+        switch (condition) {
+            case "load":
+                element = driver.findElement(by(selector, name));
+                performLoadOperation(selector, name, originalWindow, element);
+                break;
+            case "back":
+                performBackOperation(originalWindow);
+                break;
+            case "reload":
+                performReloadOperation(originalWindow);
+                break;
+            case "close":
+                performCloseOperation(originalWindow);
+                break;
+            case "Switch":
+                performSwitchOperation(originalWindow);
+                break;
+            default:
+                throw new ParseException("Invalid `Condition` option: " + condition, 0);
+        }
+    }
+    private void performLoadOperation(String selector, String name, String originalWindow, WebElement element) {
+        LOG.info("Clicking element with " + selector + " of `" + name + "`" + " to load.");
+        element.click();
+
+        new WebDriverWait(driver, 30)
+                .until(numberOfWindowsToBe(2));
+
+        for (String windowHandle : driver.getWindowHandles()) {
+            if (!originalWindow.contentEquals(windowHandle)) {
+                driver.switchTo().window(windowHandle);
+                break;
+            }
+        }
+        LOG.info("Waiting for page to fully load within 30 seconds: " + driver.getCurrentUrl());
+        new WebDriverWait(driver, 30)
+                .until((driver) -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
+                        .toString()
+                        .equals("complete"));
+    }
+
+    private void performBackOperation(String originalWindow) {
+        driver.switchTo().window(originalWindow);
+        JavascriptExecutor js = (JavascriptExecutor) driver;
+        try {
+            LOG.info("Going to the last page...");
+            js.executeScript("window.history.back();");
+            js.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
+            LOG.info("Page refreshed!");
+        } catch (org.openqa.selenium.NoSuchElementException e) {
+            LOG.error("Back operation failed!");
+        }
+    }
+
+    private void performReloadOperation(String originalWindow) {
+        driver.switchTo().window(originalWindow);
+        JavascriptExecutor j = (JavascriptExecutor) driver;
+        try {
+            LOG.info("Refreshing the page!");
+            j.executeScript("location.reload();");
+            j.executeAsyncScript("window.setTimeout(arguments[arguments.length - 1], 10000);");
+        } catch (NoSuchElementException e) {
+            LOG.info("Refresh failed!");
+        }
+    }
+
+    private void performCloseOperation(String originalWindow) {
+        try {
+            new WebDriverWait(driver, 30)
+                    .until(numberOfWindowsToBe(2));
+
+            for (String windowHandle : driver.getWindowHandles()) {
+                if (!originalWindow.contentEquals(windowHandle)) {
+                    LOG.info("Closing the page!");
+                    driver.close();
+                    LOG.info("Switching to original page!");
+                    driver.switchTo().window(windowHandle);
+                    new WebDriverWait(driver, 30)
+                            .until((driver) -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
+                                    .toString()
+                                    .equals("complete"));
+                    break;
+                }
+            }
+        } catch (NoSuchElementException e) {
+            LOG.info("Original window no longer exists. Switching Failed!");
+        }
+    }
+
+    private void performSwitchOperation(String originalWindow) {
+        try {
+            new WebDriverWait(driver, 30)
+                    .until(numberOfWindowsToBe(2));
+
+            for (String windowHandle : driver.getWindowHandles()) {
+                if (!originalWindow.contentEquals(windowHandle)) {
+                    LOG.info("Switching to original page! Last page was not closed!");
+                    driver.switchTo().window(windowHandle);
+                    new WebDriverWait(driver, 30)
+                            .until((driver) -> ((JavascriptExecutor) driver).executeScript("return document.readyState")
+                                    .toString()
+                                    .equals("complete"));
+                    break;
+                }
+            }
+        } catch (NoSuchElementException e) {
+            LOG.info("Original window no longer exists. Switching Failed!");
+        }
+    }
     /**
      * Clicking the google reCaptcha button
      */
@@ -1307,19 +1443,19 @@ public class SeleniumScripter {
      * @throws InterruptedException occurs when the process wakes up from a sleep event in a child-instruction
      */
     private void tryOperation(Map<String, Object> script) throws ParseException,
-                                                                 AttributeNotFoundException,
-                                                                 IOException,
-                                                                 InterruptedException,
-                                                                 StopIteration {
+            AttributeNotFoundException,
+            IOException,
+            InterruptedException,
+            StopIteration {
         validate(script, new String[] {"try", "catch", "expect"}); // Validation
 
         // Fetch the instruction blocks
         List<Map<String, String>> tryBody = (List<Map<String, String>>) script.get("try");
         List<Map<String, String>> catchBody = (List<Map<String, String>>) script.get("catch");
         List<String> raw_expect = ((List<String>) script.get("expect"))
-                                                        .stream()
-                                                        .map(String::toLowerCase)
-                                                        .collect(Collectors.toList());
+                .stream()
+                .map(String::toLowerCase)
+                .collect(Collectors.toList());
 
         try {
             // Try to run the sequence of instructions
@@ -1348,8 +1484,8 @@ public class SeleniumScripter {
      * @throws NotActiveException occurs when development mode is not first enabled
      */
     private void pauseOperation(Map<String, Object> script) throws ParseException,
-                                                                   NotActiveException,
-                                                                   InterruptedException {
+            NotActiveException,
+            InterruptedException {
         if(!DEV_MODE) { // Validate that dev mode is enabled
             throw new NotActiveException("The `pause` operation is for development purposes only and not available in a production environment!");
         }
